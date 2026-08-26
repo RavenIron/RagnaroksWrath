@@ -485,6 +485,21 @@ spec's surfaces, decompile gates honoured first:
   The server half is only the announcer: one line per zone per session, worded by the
   worst flag (`Empowered > Barren > Sickening > Withering`).
 
+**VERIFIED IN-GAME 2026-08-26 (0.10.0, dedicated server, live player).** Corruption staged
+to 0.7 in the outbreak by store edit (fresh stamp), so zone (0,-1) carried all four flags.
+Owner's report, all five checks: the festering announcement fired ONCE, pickables withered
+and refused, wildlife visibly slowed, starred spawns appeared at the expected rarity, and
+both negative controls held — the turnip farm at (-1,0) and the frost scar at (1,0) showed
+no consequences. Zero warnings or errors on either side across the session (the error watch
+ran throughout). A deploy near-miss worth keeping: the first 0.10.0 deploy was a DLL built
+BEFORE the version bump — task-12 code, 0.9.0 label — caught by the strings audit, not by
+the copy. Identify builds by content, always.
+
+Unobserved, accepted: crop withering (needs a plant in blighted soil and a grow cycle —
+the status flip and hover line are the quick half if anyone plants a turnip in the
+outbreak; vanilla's cant-grow death is the slow half). Same standing as task 11's tier-3
+line: same code path as verified surfaces, lower stakes, recorded rather than assumed.
+
 The drift store growing hands. Spec settled in a design conversation with the owner; the
 four framing calls and three flavor calls below are theirs:
 
