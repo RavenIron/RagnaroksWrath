@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -15,7 +15,7 @@ namespace RavenIron.RagnaroksWrath
     {
         public const string PluginId      = "com.raveniron.ragnarokswrath";
         public const string PluginName    = "Ragnarok's Wrath";
-        public const string PluginVersion = "0.15.1";
+        public const string PluginVersion = "0.15.2";
 
         public static RagnaroksWrath Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
@@ -24,7 +24,7 @@ namespace RavenIron.RagnaroksWrath
 
         /// <summary>
         /// True once ZNet exists and this process is the authority for world simulation.
-        /// Null before ZNet.Start — callers must handle "not known yet", which is why this
+        /// Null before ZNet.Start â€” callers must handle "not known yet", which is why this
         /// is a method rather than a cached bool set at Awake.
         /// </summary>
         public static bool IsSimulationAuthority()
@@ -51,7 +51,7 @@ namespace RavenIron.RagnaroksWrath
             _harmony = new Harmony(PluginId);
             _harmony.PatchAll();
 
-            // WorldTick is a plain MonoBehaviour driven from Update — deliberately NOT a
+            // WorldTick is a plain MonoBehaviour driven from Update â€” deliberately NOT a
             // coroutine. See House Style rule 2: long-lived coroutines in this codebase have
             // repeatedly grown a `continue`-past-`yield` hard-lock.
             gameObject.AddComponent<WorldTick>();
@@ -76,7 +76,7 @@ namespace RavenIron.RagnaroksWrath
 
         /// <summary>
         /// Every system registers here, in one place. Systems are ticked in registration order
-        /// by WorldTick's round-robin cursor, so ordering here is a mild scheduling hint only —
+        /// by WorldTick's round-robin cursor, so ordering here is a mild scheduling hint only â€”
         /// no system may depend on another having ticked first within the same frame.
         /// </summary>
         private static void RegisterSystems()

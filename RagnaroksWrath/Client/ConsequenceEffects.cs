@@ -46,6 +46,7 @@ namespace RavenIron.RagnaroksWrath.Client
         private bool _warHornsBuilt;
         private bool _warSeenLogged;
         private float _nextWarHorn;
+        private float _nextWarCensus;
 
         private void Update()
         {
@@ -148,6 +149,24 @@ namespace RavenIron.RagnaroksWrath.Client
 
             for (int i = 0; i < _warHorns.Count; i++)
                 seman.AddStatusEffect(_warHorns[i], resetTime: true);
+
+            // Verbose war census: the numbers vanilla's budget actually sees. m_maxSpawned
+            // is raw in the group-size line (engine fact, 2026-08-26), so "loaded" at or
+            // above a spawner's stock cap means zero yield no matter what the horns say.
+            if (ModConfig.VerboseLogging.Value && Time.time >= _nextWarCensus)
+            {
+                _nextWarCensus = Time.time + 60f;
+                var census = new System.Text.StringBuilder("ConsequenceEffects: war census —");
+                for (int i = 0; i < _warHorns.Count; i++)
+                {
+                    GameObject target = _warHorns[i].m_pheromoneTarget;
+                    if (target == null) continue;
+                    int loaded = SpawnSystem.GetNrOfInstances(target);
+                    int near = SpawnSystem.GetNrOfInstances(target, origin, 200f);
+                    census.Append($" {target.name}: {loaded} loaded, {near} within 200m;");
+                }
+                RagnaroksWrath.Log.LogInfo(census.ToString());
+            }
         }
 
         private void BuildWarHorns()
