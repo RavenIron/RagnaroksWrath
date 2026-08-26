@@ -1,0 +1,74 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>RagnaroksWrath</AssemblyName>
+    <RootNamespace>RavenIron.RagnaroksWrath</RootNamespace>
+    <Version>0.3.0</Version>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Company>Raven Iron</Company>
+    <Product>Ragnarok's Wrath</Product>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <!--
+    Shared libs folder at the solution root, populated by tools\fetch-libs.ps1.
+    Deliberately NOT a hardcoded Steam path: Skadi's install lives somewhere else,
+    and a Steam library move would break every checkout.
+    libs\ is gitignored - each dev runs fetch-libs once.
+  -->
+  <PropertyGroup>
+    <LibsDir>$(MSBuildThisFileDirectory)..\libs</LibsDir>
+  </PropertyGroup>
+
+  <Target Name="CheckLibs" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(LibsDir)\assembly_valheim_publicized.dll')"
+           Text="libs\ is missing or empty. Run tools\fetch-libs.ps1 to populate it from your Valheim install." />
+  </Target>
+
+  <ItemGroup>
+    <!--
+      Include names are the assemblies' real identities (verified against the DLL metadata:
+      the publicized files still identify as assembly_valheim / assembly_utils).
+      Naming these '..._publicized' resolves via HintPath but warns on identity mismatch.
+    -->
+    <Reference Include="assembly_valheim">
+      <HintPath>$(LibsDir)\assembly_valheim_publicized.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="assembly_utils">
+      <HintPath>$(LibsDir)\assembly_utils_publicized.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="UnityEngine">
+      <HintPath>$(LibsDir)\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(LibsDir)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(LibsDir)\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="BepInEx">
+      <HintPath>$(LibsDir)\BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(LibsDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests\**" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Matches the SDK/runtime actually installed on this machine (10.0.x).
+         RollForward=LatestMajor means this keeps running if the runtime moves on again -
+         the harness only needs *a* modern runtime, not a specific one. -->
+    <TargetFramework>net10.0</TargetFramework>
+    <RollForward>LatestMajor</RollForward>
+    <OutputType>Exe</OutputType>
+    <Nullable>disable</Nullable>
+    <AssemblyName>CoreTests</AssemblyName>
+    <RootNamespace>RagnaroksWrath.Tests</RootNamespace>
+    <!-- The mod targets net472 and needs Mono to run. These files' *logic* has no Unity
+         dependency, so compiled against stubs they run on any modern .NET. -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Local test code -->
+    <Compile Include="Program.cs" />
+    <Compile Include="Stubs.cs" />
+
+    <!--
+      THE SHIPPING SOURCE, not a copy. A harness that duplicates the logic proves nothing
+      about the logic that ships, and drifts apart from it silently.
+    -->
+    <Compile Include="..\..\RagnaroksWrath\Core\ZoneKey.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\ZoneClock.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\ZoneState.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\BiomeDrift.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\StormArea.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\WindState.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\FireScorch.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\Persistence.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Config\ModConfig.cs" />
+  </ItemGroup>
+
+</Project>
