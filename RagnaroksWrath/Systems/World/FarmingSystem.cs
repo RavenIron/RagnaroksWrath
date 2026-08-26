@@ -20,9 +20,9 @@ namespace RavenIron.RagnaroksWrath.Systems.World
     ///
     /// THE SWEEP. `ZDOMan.GetAllZDOsWithPrefabIterative` is vanilla's own self-chunking walk
     /// (verified: appends matches, returns true when the index has covered every sector). One
-    /// prefab name advances per tick, resuming mid-walk across ticks — bounded work in
-    /// WorldTick's budget, and staggered by our interval against AwayFromHome's 60s full-index
-    /// rescan, which is the whole reason the interval defaults to 45.
+    /// WHOLE prefab is drained per tick — see the comment at the call for why resuming chunks
+    /// across ticks was a bug — and the interval staggers us against AwayFromHome's 60s
+    /// full-index rescan, which is the whole reason it defaults to 45.
     ///
     /// Crop prefab names are CONFIG, not code: they are data about the game's content, they
     /// drift with game patches, and a wrong name costs a silent zero matches — which the
@@ -69,11 +69,19 @@ namespace RavenIron.RagnaroksWrath.Systems.World
 
             _rotationSeconds += deltaSeconds;
 
+            // One WHOLE prefab per tick. The iterative call yields every ~400 populated
+            // sectors, and a world's locations populate thousands — resuming one chunk per
+            // tick (the first version of this) stretched a single prefab across minutes and a
+            // rotation across the better part of an hour. Vanilla's own callers drain it in a
+            // loop within one frame; each chunk is a few thousand integer compares, so a full
+            // walk sits comfortably inside WorldTick's budget. Termination is structural:
+            // index advances every call until it passes the sector array.
             string prefab = _cropPrefabs[_prefabCursor];
-            bool done;
             try
             {
-                done = man.GetAllZDOsWithPrefabIterative(prefab, _found, ref _sweepIndex);
+                bool done = false;
+                while (!done)
+                    done = man.GetAllZDOsWithPrefabIterative(prefab, _found, ref _sweepIndex);
             }
             catch (Exception ex)
             {
@@ -82,8 +90,6 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 _sweepIndex = 0;
                 return;
             }
-
-            if (!done) return;   // mid-walk; same prefab resumes next tick
 
             // One prefab fully swept: bank its zone counts, move to the next.
             for (int i = 0; i < _found.Count; i++)
