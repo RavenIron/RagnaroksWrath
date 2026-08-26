@@ -92,8 +92,13 @@ obeys.
   **STILL OPEN on phase D:** the design decision: refill-pressure-only vs own spawn
   budget — and whether ContestWildSpawnChance=100 / ContestWildMaxSpawned=15 become the
   shipped defaults (the max override is gate-only; yield above vanilla's cap is
-  impossible either way). Player-side confirmation of the true resolution Centre line
-  was pending at write time. A dead-ledger edit CANNOT test resolution: a
+  impossible either way). Player-side sighting of the true resolution Centre line:
+  owner could NOT confirm (the only confident sighting was the disproven early one).
+  ACCEPTED UNOBSERVED on component evidence — the Centre pipe is live-verified since
+  v0.2.2 (storm announcements seen on screen, same MessageFeed.ToPlayersNear path) and
+  the call site's execution is logged with a player in the area. To observe it properly
+  someday: HalfLife=1 (valid, no clamp), care=0.31, restart, watch deliberately —
+  expect ~5-10 min, healing-presence income stretches pure-decay math ~3x. A dead-ledger edit CANNOT test resolution: a
   restart re-derives war from the store, so care edited below 0.3 just means no war and
   no edge (the Winterborn shrug — UpdateWar's own comment). Live route instead: set
   `RivalryHalfLifeHours = 0.05` in the server cfg, restart, stand within 64m of (0,-64);
