@@ -1,4 +1,4 @@
-# Session handoff — 2026-08-26
+# Session handoff — 2026-08-26 (updated through phase D, ~13:50)
 
 For the next session picking this up cold. Read `CLAUDE.md` first (house rules, locked
 decisions, verified-state ledger), then this for the operational state the docs don't carry.
@@ -26,6 +26,21 @@ obeys.
 - **0.8.2 flush-fix verification PENDING:** needs a player to get exposed, then a server
   stop — the health ledger's mtime must land beside Dedicated.db's instead of up to 60s
   earlier. Today's stops had an empty ledger, so it has never been observed doing its job.
+- **PHASE D (spawn war) BUILT at 0.15.0 and STAGED, verification IN FLIGHT at handoff:**
+  contested = blight >= 0.5 AND total zone care >= 0.3; storms x2 the intensity (rule 4's
+  breadcrumb cashed); blight side rides the task-12 star surface x(1+bonus x intensity);
+  wild side is vanilla's OWN pheromone machinery (`SE_Stats.m_pheromoneTarget` — the Bog
+  Witch mead fields, public, read by UpdateSpawnList) via invisible TTL'd "war horn" SEs
+  on players standing contested ground. Resolution at the contested->uncontested edge
+  (wild wins if blight broke, blight wins if care faded), ONE Centre line. Wire is now
+  ...zone_state3 (war intensity per zone in the ring). THE OUTBREAK (0,-1) IS STAGED AS
+  WAR GROUND: care hand-set to 0.5 (backup `.prephased`). **OPEN AT HANDOFF: the owner
+  reported "horns are sounding" but the client log showed NO horn build line — either
+  they weren't on contested ground yet or something upstream is silent; a watch was
+  running. Resolve before trusting phase D: the horn build logs `war horn(s) ready`, and
+  the resolution test is a ledger edit dropping care to 0.1 -> expect exactly one "The
+  blight has claimed this ground." Do not cure the outbreak to force a wild win — it is
+  guarded world state.**
 - **Task 13 PHASES A, B COMPLETE and live-verified; PHASE C BUILT (RW 0.14.1, FireFront
   0.17.3):** the ledger with all three writers proven (A); the grudge with three teeth
   verified — Ashbringer, the personal pick refusal, and the drift tooth measured at
