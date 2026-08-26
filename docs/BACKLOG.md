@@ -246,8 +246,8 @@ comes from a future event system, a `wrath` console command, or an admin's edito
   need the client plugin's state sync, because a plant's lifecycle runs on its ZDO's owner (a
   client), and clients have no zone store.
 
-**Remaining:** `HealthSystem` (designed — see task 11) · `ConsequenceSystem` ·
-`RivalrySystem` · `RelicSystem` (no spec yet — design before building).
+**Remaining:** `HealthSystem` (designed — task 11) · `ConsequenceSystem` (designed — task
+12) · `RivalrySystem` · `RelicSystem` (no spec yet — design before building).
 
 ---
 
@@ -397,6 +397,82 @@ its full client-side caller list must be enumerated first (other systems consult
   environment at every transition (rule 4 held by evidence, as WeatherSystem did).
 - Headless: exposure accrual logged for a connected player; the health ledger appears beside
   the zone store.
+
+---
+
+## 12. `ConsequenceSystem` — DESIGN AGREED 2026-08-26, not built
+
+The drift store growing hands. Spec settled in a design conversation with the owner; the
+four framing calls and three flavor calls below are theirs:
+
+- **Domain: wild vegetation, crops, creatures. NEVER player structures** — chosen
+  deliberately, and it deletes the entire AwayFromHome minefield from this system's map.
+  Do not add a "just a little structure decay" option later without a new conversation.
+- **Severity: degrade with repair.** Pressure, not verdicts — everything it does can be
+  pushed back by curing the land (the existing drift cures), replanting, or leaving.
+- **Reach: player-present only.** Consequences fire only in zones with a real player
+  standing in them. This is a design choice AND the mechanism: a present player's client has
+  live instances and can own every physical act — the FireFront delegation lesson, promoted
+  to architecture. No headless-instance problem exists here at all.
+- **Voice: mixed by weight.** Per-creature and per-pickable effects are silent (the fog
+  precedent — the world speaks through its body); a zone's first crossing into a
+  consequence-active tier while contacted earns ONE MessageFeed line.
+- **Creatures: both directions.** Blight empowers hostiles and sickens passive wildlife.
+  The blight has a side, and it is not yours.
+- **Wild vegetation: barren only.** Pickables (berries, mushrooms, thistle) stop yielding
+  in bad zones — withered hover text, no theatrical tree damage. The land goes quiet.
+- **Pacing: noticeable per visit.** Effects are visible during a stay — a starred spawn, a
+  staggering deer, a bush that won't pick — without waiting for a return trip.
+
+**Flavor mapping** (proposed defaults, all thresholds config):
+
+- **Plague** sickens: pickables fail (>= 0.4), passive wildlife gets a code-built sickness
+  SE — slowed (`ModifySpeed` is on the SEMan path) plus a mild drain, visibly staggering
+  (>= 0.4). Sickness on wildlife may kill a starving deer eventually; that is the one
+  lethal edge, and it is aimed at deer, not players.
+- **Corruption** empowers: hostile spawns in corrupt zones (>= 0.5) come up starred via
+  vanilla `SetLevel` at spawn time — vanilla's own language for "this one is worse". The
+  `SetLevel`-resets-max-health trap is irrelevant at spawn: it IS the vanilla leveling path.
+- **Scorch** starves: pickables fail on burned ground too (>= 0.5). Ash bears nothing.
+
+**Architecture:**
+
+- Clients already hold the zone ring — **ZoneSync needs no new payload**. The client-side
+  `ConsequenceSystem` reads the synced cache and acts only on instances whose ZDOs the local
+  client OWNS (the ownership check is what prevents two present players applying the same
+  effect twice).
+- Candidate patch surfaces, each behind the decompile gate before build: `Pickable`'s
+  pick/hover path (a `Priority.Low` prefix that declines the pick with withered hover text —
+  "no opinion means return true"), the spawn path (`SpawnSystem` / `CreatureSpawner`)
+  postfix for stars, and `SEMan` instance-add for wildlife sickness (same no-asset SE
+  pattern task 11 verified).
+- "Passive wildlife" is an explicit configurable prefab-name list (Deer, Boar, Hare, ...),
+  not a faction guess — factions lump deer with greydwarfs.
+- Server side is thin: a WorldTick watcher that sends the landmark MessageFeed line on a
+  contacted zone's first tier crossing (persisted flag in the zone store? No — a announced
+  set in memory per session is enough; re-announcing after a restart is acceptable, spam
+  within a session is not).
+- The AFH keeper must not count as "player present" — verify at build that the keeper is
+  not a real character ZDO (expected: it is not), and pin the check to the same
+  contact-detection path BiomeDrift uses.
+- **Boundary with FarmingSystem:** FarmingSystem owns growth/yield RATES (its client
+  consumer); ConsequenceSystem owns physical ACTS. For crops that means: growth slowdown is
+  farming's; withering-to-death in soil past a high line (>= 0.6 proposed) is consequence's.
+  Neither writes the other's ledger.
+
+**Acceptance:**
+
+- Harness: threshold/tier math, the flavor mapping table, passive-list matching,
+  announce-once logic.
+- In-game, plague zone: a berry bush shows withered hover and declines the pick; a deer
+  visibly slows with a sickness icon over it; walking out and curing the zone restores both.
+- In-game, corrupt zone: a fresh spawn comes up starred; the same prefab in a clean zone
+  does not.
+- In-game, voice: exactly one MessageFeed line the first time a contacted zone crosses into
+  a consequence tier; nothing per-bush, per-deer, per-spawn.
+- Ownership: with two players in the zone, no double-applied effects (one SE per creature,
+  one suppression per pickable).
+- AFH: a keeper-held zone with no real player fires nothing.
 
 - BepInEx pinned `denikson-BepInExPack_Valheim-5.4.2333` — confirmed current: it is the exact
   pack the live install runs.
