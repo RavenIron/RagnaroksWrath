@@ -8,10 +8,16 @@ obeys.
 
 ## Where things stand
 
-- **Backlog tasks 0–11: done.** RW at **0.9.0** (143/143 off-game tests), deployed AND
+- **Backlog tasks 0–12: done.** RW at **0.10.0** (151/151 off-game tests), deployed AND
   verified by strings on both sides (Gale client profile + dedicated server — Program Files
   IS copyable from PowerShell when the server is stopped; the old "cannot write there"
   memory was circumstantial). FireFront at **0.17.2**. Both repos pushed under **RavenIron**.
+- **Task 12 (ConsequenceSystem) VERIFIED LIVE same day** — all five checks by the owner:
+  one-line announcement (once), withered/refusing pickables, slowed wildlife, starred
+  spawns at expected rarity, both negative controls held. Crop withering recorded
+  unobserved (plant a turnip in the outbreak for the quick half). Deploy near-miss to
+  remember: a DLL built BEFORE the version bump shipped with task-12 code and a 0.9.0
+  label — the strings audit caught it; identify builds by content, always.
 - **Task 11 (HealthSystem) VERIFIED LIVE end to end** — accrual to four decimals, tiers
   felt (after the 0.8.1 step fix — read that backlog entry for the lesson: assert what the
   player was PROMISED, not what the function computes), relog/restart persistence, decay to
@@ -20,20 +26,23 @@ obeys.
 - **0.8.2 flush-fix verification PENDING:** needs a player to get exposed, then a server
   stop — the health ledger's mtime must land beside Dedicated.db's instead of up to 60s
   earlier. Today's stops had an empty ledger, so it has never been observed doing its job.
-- **Design conversations DONE 2026-08-26:** tasks 12–14 specced (owner's calls recorded per
-  task — do not re-litigate; build order 12 -> 13 -> 14, Relic capstone). Honour each
-  spec's decompile gates.
-- **Remaining, unnumbered:** build tasks 12–14; the storm-gust emitter (frost-breath
-  shipped in 0.9.0; both share `Visuals\ParticleKit`); farming's growth/yield consumer;
-  the nameplate RENDER check (needs a second player); package + Thunderstore upload of
-  0.9.0 (`tools\package.ps1`, upload is the user's browser step).
+- **Tasks 13–14 specced, not built** (owner's calls recorded per task — do not re-litigate;
+  13 then 14, Relic capstone). Honour each spec's decompile gates.
+- **Remaining, unnumbered:** build tasks 13–14; the storm-gust emitter (`Visuals\ParticleKit`
+  is the shared substrate); farming's growth/yield consumer; the nameplate RENDER check
+  (needs a second player); crop-wither quick half; the 0.8.2 flush verification (stop the
+  server WHILE a player stands in plague — a logged-out player's ledger may already be
+  cadence-clean); package + Thunderstore upload of 0.10.0.
 
 ## The live world (Dedicated, uid 4690126)
 
 Genuine state, not test residue — do not wipe:
 
-- An outbreak centred on zone (0,-1) at plague **~1.0** (regrown, corruption-fed, corruption
-  ~0.29); seeded neighbours below the 0.15 floor. Winter or a config cure drains it.
+- An outbreak centred on zone (0,-1) at plague **~1.0** with corruption **0.7** (raised
+  from ~0.30 by store edit for the task 12 empowerment test, kept as genuine state) —
+  the zone now carries ALL FOUR consequence flags, and the corruption boost makes its
+  plague effectively incurable by neglect. Winter or a config cure drains the plague;
+  nothing but time off drains corruption. Seeded neighbours sit below the 0.15 floor.
 - **A cold scar at zone (1,0), frost ~0.74** — staged for the chill/breath test and KEPT
   deliberately (owner's call): breath fogs there, the chill bites, and it only drains while
   someone stands in it. A `.prefrost` backup of the zone store sits beside it if it ever
