@@ -67,6 +67,24 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> PlagueSpreadChance;
         public static ConfigEntry<int>   PlagueMaxSpreadsPerTick;
 
+        // ---- World state ----------------------------------------------------------------
+        public static ConfigEntry<float> WorldStateIntervalSeconds;
+        public static ConfigEntry<float> WorldFlourishingBurden;
+        public static ConfigEntry<float> WorldAilingBurden;
+        public static ConfigEntry<float> WorldStrickenBurden;
+        public static ConfigEntry<float> WorldStormBurden;
+
+        // ---- Ecology --------------------------------------------------------------------
+        public static ConfigEntry<float> EcologyIntervalSeconds;
+        public static ConfigEntry<float> EcologyCorruptionPerHour;
+        public static ConfigEntry<float> EcologyPlagueThreshold;
+        public static ConfigEntry<float> EcologyScorchThreshold;
+
+        // ---- Farming --------------------------------------------------------------------
+        public static ConfigEntry<float>  FarmingIntervalSeconds;
+        public static ConfigEntry<float>  FarmingDepletionPerCropHour;
+        public static ConfigEntry<string> FarmingCropPrefabs;
+
         // ---- Per-system master switches -------------------------------------------------
 
         public static ConfigEntry<bool> EnableSeason;
@@ -82,6 +100,7 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<bool> EnableRivalry;
         public static ConfigEntry<bool> EnableRelic;
         public static ConfigEntry<bool> EnableTitle;
+        public static ConfigEntry<bool> EnableWorldState;
 
         public static void Bind(ConfigFile cfg)
         {
@@ -273,7 +292,91 @@ namespace RavenIron.RagnaroksWrath.Config
                     "frontier all rolling well at once.",
                     new AcceptableValueRange<int>(1, 256)));
 
+            const string worldstate = "10 - World state";
+
+            WorldStateIntervalSeconds = cfg.Bind(worldstate, "WorldStateIntervalSeconds", 30f,
+                new ConfigDescription(
+                    "Seconds between derivations of the world condition. Derived bottom-up " +
+                    "from the zone store and weather every pass, never persisted: if it dies, " +
+                    "the next pass recomputes the same answer.",
+                    new AcceptableValueRange<float>(10f, 600f)));
+
+            WorldFlourishingBurden = cfg.Bind(worldstate, "WorldFlourishingBurden", 0.25f,
+                new ConfigDescription(
+                    "Total burden at or below which the land flourishes.",
+                    new AcceptableValueRange<float>(0f, 10f)));
+
+            WorldAilingBurden = cfg.Bind(worldstate, "WorldAilingBurden", 4f,
+                new ConfigDescription(
+                    "Total burden at which the land turns Ailing. Burden is a weighted sum over " +
+                    "every tracked zone (plague x1.5, corruption x1, scorch x1, depletion x0.75, " +
+                    "frost x0.5), so it scales with real damage, not with how many zones happen " +
+                    "to be tracked.",
+                    new AcceptableValueRange<float>(0.5f, 100f)));
+
+            WorldStrickenBurden = cfg.Bind(worldstate, "WorldStrickenBurden", 12f,
+                new ConfigDescription(
+                    "Total burden at which the land is Stricken. Keep well above Ailing; " +
+                    "improvements only announce after burden clears a 15 percent hysteresis " +
+                    "band, so transitions cannot flap.",
+                    new AcceptableValueRange<float>(1f, 500f)));
+
+            WorldStormBurden = cfg.Bind(worldstate, "WorldStormBurden", 1f,
+                new ConfigDescription(
+                    "Burden added while a Devastating Storm runs - the weather taking its seat " +
+                    "when the land is judged.",
+                    new AcceptableValueRange<float>(0f, 20f)));
+
+            const string ecology = "11 - Ecology";
+
+            EcologyIntervalSeconds = cfg.Bind(ecology, "EcologyIntervalSeconds", 60f,
+                new ConfigDescription(
+                    "Seconds between blight-pressure passes.",
+                    new AcceptableValueRange<float>(10f, 600f)));
+
+            EcologyCorruptionPerHour = cfg.Bind(ecology, "EcologyCorruptionPerHour", 0.01f,
+                new ConfigDescription(
+                    "Corruption accrued per hour in a zone held at the pressure threshold; " +
+                    "scales up as plague or scorch exceed it. Corruption then feeds plague " +
+                    "growth through PlagueCorruptionBoost - the loop that makes a neglected " +
+                    "outbreak worse than two clean ones. Set 0 to sever the loop.",
+                    new AcceptableValueRange<float>(0f, 1f)));
+
+            EcologyPlagueThreshold = cfg.Bind(ecology, "EcologyPlagueThreshold", 0.3f,
+                new ConfigDescription(
+                    "Plague level at which the land beneath begins to corrupt.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            EcologyScorchThreshold = cfg.Bind(ecology, "EcologyScorchThreshold", 0.3f,
+                new ConfigDescription(
+                    "Scorch level at which the land beneath begins to corrupt.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            const string farming = "12 - Farming";
+
+            FarmingIntervalSeconds = cfg.Bind(farming, "FarmingIntervalSeconds", 45f,
+                new ConfigDescription(
+                    "Seconds between crop-sweep steps. Deliberately not 60: AwayFromHome " +
+                    "rescans the full ZDO index every 60s, and two sweeps landing together is " +
+                    "a stutter neither mod can diagnose alone.",
+                    new AcceptableValueRange<float>(10f, 600f)));
+
+            FarmingDepletionPerCropHour = cfg.Bind(farming, "FarmingDepletionPerCropHour", 0.002f,
+                new ConfigDescription(
+                    "Fertility depletion per standing crop per hour. At the default, a 25-crop " +
+                    "field tires its zone fully in about 20 hours of real uptime; rest heals " +
+                    "it through the biome recovery rate. Depletion is only WRITTEN server-side " +
+                    "today - growth and yield effects arrive with the client plugin.",
+                    new AcceptableValueRange<float>(0f, 0.5f)));
+
+            FarmingCropPrefabs = cfg.Bind(farming, "FarmingCropPrefabs",
+                "sapling_carrot,sapling_turnip,sapling_onion,sapling_barley,sapling_flax,sapling_seedcarrot,sapling_seedturnip,sapling_seedonion,sapling_jotunpuffs,sapling_magecap",
+                "Comma-separated crop prefab names to sweep. Game content, so data rather than " +
+                "code: a name the game no longer knows costs a silent zero matches - check " +
+                "with VerboseLogging if a crop stops tiring soil after a game patch.");
+
             const string systems = "4 - Systems";
+
 
 
 
@@ -290,6 +393,7 @@ namespace RavenIron.RagnaroksWrath.Config
             EnableConsequence = cfg.Bind(systems, "EnableConsequence", true, "Master switch for ConsequenceSystem.");
             EnableRivalry     = cfg.Bind(systems, "EnableRivalry",     true, "Master switch for RivalrySystem.");
             EnableRelic       = cfg.Bind(systems, "EnableRelic",       true, "Master switch for RelicSystem.");
+            EnableWorldState  = cfg.Bind(systems, "EnableWorldState",  true, "Master switch for WorldStateSystem (derived world condition and announcements).");
             EnableTitle       = cfg.Bind(systems, "EnableTitle",       true, "Master switch for TitleSystem (earned title under player nameplates).");
 
             const string biome = "5 - Biome state";

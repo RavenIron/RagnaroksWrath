@@ -40,6 +40,8 @@ namespace RagnaroksWrath.Tests
             WindStateTests();
             FireScorchTests();
             PlagueTests();
+            WorldStateTests();
+            EcologyTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -680,6 +682,109 @@ namespace RagnaroksWrath.Tests
                         0.5f, new HashSet<ZoneKey> { new ZoneKey(3, 3) }, t);
                     return t.Count == 0;
                 }))());
+        }
+
+        // ---- WorldState -------------------------------------------------------------
+
+        private static void WorldStateTests()
+        {
+            Console.WriteLine("\nWorldState");
+
+            var zones = new List<KeyValuePair<ZoneKey, ZoneState>>
+            {
+                new KeyValuePair<ZoneKey, ZoneState>(new ZoneKey(0, 0),
+                    new ZoneState { Plague = 0.6f, Corruption = 0.5f }),
+                new KeyValuePair<ZoneKey, ZoneState>(new ZoneKey(1, 0),
+                    new ZoneState { Scorch = 0.2f }),
+                new KeyValuePair<ZoneKey, ZoneState>(new ZoneKey(2, 0),
+                    new ZoneState { Frost = 0.4f }),
+            };
+            BiomeMetrics m = BiomeMetrics.Compute(zones);
+
+            Check($"metrics count what they should ({m.TrackedZones} tracked, {m.InfectedZones} infected)",
+                m.TrackedZones == 3 && m.InfectedZones == 1);
+
+            // Burden is the weighted sum: 0.6*1.5 + 0.5*1 + 0.2*1 + 0.4*0.5 = 1.8.
+            Check($"burden weights each field as documented ({m.Burden():F3})",
+                Math.Abs(m.Burden() - 1.8f) < 0.0005f);
+
+            Check("an empty store carries no burden",
+                BiomeMetrics.Compute(new List<KeyValuePair<ZoneKey, ZoneState>>()).Burden() == 0f);
+
+            // Worsening is prompt: at the threshold, the condition turns.
+            Check("ailing begins at its threshold",
+                WorldConditionRules.Derive(4f, WorldCondition.Stable, 0.25f, 4f, 12f)
+                    == WorldCondition.Ailing);
+
+            Check("stricken begins at its threshold",
+                WorldConditionRules.Derive(12f, WorldCondition.Ailing, 0.25f, 4f, 12f)
+                    == WorldCondition.Stricken);
+
+            // Improvement needs the hysteresis band. This is the no-flap guarantee: a burden
+            // hovering exactly at a boundary announces once, not every pass forever.
+            Check("just under the threshold does NOT improve (hysteresis)",
+                WorldConditionRules.Derive(3.9f, WorldCondition.Ailing, 0.25f, 4f, 12f)
+                    == WorldCondition.Ailing);
+
+            Check("clearing the hysteresis band improves",
+                WorldConditionRules.Derive(3.3f, WorldCondition.Ailing, 0.25f, 4f, 12f)
+                    == WorldCondition.Stable);
+
+            // A collapse can improve several steps in one pass, but only through boundaries it
+            // has genuinely cleared.
+            Check("a full collapse improves straight to flourishing",
+                WorldConditionRules.Derive(0.1f, WorldCondition.Stricken, 0.25f, 4f, 12f)
+                    == WorldCondition.Flourishing);
+
+            Check("a partial collapse stops at the band it has not cleared",
+                WorldConditionRules.Derive(3.8f, WorldCondition.Stricken, 0.25f, 4f, 12f)
+                    == WorldCondition.Ailing);
+
+            // The calm end has the same protection: flourishing is not re-entered at its
+            // ceiling, only below the band under it.
+            Check("flourishing needs its own band cleared",
+                WorldConditionRules.Derive(0.24f, WorldCondition.Stable, 0.25f, 4f, 12f)
+                    == WorldCondition.Stable
+                && WorldConditionRules.Derive(0.2f, WorldCondition.Stable, 0.25f, 4f, 12f)
+                    == WorldCondition.Flourishing);
+        }
+
+        // ---- Ecology ----------------------------------------------------------------
+
+        private static void EcologyTests()
+        {
+            Console.WriteLine("\nEcology");
+
+            const float Hour = 3600f;
+
+            Check("clean land does not corrupt",
+                EcologyPressure.Apply(new ZoneState { Plague = 0.29f, Scorch = 0.29f },
+                    Hour, 0.01f, 0.3f, 0.3f).Corruption == 0f);
+
+            // At the threshold exactly, pressure is a trickle (quarter rate), not full-on: the
+            // effect ramps in rather than switching at one epsilon past the line.
+            ZoneState atLine = EcologyPressure.Apply(new ZoneState { Plague = 0.3f },
+                Hour, 0.01f, 0.3f, 0.3f);
+            Check($"pressure starts as a trickle at the threshold ({atLine.Corruption:E2})",
+                Math.Abs(atLine.Corruption - 0.0025f) < 0.0001f);
+
+            // Plague at double the threshold: excess 1, so rate x1.25.
+            ZoneState hot = EcologyPressure.Apply(new ZoneState { Plague = 0.6f },
+                Hour, 0.01f, 0.3f, 0.3f);
+            Check($"pressure scales with how far past the line ({hot.Corruption:E2})",
+                Math.Abs(hot.Corruption - 0.0125f) < 0.0001f);
+
+            Check("scorch pressure corrupts too",
+                EcologyPressure.Apply(new ZoneState { Scorch = 0.5f },
+                    Hour, 0.01f, 0.3f, 0.3f).Corruption > 0f);
+
+            Check("zero rate or zero time changes nothing",
+                EcologyPressure.Apply(new ZoneState { Plague = 0.9f }, 0f, 0.01f, 0.3f, 0.3f).Corruption == 0f
+                && EcologyPressure.Apply(new ZoneState { Plague = 0.9f }, Hour, 0f, 0.3f, 0.3f).Corruption == 0f);
+
+            Check("NaN inputs corrupt nothing rather than poisoning the store",
+                EcologyPressure.Apply(new ZoneState { Plague = 0.9f }, float.NaN, 0.01f, 0.3f, 0.3f).Corruption == 0f
+                && !float.IsNaN(EcologyPressure.Apply(new ZoneState { Plague = 0.9f }, Hour, float.NaN, 0.3f, 0.3f).Corruption));
         }
 
         // ---- harness ----------------------------------------------------------------

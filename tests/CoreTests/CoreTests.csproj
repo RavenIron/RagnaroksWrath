@@ -32,6 +32,9 @@
     <Compile Include="..\..\RagnaroksWrath\Core\WindState.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\FireScorch.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\PlagueSpread.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\BiomeMetrics.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\WorldCondition.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\EcologyPressure.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\Persistence.cs" />
     <Compile Include="..\..\RagnaroksWrath\Config\ModConfig.cs" />
   </ItemGroup>

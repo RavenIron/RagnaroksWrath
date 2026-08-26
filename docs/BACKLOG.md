@@ -222,13 +222,30 @@ comes from a future event system, a `wrath` console command, or an admin's edito
 
 ---
 
-## 7. Remaining systems
+## 7. Remaining systems — 3 of 7 DONE 2026-08-25
 
-In roughly this order, each following the same `IWorldSystem` shape:
+**Done (v0.5.0):**
 
-`WorldStateSystem` (derived aggregate — computed bottom-up from `BiomeMetrics × WeatherSystem`,
-never stored top-down) · `EcologySystem` · `FarmingSystem` · `HealthSystem` ·
-`ConsequenceSystem` · `RivalrySystem` · `RelicSystem`
+- `WorldStateSystem` — derived condition (Flourishing/Stable/Ailing/Stricken) from
+  `BiomeMetrics` (sums-not-means over the sparse store, never persisted) x weather, with
+  15% hysteresis so announced transitions cannot flap. Verified headless: initial condition
+  `Stable (burden 2.08, 16 tracked, 5 infected)` against a hand-predicted 2.1, set silently on
+  boot per design.
+- `EcologySystem` — Corruption's first writer: plague or scorch >= 0.3 corrupts the land under
+  it, ramping from a quarter-rate trickle at the line. Closes the first feedback loop
+  (corruption feeds plague growth through the boost); severable via config. Verified headless:
+  +0.00022 corruption in patient zero in one 60s tick with nobody online, matching the
+  predicted 0.0132/h.
+- `FarmingSystem` — Fertility-depletion's first writer, and the ZDO sweep deferred since task
+  2: `GetAllZDOsWithPrefabIterative` walks one config-listed crop prefab per 45s tick
+  (staggered off AwayFromHome's 60s rescan), crop density tires soil. HONESTLY SCOPED:
+  depletion is only WRITTEN today — growth/yield effects need the client plugin's state sync,
+  because a plant's lifecycle runs on its ZDO's owner (a client), and clients have no zone
+  store. In-game verification pending: needs crops planted on the server world.
+
+**Remaining:** `HealthSystem` (frost/plague effects on players — needs client-side delivery,
+likely with task 9) · `ConsequenceSystem` · `RivalrySystem` · `RelicSystem` (no spec yet —
+design before building).
 
 ---
 
