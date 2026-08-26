@@ -246,9 +246,8 @@ comes from a future event system, a `wrath` console command, or an admin's edito
   need the client plugin's state sync, because a plant's lifecycle runs on its ZDO's owner (a
   client), and clients have no zone store.
 
-**Remaining:** `HealthSystem` (designed — task 11) · `ConsequenceSystem` (designed — task
-12) · `RivalrySystem` (designed — task 13) · `RelicSystem` (no spec yet — design before
-building).
+**Remaining:** all four designed 2026-08-26 — `HealthSystem` (task 11), `ConsequenceSystem`
+(task 12), `RivalrySystem` (task 13), `RelicSystem` (task 14, capstone — build last).
 
 ---
 
@@ -564,6 +563,77 @@ threshold, floor, and decay half-life in config.
   storm, war visible with a player present, exactly one resolution line.
 - E: decided by its gate; if built, mark survives what it claims to survive, and no patch
   ever touches the frozen-ZDO trap.
+
+---
+
+## 14. `RelicSystem` — DESIGN AGREED 2026-08-26, not built. THE CAPSTONE — build last.
+
+Consecrated places: sites where the world's story peaked become lasting landmarks with real
+properties, marked by a physical stone. The world writes its own monuments. Owner's calls:
+
+- **A relic is a PLACE, not an item.** Item-relics would reopen the no-prefabs locked
+  decision; not chosen. The stone is an EXISTING vanilla prefab spawned by us (legal ground —
+  both sides ship this mod, the hash resolves, no `CreateObjectsSorted` landmine).
+- **All four story peaks consecrate:**
+  1. *A great fire, survived* — scorch peaked past a threshold, then fully healed. Blessed.
+  2. *A plague, cured* — plague past the spread threshold, then driven through zero (the
+     permanence-through-zero mechanic is the trigger's backbone). Blessed.
+  3. *A contest, resolved* — task 13's spawn war ends: wild won, blessed; blight won,
+     cursed. This trigger ARRIVES with task 13 phase D; dormant until then.
+  4. *A world recovery* — Stricken back to Stable/Flourishing consecrates ONE site, the
+     zone whose healed delta defined the era. The rarest stone.
+- **Real auras, modest** (all config): blessed ground — zone recovery drift x1.25, task 11
+  exposure drains x1.5 while standing there, a warmth-like calm; cursed ground — recovery
+  x0.8, exposure accrues x1.25, spawns slightly meaner at a low rate (task 12's star
+  surface, gentler dial). Places worth pilgrimage, and places to walk around.
+- **Destructible by players.** Breaking a stone lifts its blessing or curse — the world's
+  memory CAN be vandalized — and the act books harm to the breaker in the task 13 rivalry
+  ledger (attacker identity from the destruction hit; decompile gate). Until task 13 phase A
+  exists, the booking is a log line. A desecrated site can consecrate again on a fresh peak
+  cycle; while a stone stands, new peaks in that zone change nothing — the land's story is
+  already told. One relic per zone.
+
+**Honesty correction baked into the design:** vanilla runestone lore text is prefab-FIXED,
+not per-instance — so the story does not ride vanilla text plumbing at all. The relic ledger
+owns the story (event type, world day, blessed/cursed, attributed names where the rivalry
+ledger knows them), and a client-side hover/interact decoration (the GetHoverName pattern)
+reads it. The stone is the anchor; the ledger is the memoir. Exact prefab chosen at build
+behind the decompile gate — needs: visible, dignified, destructible (or made destructible by
+a client-added component — also gated).
+
+**Placement and the headless trap:** consecration events are contact-driven by construction
+(cures and contests need players), so someone is present when a stone rises — placement is
+delegated to a present client (task 12's delegation rule), which has real terrain for ground
+height. The server never calls `GetGroundHeight` for this (the returns-its-input trap).
+Acceptance requires the stone standing ON the ground on a dedicated server, not floating or
+buried.
+
+**Peak tracking:** the zone store stays lean — RelicSystem tracks candidate peaks in its own
+persisted ledger, `ragnarokswrath_relics_<uid>.dat` (same fail-safe / quarantine / no-BOM /
+InvariantCulture contract): per-zone peak watermarks plus the standing relics. Consecration
+fires on the through-zero / resolution / era transition, not on the peak itself.
+
+**Sync:** relics are few — full-table replay on join via a GUID-prefixed routed RPC (the
+TitleSync shape), plus a delta push on consecration/desecration. Clients need it for hover
+text and aura application; auras execute exactly like task 12 acts (present client, owned
+instances, ZoneSync-style cached state).
+
+**Cross-system wiring (why this builds LAST):** exposure auras touch task 11; star surface,
+presence rule, and delegation touch task 12; the contest trigger and vandalism booking touch
+task 13. Build order 11 -> 12 -> 13 -> 14. `EnableRelic` already bound; each aura and
+trigger gets its own config line.
+
+**Acceptance:**
+
+- Harness: peak-watermark state machine (peak, through-zero, consecrate-once, desecrate,
+  re-arm), ledger round-trip through the shipping writer, aura math.
+- In-game: a hand-driven cure cycle (store edit to peak, then real cure) raises a stone
+  where predicted, hover tells the story; blessed-zone recovery and exposure drain measured
+  against the aura multipliers (the four-decimal pattern); breaking the stone lifts the
+  aura and logs/books the vandal; the relic survives a server restart.
+- Dedicated: the stone stands on the ground, and consecration with no player present does
+  not fire (it queues for next contact instead — nothing spawns blind on headless).
+- Era monument: exactly one, on a real Stricken -> recovered transition.
 
 - BepInEx pinned `denikson-BepInExPack_Valheim-5.4.2333` — confirmed current: it is the exact
   pack the live install runs.
