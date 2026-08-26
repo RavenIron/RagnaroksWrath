@@ -48,13 +48,19 @@ namespace RavenIron.RagnaroksWrath.Core
         /// </summary>
         public static float Decay(float current, float recoveryMinutes,
                                   bool rested, float restedMultiplier,
-                                  float deltaSeconds)
+                                  float deltaSeconds, float mercyMultiplier = 1f)
         {
             if (float.IsNaN(current) || current <= 0f) return 0f;
             if (float.IsNaN(deltaSeconds) || deltaSeconds <= 0f) return Clamp01(current);
 
             float ratePerSecond = 1f / (Math.Max(1f, recoveryMinutes) * 60f);
             if (rested) ratePerSecond *= Math.Max(1f, restedMultiplier);
+
+            // Task 13 phase C: the land takes sides. On ground whose memory you hold as
+            // dominant carer, the sickness leaves you faster. Never below 1 — mercy is
+            // only ever a bonus.
+            if (!float.IsNaN(mercyMultiplier) && mercyMultiplier > 1f)
+                ratePerSecond *= mercyMultiplier;
 
             float next = current - ratePerSecond * deltaSeconds;
             return next <= 0f ? 0f : Clamp01(next);

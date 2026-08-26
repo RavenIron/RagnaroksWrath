@@ -141,6 +141,14 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> GrudgeScale;
         public static ConfigEntry<float> GrudgePickRefuse;
         public static ConfigEntry<float> AshbringerGrudge;
+        public static ConfigEntry<float> CareDominanceFloor;
+        public static ConfigEntry<float> HarmDominanceFloor;
+        public static ConfigEntry<float> ContestHysteresis;
+        public static ConfigEntry<bool>  AnnounceContests;
+        public static ConfigEntry<float> MercyRecoveryBonus;
+        public static ConfigEntry<float> MercySicknessBonus;
+        public static ConfigEntry<int>   WardenZonesHeld;
+        public static ConfigEntry<int>   DespoilerZonesHeld;
 
         // ---- Per-system master switches -------------------------------------------------
 
@@ -732,6 +740,53 @@ namespace RavenIron.RagnaroksWrath.Config
                     "fire today, so the name is true). Awarded once per crossing — latest " +
                     "earned wins, like every title.",
                     new AcceptableValueRange<float>(0.05f, 1f)));
+
+            CareDominanceFloor = cfg.Bind(rivalry, "CareDominanceFloor", 0.2f,
+                new ConfigDescription(
+                    "Care below which nobody can hold a zone's memory as its carer — " +
+                    "nobody wins ground they barely touched.",
+                    new AcceptableValueRange<float>(0.05f, 5f)));
+
+            HarmDominanceFloor = cfg.Bind(rivalry, "HarmDominanceFloor", 0.2f,
+                new ConfigDescription(
+                    "Harm below which nobody counts as a zone's dominant despoiler.",
+                    new AcceptableValueRange<float>(0.05f, 5f)));
+
+            ContestHysteresis = cfg.Bind(rivalry, "ContestHysteresis", 0.15f,
+                new ConfigDescription(
+                    "How far past an incumbent's value a challenger must reach to take a " +
+                    "held zone (0.15 = 15 percent) — the WorldState anti-flap band, " +
+                    "applied to people. Vacancies fill silently; only genuine takings " +
+                    "flip.",
+                    new AcceptableValueRange<float>(0f, 1f)));
+
+            AnnounceContests = cfg.Bind(rivalry, "AnnounceContests", true,
+                "Narrate a zone changing hands, to players near it, only when both rivals " +
+                "genuinely shaped the ground (both above the floor). One line per actual " +
+                "flip; a one-player world never hears this voice.");
+
+            MercyRecoveryBonus = cfg.Bind(rivalry, "MercyRecoveryBonus", 0.25f,
+                new ConfigDescription(
+                    "Extra zone recovery while its dominant carer's contact covers it " +
+                    "(0.25 = 25 percent faster healing). The land takes sides.",
+                    new AcceptableValueRange<float>(0f, 2f)));
+
+            MercySicknessBonus = cfg.Bind(rivalry, "MercySicknessBonus", 0.5f,
+                new ConfigDescription(
+                    "Extra plague-exposure recovery while standing on ground whose memory " +
+                    "you hold as dominant carer (0.5 = 50 percent faster). Decay only — " +
+                    "the land's favour heals, it does not shield.",
+                    new AcceptableValueRange<float>(0f, 3f)));
+
+            WardenZonesHeld = cfg.Bind(rivalry, "WardenZonesHeld", 3,
+                new ConfigDescription(
+                    "Zones held as dominant carer to earn the Warden title.",
+                    new AcceptableValueRange<int>(1, 64)));
+
+            DespoilerZonesHeld = cfg.Bind(rivalry, "DespoilerZonesHeld", 3,
+                new ConfigDescription(
+                    "Zones held as dominant harmer to earn the Despoiler title.",
+                    new AcceptableValueRange<int>(1, 64)));
 
             const string systems = "4 - Systems";
 

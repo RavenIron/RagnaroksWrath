@@ -43,6 +43,7 @@
     <Compile Include="..\..\RagnaroksWrath\Core\ConsequenceMath.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\RivalryMath.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\RivalryLedger.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\RivalryContest.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\Persistence.cs" />
     <Compile Include="..\..\RagnaroksWrath\Config\ModConfig.cs" />
   </ItemGroup>

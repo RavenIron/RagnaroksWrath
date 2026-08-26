@@ -46,6 +46,11 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         // _contacted; empty whenever rivalry is off or nobody present is resented.
         private readonly Dictionary<ZoneKey, float> _grudgeByZone = new Dictionary<ZoneKey, float>(64);
 
+        // Task 13 phase C: zones whose dominant carer is present — the land's mercy.
+        // Grudge and mercy can coexist (a resented player beside a beloved one): the land
+        // weighs both, multiplicatively.
+        private readonly HashSet<ZoneKey> _mercyZones = new HashSet<ZoneKey>();
+
         // Round-robin position, in the same shape as WorldTick's: it persists across ticks so a
         // pass cut short by the budget resumes rather than restarting, and the zones at the front
         // of the list cannot starve the ones behind them.
@@ -66,7 +71,8 @@ namespace RavenIron.RagnaroksWrath.Systems.World
 
             _contacted.Clear();
             _grudgeByZone.Clear();
-            CollectContactedZones(_contacted, _grudgeByZone);
+            _mercyZones.Clear();
+            CollectContactedZones(_contacted, _grudgeByZone, _mercyZones);
 
             if (_contacted.Count == 0)
             {
@@ -106,9 +112,15 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 // harness-covered. A zone with no resented player present pays nothing.
                 float g = _grudgeByZone.TryGetValue(zone, out float zg) ? zg : 0f;
 
+                // Phase C mercy: the dominant carer's presence quickens healing. Applied
+                // after the grudge so both can be true at once — the land weighs everyone.
+                float zoneRecovery = RivalryMath.GrudgedRecovery(recovery, g);
+                if (_mercyZones.Contains(zone))
+                    zoneRecovery *= 1f + ModConfig.MercyRecoveryBonus.Value;
+
                 ZoneState before = Persistence.Get(zone);
                 ZoneState after  = BiomeDrift.Apply(before, elapsed,
-                    RivalryMath.GrudgedRecovery(recovery, g),
+                    zoneRecovery,
                     RivalryMath.GrudgedPressure(frostPressure, g),
                     cold, fireRisk,
                     RivalryMath.GrudgedPressure(plagueGrowth, g),
@@ -136,7 +148,8 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         /// where players actually are - Player.GetAllPlayers() is not authoritative there, while
         /// position on a character ZDO is replicated state kept fresh by its owner.
         /// </summary>
-        private static void CollectContactedZones(List<ZoneKey> into, Dictionary<ZoneKey, float> grudges)
+        private static void CollectContactedZones(List<ZoneKey> into, Dictionary<ZoneKey, float> grudges,
+                                                  HashSet<ZoneKey> mercies)
         {
             ZNet znet = ZNet.instance;
             if (znet == null) return;
@@ -184,6 +197,9 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                             float g = RivalryMath.GrudgeFor(row.Harm, row.Care, scale);
                             if (g > 0f && (!grudges.TryGetValue(zone, out float worst) || g > worst))
                                 grudges[zone] = g;
+
+                            if (RivalrySystem.IsDominantCarer(zone, playerId))
+                                mercies.Add(zone);
                         }
                     }
                 }

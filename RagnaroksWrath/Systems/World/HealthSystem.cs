@@ -89,15 +89,23 @@ namespace RavenIron.RagnaroksWrath.Systems.World
 
                 _seenThisTick.Add(playerId);
 
-                float plague = Persistence.Get(ZoneKey.FromWorldPos(zdo.GetPosition())).Plague;
+                ZoneKey underfoot = ZoneKey.FromWorldPos(zdo.GetPosition());
+                float plague = Persistence.Get(underfoot).Plague;
                 int remedies = RemedyBitsFor(playerId, now);
 
                 float current = HealthStore.Get(playerId);
+
+                // Phase C mercy: ground whose memory you hold as dominant carer sheds
+                // your sickness faster. Only the decay branch — the land's favour helps
+                // you heal, it does not shield you from fresh plague.
+                float mercy = RivalrySystem.IsDominantCarer(underfoot, playerId)
+                    ? 1f + ModConfig.MercySicknessBonus.Value : 1f;
+
                 float next = plague >= FogMath.VisibleFloor
                     ? ExposureMath.Accrue(current, plague, minutesToMax,
                         (remedies & HealthSync.RemedyPoisonResist) != 0, poisonMult, deltaSeconds)
                     : ExposureMath.Decay(current, recoveryMinutes,
-                        (remedies & HealthSync.RemedyRested) != 0, restedMult, deltaSeconds);
+                        (remedies & HealthSync.RemedyRested) != 0, restedMult, deltaSeconds, mercy);
 
                 if (next != current) HealthStore.Set(playerId, next);
                 if (next > 0f) sick++;

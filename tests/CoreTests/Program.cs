@@ -48,6 +48,7 @@ namespace RagnaroksWrath.Tests
             HealthStoreTests();
             ConsequenceTests();
             RivalryTests();
+            ContestTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -1217,6 +1218,85 @@ namespace RagnaroksWrath.Tests
                 RivalryLedger.OverridePath = null;
                 try { Directory.Delete(dir, true); } catch { }
             }
+        }
+
+        // ---- Contest (phase C) ---------------------------------------------------------
+
+        private static void ContestTests()
+        {
+            Console.WriteLine("\nContest");
+
+            var zone = new ZoneKey(1, -1);
+            var other = new ZoneKey(2, 2);
+
+            Dictionary<ZoneKey, Dictionary<long, float>> Values(params (ZoneKey z, long p, float v)[] rows)
+            {
+                var d = new Dictionary<ZoneKey, Dictionary<long, float>>();
+                foreach ((ZoneKey z, long p, float v) r in rows)
+                {
+                    if (!d.TryGetValue(r.z, out Dictionary<long, float> inner))
+                        d[r.z] = inner = new Dictionary<long, float>();
+                    inner[r.p] = r.v;
+                }
+                return d;
+            }
+
+            var holders = new Dictionary<ZoneKey, RivalryContest.Holder>();
+            var flips = new List<RivalryContest.Flip>();
+
+            // Below the floor: nobody holds anything, and nothing is announced.
+            RivalryContest.Update(Values((zone, 111L, 0.1f)), holders, 0.2f, 0.15f, flips);
+            Check("nobody wins ground they barely touched",
+                holders.Count == 0 && flips.Count == 0);
+
+            // First real claim: crowned SILENTLY (a walkover is not a contest).
+            RivalryContest.Update(Values((zone, 111L, 0.5f)), holders, 0.2f, 0.15f, flips);
+            Check("an unclaimed zone is crowned silently",
+                holders.Count == 1 && holders[zone].Player == 111L && flips.Count == 0);
+
+            // A challenger inside the hysteresis band does NOT take it.
+            RivalryContest.Update(Values((zone, 111L, 0.5f), (zone, 222L, 0.55f)), holders, 0.2f, 0.15f, flips);
+            Check("a challenger inside the band does not dethrone (0.55 < 0.5 x 1.15)",
+                holders[zone].Player == 111L && flips.Count == 0);
+
+            // Clearing the band takes the zone AND announces — both above the floor.
+            RivalryContest.Update(Values((zone, 111L, 0.5f), (zone, 222L, 0.6f)), holders, 0.2f, 0.15f, flips);
+            Check($"clearing the band flips the zone and announces ({flips.Count} flip)",
+                holders[zone].Player == 222L && flips.Count == 1
+                && flips[0].From == 111L && flips[0].To == 222L && flips[0].Zone == zone);
+
+            // An incumbent who falls below the floor is replaced SILENTLY: no rival
+            // genuinely contested them, they simply faded.
+            flips.Clear();
+            RivalryContest.Update(Values((zone, 222L, 0.1f), (zone, 333L, 0.9f)), holders, 0.2f, 0.15f, flips);
+            Check("a faded incumbent is replaced without an announcement",
+                holders[zone].Player == 333L && flips.Count == 0);
+
+            // Everyone decays below the floor: the ground is unclaimed again, silently.
+            flips.Clear();
+            RivalryContest.Update(Values((zone, 333L, 0.05f)), holders, 0.2f, 0.15f, flips);
+            Check("ground nobody shapes any more becomes unclaimed",
+                holders.Count == 0 && flips.Count == 0);
+
+            // A zone that vanishes from the ledger entirely vacates too.
+            holders[other] = new RivalryContest.Holder { Player = 444L, Value = 1f };
+            RivalryContest.Update(Values((zone, 111L, 0.5f)), holders, 0.2f, 0.15f, flips);
+            Check("a fully decayed zone vacates its holder",
+                !holders.ContainsKey(other));
+
+            Check("ZonesHeld counts only that player's holdings",
+                RivalryContest.ZonesHeld(holders, 111L) == 1
+                && RivalryContest.ZonesHeld(holders, 999L) == 0
+                && RivalryContest.ZonesHeld(holders, 0L) == 0);
+
+            // Mercy is decay-only and never a penalty.
+            float plain = ExposureMath.Decay(1f, 20f, false, 2f, 60f);
+            float merciful = ExposureMath.Decay(1f, 20f, false, 2f, 60f, 1.5f);
+            Check($"mercy quickens recovery only ({plain:F3} -> {merciful:F3})",
+                merciful < plain
+                && Math.Abs((1f - merciful) - (1f - plain) * 1.5f) < 1e-5f
+                && ExposureMath.Decay(1f, 20f, false, 2f, 60f, 0.1f) == plain
+                && ExposureMath.Decay(1f, 20f, false, 2f, 60f, float.NaN) == plain);
         }
 
         // ---- harness ----------------------------------------------------------------

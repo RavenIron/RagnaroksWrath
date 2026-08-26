@@ -35,6 +35,8 @@ namespace RavenIron.RagnaroksWrath.Systems
         public const string Plaguewalker = "Plaguewalker";
         public const string Winterborn = "Winterborn";
         public const string Ashbringer = "Ashbringer";
+        public const string Warden = "Warden";
+        public const string Despoiler = "Despoiler";
 
         private readonly Dictionary<long, float> _winterSeconds = new Dictionary<long, float>(8);
         private readonly HashSet<long> _knownOnline = new HashSet<long>();
@@ -47,6 +49,10 @@ namespace RavenIron.RagnaroksWrath.Systems
         // Plaguewalker every tick, announcing each swap. Edge-triggered, the grudge title
         // lands once and then cedes to whatever the player walks into next.
         private readonly HashSet<long> _ashbringerHeld = new HashSet<long>();
+
+        // Phase C's standing titles, edge-triggered for the same anti-flap reason.
+        private readonly HashSet<long> _wardenHeld = new HashSet<long>();
+        private readonly HashSet<long> _despoilerHeld = new HashSet<long>();
         private bool _storeLoaded;
 
         public void Initialise()
@@ -131,10 +137,22 @@ namespace RavenIron.RagnaroksWrath.Systems
                         Award(playerId, zdo, Ashbringer);
                     else if (!grudged)
                         _ashbringerHeld.Remove(playerId);   // re-arm once the land forgives
+
+                    // Phase C standing: holding enough zones' memory earns the name.
+                    EdgeTitle(playerId, zdo, _wardenHeld, Warden,
+                        World.RivalrySystem.CareZonesHeld(playerId) >= ModConfig.WardenZonesHeld.Value);
+                    EdgeTitle(playerId, zdo, _despoilerHeld, Despoiler,
+                        World.RivalrySystem.HarmZonesHeld(playerId) >= ModConfig.DespoilerZonesHeld.Value);
                 }
             }
 
             _knownOnline.RemoveWhere(id => !_seenThisTick.Contains(id));
+        }
+
+        private void EdgeTitle(long playerId, ZDO zdo, HashSet<long> held, string title, bool condition)
+        {
+            if (condition && held.Add(playerId)) Award(playerId, zdo, title);
+            else if (!condition) held.Remove(playerId);
         }
 
         private void Award(long playerId, ZDO zdo, string title)

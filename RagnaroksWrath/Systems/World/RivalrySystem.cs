@@ -57,6 +57,35 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         private readonly Dictionary<ZoneKey, List<long>> _present = new Dictionary<ZoneKey, List<long>>(32);
         private readonly List<ZoneKey> _stale = new List<ZoneKey>(16);
 
+        // ---- phase C: the contest ------------------------------------------------------
+        // Holder maps are static so BiomeStateSystem (mercies), HealthSystem (sickness
+        // mercy) and TitleSystem (Warden/Despoiler) can ask — the SeasonSystem.Current
+        // pattern. Written only from this system's tick; WorldTick is single-threaded.
+        private static readonly Dictionary<ZoneKey, RivalryContest.Holder> _careHolders =
+            new Dictionary<ZoneKey, RivalryContest.Holder>(32);
+        private static readonly Dictionary<ZoneKey, RivalryContest.Holder> _harmHolders =
+            new Dictionary<ZoneKey, RivalryContest.Holder>(32);
+
+        private readonly Dictionary<ZoneKey, Dictionary<long, float>> _careValues =
+            new Dictionary<ZoneKey, Dictionary<long, float>>(32);
+        private readonly Dictionary<ZoneKey, Dictionary<long, float>> _harmValues =
+            new Dictionary<ZoneKey, Dictionary<long, float>>(32);
+        private readonly List<RivalryContest.Flip> _flips = new List<RivalryContest.Flip>(4);
+
+        // Last known display name per player id, harvested from character ZDOs while they
+        // are online. An offline rival's name may be unknown after a restart; the flip
+        // line degrades to "another" rather than inventing one.
+        private readonly Dictionary<long, string> _names = new Dictionary<long, string>(8);
+
+        /// <summary>Whether this player currently holds this zone's memory as its dominant
+        /// carer — the land's mercies hang off this.</summary>
+        public static bool IsDominantCarer(ZoneKey zone, long playerId)
+            => playerId != 0 && _careHolders.TryGetValue(zone, out RivalryContest.Holder h)
+               && h.Player == playerId;
+
+        public static int CareZonesHeld(long playerId) => RivalryContest.ZonesHeld(_careHolders, playerId);
+        public static int HarmZonesHeld(long playerId) => RivalryContest.ZonesHeld(_harmHolders, playerId);
+
         public void Initialise()
         {
             _cropPrefabs = (ModConfig.FarmingCropPrefabs.Value ?? "")
@@ -88,6 +117,7 @@ namespace RavenIron.RagnaroksWrath.Systems.World
 
             ObserveHealing();
             SweepTending();
+            UpdateContest();
 
             _sinceSave += deltaSeconds;
             if (_sinceSave >= SaveCadenceSeconds)
@@ -123,6 +153,11 @@ namespace RavenIron.RagnaroksWrath.Systems.World
 
                 long playerId = zdo.GetLong(ZDOVars.s_playerID, 0L);
                 if (playerId == 0) continue;
+
+                // Harvest the display name for the contest voice while they are here.
+                string name = zdo.GetString(ZDOVars.s_playerName, "");
+                if (!string.IsNullOrEmpty(name) && name != "Stranger" && name != "...")
+                    _names[playerId] = name;
 
                 ZoneKey centre = ZoneKey.FromWorldPos(zdo.GetPosition());
                 for (int dx = -radius; dx <= radius; dx++)
@@ -223,6 +258,80 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             _prefabCursor = 0;
             RivalryLedger.PlantWatermark = _rotationMaxPlantTime;
             _rotationMaxPlantTime = 0;
+        }
+
+        /// <summary>
+        /// Phase C: recompute who holds each shaped zone's memory, column by column, and
+        /// narrate genuine changes of hands. Everything here reads the ledger this system
+        /// already maintains; the mercies and titles hang off the static holder maps.
+        /// </summary>
+        private void UpdateContest()
+        {
+            // Rebuild the per-zone value maps from the sparse ledger. Inner dictionaries
+            // are reused across passes (cleared, not reallocated) via the pool below.
+            foreach (Dictionary<long, float> d in _careValues.Values) d.Clear();
+            foreach (Dictionary<long, float> d in _harmValues.Values) d.Clear();
+
+            foreach (KeyValuePair<RivalryLedger.Key, RivalryLedger.Row> kv in RivalryLedger.All())
+            {
+                if (kv.Value.Care > 0f)
+                {
+                    if (!_careValues.TryGetValue(kv.Key.Zone, out Dictionary<long, float> d))
+                        _careValues[kv.Key.Zone] = d = new Dictionary<long, float>(4);
+                    d[kv.Key.Player] = kv.Value.Care;
+                }
+                if (kv.Value.Harm > 0f)
+                {
+                    if (!_harmValues.TryGetValue(kv.Key.Zone, out Dictionary<long, float> d))
+                        _harmValues[kv.Key.Zone] = d = new Dictionary<long, float>(4);
+                    d[kv.Key.Player] = kv.Value.Harm;
+                }
+            }
+
+            // Empty inner maps mean the zone's column fully decayed: drop them so the
+            // contest sees the zone as unshaped, not as shaped-by-nobody.
+            PruneEmpty(_careValues);
+            PruneEmpty(_harmValues);
+
+            float hysteresis = ModConfig.ContestHysteresis.Value;
+
+            _flips.Clear();
+            RivalryContest.Update(_careValues, _careHolders,
+                ModConfig.CareDominanceFloor.Value, hysteresis, _flips);
+            Announce(_flips, "{0} now tends this ground more than {1}.");
+
+            _flips.Clear();
+            RivalryContest.Update(_harmValues, _harmHolders,
+                ModConfig.HarmDominanceFloor.Value, hysteresis, _flips);
+            Announce(_flips, "This ground now fears {0} more than {1}.");
+        }
+
+        private static void PruneEmpty(Dictionary<ZoneKey, Dictionary<long, float>> values)
+        {
+            List<ZoneKey> dead = null;
+            foreach (KeyValuePair<ZoneKey, Dictionary<long, float>> kv in values)
+                if (kv.Value.Count == 0)
+                    (dead = dead ?? new List<ZoneKey>(4)).Add(kv.Key);
+            if (dead != null)
+                for (int i = 0; i < dead.Count; i++) values.Remove(dead[i]);
+        }
+
+        private void Announce(List<RivalryContest.Flip> flips, string format)
+        {
+            if (flips.Count == 0 || !ModConfig.AnnounceContests.Value) return;
+
+            for (int i = 0; i < flips.Count; i++)
+            {
+                RivalryContest.Flip flip = flips[i];
+                string to = _names.TryGetValue(flip.To, out string tn) ? tn : "another";
+                string from = _names.TryGetValue(flip.From, out string fn) ? fn : "another";
+                Feedback.MessageFeed.ToPlayersNear(flip.Zone.ToWorldPos(), 64f,
+                    string.Format(format, to, from));
+
+                if (ModConfig.VerboseLogging.Value)
+                    RagnaroksWrath.Log.LogInfo(
+                        $"[{Name}] contest flip in {flip.Zone}: {flip.From} -> {flip.To}.");
+            }
         }
     }
 }

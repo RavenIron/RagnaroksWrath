@@ -645,6 +645,34 @@ own decompile gates rather than riding along untestable. Decisions:
 - **Wire:** ZoneSync's per-peer ring gained the receiving player's grudge per zone and
   was renamed (...zone_state2) so a version-skewed pair no-ops cleanly — the FireFront
   0.17.3 lesson applied to our own wire. GrudgeAt mirrors StateAt's authority rule.
+
+**PHASE B VERIFIED LIVE 2026-08-26 (0.12.0, staged harm 0.6):** Ashbringer landed on
+schedule, once, no flap (owner-reported); pickables refused the grudged hand with the
+personal line (owner-reported); and the drift tooth measured **0.01753/h against a
+0.01750/h prediction** — the x0.7 grudge signature to the fourth digit, on save-to-save
+endpoints. THE MEASUREMENT STORY IS THE LESSON: the first window read 0.0578/h — triple
+the prediction — because the player's returning footsteps paid a ~20min credit-on-contact
+backlog INSIDE the window. The runbook's own most-documented trap caught the person who
+documented it; the instrument was honest, the window was not. Re-baselined after the
+backlog cleared, save-to-save. Open two-player inches: a clean player picking the refused
+bush, and the grudge title rendering on a nameplate.
+
+**PHASE C BUILT 2026-08-26 at 0.13.0 (in-game verification pending) — all three faces:**
+
+- **Dominance** (`RivalryContest`, pure, 9 harness checks): per zone per column, floor-
+  gated (nobody wins ground they barely touched), hysteresis-held (a challenger needs
+  incumbent x1.15 — WorldState's anti-flap band applied to people). Vacancies fill
+  SILENTLY and faded incumbents are replaced silently — a FLIP, the only announceable
+  event, requires both rivals above the floor: the voice speaks only of genuinely
+  contested ground, and a one-player world never hears it.
+- **Mercies:** the dominant carer's presence quickens zone recovery x1.25 (stacking
+  multiplicatively with any present grudge — the land weighs everyone), and standing on
+  ground whose memory you hold sheds plague exposure x1.5 faster (decay only: the land's
+  favour heals, it does not shield). The dominant-harmer face costs nothing — phase B
+  already IS it.
+- **Standing titles:** Warden / Despoiler at >= 3 zones held per column, edge-triggered
+  via the shared EdgeTitle helper. Holder maps are static on RivalrySystem (the
+  SeasonSystem.Current pattern) for BiomeState/Health/Title to read.
 - The ledger is the third write-behind store, so it appears in `WorldTick.OnDestroy` per
   the 0.8.2 rule.
 

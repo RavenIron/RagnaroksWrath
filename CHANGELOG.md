@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.13.0
+
+- **The land takes sides.** Every shaped zone now remembers who shaped it MOST: its
+  dominant carer and its dominant despoiler, floor-gated so nobody wins ground they barely
+  touched, hysteresis-held so the crown doesn't flap.
+  - The dominant carer's presence heals the zone 25% faster, and sickness leaves them 50%
+    faster on their own ground — the world's favour, earned in the ledger.
+  - Holding three zones' memory earns **Warden** (care) or **Despoiler** (harm) under your
+    nameplate.
+  - When a zone genuinely changes hands between two rivals who both shaped it, the ground
+    says so to whoever stands there — one line per actual taking; walkovers and fades pass
+    in silence, and a solo world never hears this voice at all.
+
 ## 0.12.0
 
 - **The land holds grudges.** Zones remember who hurt them (net of who tended them), and
