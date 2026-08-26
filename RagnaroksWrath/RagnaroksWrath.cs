@@ -15,7 +15,7 @@ namespace RavenIron.RagnaroksWrath
     {
         public const string PluginId      = "com.raveniron.ragnarokswrath";
         public const string PluginName    = "Ragnarok's Wrath";
-        public const string PluginVersion = "0.6.0";
+        public const string PluginVersion = "0.7.1";
 
         public static RagnaroksWrath Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
@@ -58,6 +58,13 @@ namespace RavenIron.RagnaroksWrath
 
             RegisterSystems();
 
+            // Visuals exist only where something renders. GraphicsDeviceType.Null is the
+            // headless tell that survives compiling against client reference DLLs (where
+            // ZNet.IsDedicated() is a hardcoded false).
+            if (UnityEngine.SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null)
+                gameObject.AddComponent<Visuals.PlagueFog>();
+
+
             Log.LogInfo($"{PluginName} v{PluginVersion} loaded.");
         }
 
@@ -78,6 +85,7 @@ namespace RavenIron.RagnaroksWrath
             WorldTick.Register(new Systems.World.FarmingSystem());
             WorldTick.Register(new Systems.World.WorldStateSystem());
             WorldTick.Register(new Systems.TitleSystem());
+            WorldTick.Register(new Systems.ZoneSyncSystem());
         }
 
         private void OnDestroy()

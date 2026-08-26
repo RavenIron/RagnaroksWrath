@@ -59,8 +59,9 @@ RagnaroksWrath/            server plugin (net472) — all simulation
   Core/                    WorldTick, ZoneClock, ZoneKey, ZoneState, Persistence, IWorldSystem
   Feedback/MessageFeed.cs  the ONLY player-facing output channel
   Systems/World/           the simulation systems
+  Net/                     TitleSync, ZoneSync — server-to-client state
+  Visuals/                 client-side procedural effects (PlagueFog); gated on a real GPU
   Patches/                 Harmony patches
-RagnaroksWrath.Client/     minimal visual-only plugin (no HUD) — not yet started
 tests/CoreTests/           net10 harness; compiles the REAL source against stubs
 tools/                     scripts
 libs/                      gitignored; populated by fetch-libs.ps1
@@ -133,7 +134,7 @@ wrong measurement is the most common cause of a long debugging session here.
 | Devastating Storms | `RandEventSystem` event with `m_forceEnvironment` **left empty** — full vanilla event (name, duration, music, spawns, banner) without overriding weather. A `StormsForceWeather` toggle, **default false**, exists for owners not running Seasonality. |
 | Persistence | **World-scoped sparse file**, keyed by world uid. ZDO custom keys rejected: they attach to an *object*, drift attaches to a *coordinate*, and an anchor prefab per zone would trigger the `ZNetScene.CreateObjectsSorted` → `DestroyZDO` landmine. |
 | FireSystem | **A bridge to FireFront, never a second fire sim.** FireFront (com.raveniron.firefront, same studio) owns ignition, spread, burning, VFX. RW reads its fires by reflection (`FireManager.CollectActiveFirePositions`, public since FireFront 0.17.2) and raises zone `Scorch`. Without FireFront, FireSystem is dormant. Decided 2026-08-25. |
-| Client plugin | Required, but **visual-only** — renders fire/storm/plague effects the server cannot push. No HUD. |
+| Client plugin | **One role-aware DLL** (amended 2026-08-26): headless simulates, clients render, hosts do both. Visual-only, no HUD, procedural effects only — no assets, no bundles. `RagnaroksWrath.Client` retired. | Client plugin (old) | ~~Required, but **visual-only**~~ — renders fire/storm/plague effects the server cannot push. No HUD. |
 | Timeline | Open-ended. Done when it's done. |
 | Console prefix | `wrath` (e.g. `wrath status`) |
 | GUID / namespace | `com.raveniron.ragnarokswrath` / `RavenIron.RagnaroksWrath` |
@@ -221,7 +222,7 @@ established world, not the `Spring` enum default — a brand-new world legitimat
 at day 0, so read that line together with `resolved EnvMan.GetCurrentDay accessor` above it).
 `Persistence` is covered by the paragraph below.
 
-**Built and unit-tested (111/111):** `ZoneKey`, `ZoneClock` (credit-on-contact drift timing),
+**Built and unit-tested (117/117):** `ZoneKey`, `ZoneClock` (credit-on-contact drift timing),
 `ZoneState`, `Persistence` (world-scoped, atomic, fail-safe), `ModConfig`, `MessageFeed`.
 
 **Verified in-game, both paths:** `Persistence`, verified 2026-08-25 at v0.1.6
@@ -240,7 +241,14 @@ nothing is wrong) and a partially-corrupt one stays on per-line isolation. One n
 the fix: the version header is now recognised by **content**, not by being line 1 — skipping line 1
 unconditionally swallowed the only line a short binary file has, which is what hid the bug.
 
-**Built and verified in-game (2026-08-26, v0.6.0, dedicated server):** `TitleSystem` +
+**Built and verified in-game (2026-08-26, v0.7.1, by eye):** `ZoneSync` + `PlagueFog` — the
+server-to-client state sync and the first visual. A player stood in the outbreak and SAW the
+miasma: store -> per-peer ring push -> routed RPC -> client cache -> emission math ->
+particles, every link live. Valheim strips standard particle shaders; `Sprites/Default` is
+the first that ships, and the chosen shader is logged.
+
+**Built and verified in-game (2026-08-26, v0.6.0, dedicated server):**
+ `TitleSystem` +
 `TitleStore` + `TitleSync` + the first amended-rule-1 postfix — Plaguewalker earned live by
 walking into the outbreak, titles file created beside the zone store. `FarmingSystem` fully
 verified headless: planted crops counted from the world save with nobody online, depletion

@@ -43,6 +43,7 @@ namespace RagnaroksWrath.Tests
             WorldStateTests();
             EcologyTests();
             TitleTests();
+            FogTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -843,6 +844,37 @@ namespace RagnaroksWrath.Tests
                 TitleStore.OverridePath = null;
                 try { Directory.Delete(dir, true); } catch { }
             }
+        }
+
+        // ---- Fog --------------------------------------------------------------------
+
+        private static void FogTests()
+        {
+            Console.WriteLine("\nFog");
+
+            // The floor is the discovery mechanic: fresh seeds (0.05) must not telegraph the
+            // frontier the tick it spreads.
+            Check("a fresh seed shows no fog",
+                FogMath.EmissionFor(0.05f, 1f) == 0f);
+
+            Check("below the visible floor shows no fog",
+                FogMath.EmissionFor(0.1499f, 1f) == 0f);
+
+            Check($"full plague fogs at the full rate ({FogMath.EmissionFor(1f, 1f):F1})",
+                Math.Abs(FogMath.EmissionFor(1f, 1f) - FogMath.FullRate) < 0.01f);
+
+            float half = FogMath.EmissionFor(0.575f, 1f);
+            Check($"halfway up the ramp is half the rate ({half:F1})",
+                Math.Abs(half - FogMath.FullRate / 2f) < 0.5f);
+
+            Check("density scales and is capped",
+                FogMath.EmissionFor(1f, 2f) > FogMath.EmissionFor(1f, 1f)
+                && Math.Abs(FogMath.EmissionFor(1f, 99f) - FogMath.FullRate * 4f) < 0.01f);
+
+            Check("zero density, NaN plague and NaN density all mean no fog",
+                FogMath.EmissionFor(1f, 0f) == 0f
+                && FogMath.EmissionFor(float.NaN, 1f) == 0f
+                && FogMath.EmissionFor(1f, float.NaN) == 0f);
         }
 
         // ---- harness ----------------------------------------------------------------

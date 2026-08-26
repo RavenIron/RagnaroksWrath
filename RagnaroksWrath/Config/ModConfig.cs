@@ -90,6 +90,12 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> WinterbornSeconds;
         public static ConfigEntry<bool>  AnnounceTitles;
 
+        // ---- Zone sync + client visuals ---------------------------------------------------
+        public static ConfigEntry<float> ZoneSyncIntervalSeconds;
+        public static ConfigEntry<int>   ZoneSyncRadiusZones;
+        public static ConfigEntry<bool>  PlagueFogEnabled;
+        public static ConfigEntry<float> PlagueFogDensity;
+
         // ---- Per-system master switches -------------------------------------------------
 
         public static ConfigEntry<bool> EnableSeason;
@@ -106,6 +112,7 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<bool> EnableRelic;
         public static ConfigEntry<bool> EnableTitle;
         public static ConfigEntry<bool> EnableWorldState;
+        public static ConfigEntry<bool> EnableZoneSync;
 
         public static void Bind(ConfigFile cfg)
         {
@@ -398,7 +405,34 @@ namespace RavenIron.RagnaroksWrath.Config
                 "Announce newly earned titles to everyone. Titles are rare by construction; " +
                 "placeholder names (Stranger) are never announced.");
 
+            const string sync = "14 - Client sync and visuals";
+
+            ZoneSyncIntervalSeconds = cfg.Bind(sync, "ZoneSyncIntervalSeconds", 10f,
+                new ConfigDescription(
+                    "Seconds between zone-state pushes to each connected player. Pushes are " +
+                    "absolute snapshots of the ring around them, defaults included, so a " +
+                    "dropped packet heals on the next push - no delta bookkeeping to rot.",
+                    new AcceptableValueRange<float>(2f, 120f)));
+
+            ZoneSyncRadiusZones = cfg.Bind(sync, "ZoneSyncRadiusZones", 2,
+                new ConfigDescription(
+                    "Ring radius in zones pushed to each player. 2 means a 5x5 block - under " +
+                    "a kilobyte per push.",
+                    new AcceptableValueRange<int>(1, 4)));
+
+            PlagueFogEnabled = cfg.Bind(sync, "PlagueFogEnabled", true,
+                "Render the plague miasma on this client. Purely visual, built procedurally " +
+                "(no assets), local-only - never networked, never saved.");
+
+            PlagueFogDensity = cfg.Bind(sync, "PlagueFogDensity", 1f,
+                new ConfigDescription(
+                    "Fog density multiplier for this client. Zones below plague 0.15 never " +
+                    "fog regardless - the frontier's fresh seeds should not telegraph " +
+                    "themselves the tick they spread.",
+                    new AcceptableValueRange<float>(0f, 4f)));
+
             const string systems = "4 - Systems";
+
 
 
 
@@ -417,6 +451,7 @@ namespace RavenIron.RagnaroksWrath.Config
             EnableConsequence = cfg.Bind(systems, "EnableConsequence", true, "Master switch for ConsequenceSystem.");
             EnableRivalry     = cfg.Bind(systems, "EnableRivalry",     true, "Master switch for RivalrySystem.");
             EnableRelic       = cfg.Bind(systems, "EnableRelic",       true, "Master switch for RelicSystem.");
+            EnableZoneSync    = cfg.Bind(systems, "EnableZoneSync",    true, "Master switch for ZoneSyncSystem (zone state pushed to clients for visuals).");
             EnableWorldState  = cfg.Bind(systems, "EnableWorldState",  true, "Master switch for WorldStateSystem (derived world condition and announcements).");
             EnableTitle       = cfg.Bind(systems, "EnableTitle",       true, "Master switch for TitleSystem (earned title under player nameplates).");
 

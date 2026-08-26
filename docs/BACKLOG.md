@@ -281,28 +281,35 @@ second player looking at a titled one.
 
 ---
 
-## 9. Client plugin
+## 9. Client plugin — FIRST PASS DONE 2026-08-26 (zone sync + plague fog, verified by eye)
 
-`RagnaroksWrath.Client` — visual-only, no HUD. Renders fire spread, storm intensity, and
-plague fog, which pure server-side logic cannot push.
+**Ships as ONE role-aware DLL** (locked decision amended 2026-08-26): headless runs
+simulation, clients add visuals, hosts do both. `RagnaroksWrath.Client/` is retired — the
+main DLL already had to be client-installed for nameplates and TitleSync, so a second DLL
+was two files and a version skew for nothing.
 
-Read the presence-layer notes before starting: sky, weather, particles and grass are **one
-global kit** welded to the local player's camera via a scene-authored `FollowPlayer`, which
-early-outs when `Player.m_localPlayer == null` — the dedicated-server condition.
+What landed, verified live (player saw the miasma in the outbreak):
 
-- **Particles cannot be swapped per-camera** — they carry simulated history. Anything
-  simulated needs its own instantiated copy.
-- **`m_psystems` are gated on `InShelter()`** — vanilla suppresses weather particles under a
-  roof. Decide deliberately whether storms respect that.
-- **`m_rainCloudAlpha` lives on the cloud dome's own material.** Drive it with a
-  `MaterialPropertyBlock`, not `.material` (which instantiates a material you must then own
-  and destroy).
-- **Trap: resolve-on-attach latches OFF.** Resolving an `EnvSetup` at zone load returns null
-  because the far heightmap does not exist yet, and if the retry sits behind an
-  `if (_env == null) return;` early-out it can never reach itself — silent, for the whole
-  session. Resolve on the settle tick.
+- `Net/ZoneSync.cs` + `ZoneSyncSystem` — the keystone sync three systems were queued behind.
+  Per-peer pushes of the zone ring around each player (5x5 default, ~700B), ABSOLUTE
+  snapshots with defaults included (the stats sheet's delta lesson), clamp-on-read at the
+  wire, per-world-session RPC registration, listen hosts bypassing the wire entirely.
+- `Visuals/PlagueFog.cs` + `Core/FogMath.cs` — procedural miasma (texture, material,
+  particles all code; no assets, no bundles, no prefab trap), world-space so it hangs behind
+  a walking player, InShelter-suppressed, rule-3 wrapped with a throw-once latch. Emission
+  floor at plague 0.15: fog is the DISCOVERY mechanic, so the frontier's fresh seeds must not
+  telegraph themselves.
+- Gated on `GraphicsDeviceType.Null` — the headless tell that survives client reference DLLs.
 
----
+The lesson this pass paid for: **Valheim strips Unity's standard particle shaders.**
+"Particles/Standard Unlit" and "Legacy Shaders/Particles/Alpha Blended" are both absent;
+`Sprites/Default` is the first of FireFront's candidate chain that actually ships. The chosen
+shader is logged at build, because two clients disagreeing about fog is otherwise
+undiagnosable.
+
+Still to come on this substrate, in whatever order earns it: storm gusts and frost breath
+(same sync, new emitters), farming's growth/yield consumer (client reads depletion),
+HealthSystem delivery.
 
 ## 10. Packaging
 
