@@ -44,8 +44,26 @@ obeys.
   logged `war intensity 1.0 underfoot.` then `3 war horn(s) ready for contested ground.`
   — server war state -> ring push -> client cache -> horn build, every link observed. The
   "horns sounding" audio was never ours; the horns are silent SEs.
-  **STILL OPEN on phase D:** (1) wildlife actually ARRIVING — owner's eyes, minutes on
-  contested ground; (2) the resolution edge. A dead-ledger edit CANNOT test resolution: a
+  **ENGINE FACT, decompile-read 2026-08-26 (SpawnSystem.UpdateSpawnList body):** vanilla's
+  `m_pheromoneMaxInstanceOverride` widens the instance-cap GATE but NOT the group-size
+  BUDGET — the spawn-count line computes `m_maxSpawned - currentCount` from the spawner's
+  RAW `m_maxSpawned`, ignoring the override. So pheromones can never push a population
+  above vanilla's stock cap; they only refill toward it faster (and `GetNrOfInstances`
+  at range 0 counts the WHOLE loaded area, not the zone). Observed live: `Spawned Deer
+  x 0` — a line only reachable when a pheromone raised the gate past ambient while the
+  raw-cap arithmetic zeroed the group. That line is also PROOF the horn's prefab-
+  reference equality holds and the override applies: without a pheromone the pass breaks
+  before logging. Also: Hare's spawner is Mistlands-tagged, biome-gated out before
+  pheromones are consulted — in Meadows only Deer/Boar can ever answer the horn. Configs
+  raised to ContestWildSpawnChance=100 / ContestWildMaxSpawned=15 both ends (the max
+  override is gate-only given the quirk). The war therefore reads as REFILL PRESSURE:
+  visible only when local wildlife is below vanilla's cap — hunt the ambient deer down,
+  then horns refill at 100% chance from 40-80m out. Whether refill pressure is enough
+  wild-side teeth, or phase D needs its own modest spawn budget, is a DESIGN DECISION
+  for Raven Iron — the "no spawn patch at all" intent has now met vanilla's ceiling.
+  **STILL OPEN on phase D:** (1) wildlife actually ARRIVING — hunt 2-3 local deer/boar
+  first (see engine fact above), then expect `Spawned Deer x 1`+ within ~2 min and
+  animals from the treeline; (2) the resolution edge. A dead-ledger edit CANNOT test resolution: a
   restart re-derives war from the store, so care edited below 0.3 just means no war and
   no edge (the Winterborn shrug — UpdateWar's own comment). Live route instead: set
   `RivalryHalfLifeHours = 0.05` in the server cfg, restart, stand within 64m of (0,-64);
