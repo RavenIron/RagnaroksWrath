@@ -95,6 +95,8 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<int>   ZoneSyncRadiusZones;
         public static ConfigEntry<bool>  PlagueFogEnabled;
         public static ConfigEntry<float> PlagueFogDensity;
+        public static ConfigEntry<bool>  FrostBreathEnabled;
+        public static ConfigEntry<float> FrostBreathFloor;
 
         // ---- Health ---------------------------------------------------------------------
         public static ConfigEntry<float> HealthIntervalSeconds;
@@ -448,6 +450,17 @@ namespace RavenIron.RagnaroksWrath.Config
                     "fog regardless - the frontier's fresh seeds should not telegraph " +
                     "themselves the tick they spread.",
                     new AcceptableValueRange<float>(0f, 4f)));
+
+            FrostBreathEnabled = cfg.Bind(sync, "FrostBreathEnabled", true,
+                "Fog the local player's breath on land whose frost has drifted high. Purely " +
+                "visual, procedural, local-only - the warning that precedes the chill.");
+
+            FrostBreathFloor = cfg.Bind(sync, "FrostBreathFloor", 0.3f,
+                new ConfigDescription(
+                    "Zone frost at which breath starts to fog. Deliberately BELOW the chill " +
+                    "threshold (0.5 default): the land shows its cold before it bites, the " +
+                    "way plague fogs before it sickens.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
 
             const string health = "15 - Health";
 

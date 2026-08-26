@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.0
+
+- **Frost breath.** On land whose frost has drifted high, your breath fogs — a soft puff
+  every few seconds, denser the colder the ground. It starts BELOW the chill threshold, so
+  the land shows its cold before it bites, the way plague fogs before it sickens. Purely
+  visual, procedural, local-only; a roof keeps it off you.
+
 ## 0.8.2
 
 - **Shutdown no longer loses the last minute of sickness.** The exposure ledger saved on a

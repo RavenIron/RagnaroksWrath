@@ -100,7 +100,7 @@ namespace RavenIron.RagnaroksWrath.Visuals
                 emission.rateOverTime = 0f;
 
                 var renderer = go.GetComponent<ParticleSystemRenderer>();
-                renderer.material = BuildMaterial();
+                renderer.material = ParticleKit.BuildMaterial("PlagueFog");
                 renderer.sortMode = ParticleSystemSortMode.Distance;
 
                 RagnaroksWrath.Log.LogInfo("PlagueFog: emitter built.");
@@ -113,60 +113,7 @@ namespace RavenIron.RagnaroksWrath.Visuals
             }
         }
 
-        /// <summary>
-        /// Shaders Valheim's build might actually contain, in FOG order: alpha-blended first
-        /// (soft haze), additive last (it glows, which reads as magic rather than miasma).
-        /// The list is FireFront's proven chain — "Particles/Standard Unlit" is CONFIRMED
-        /// stripped from Valheim's build, kept first only for future Unity versions. This is
-        /// the bug the first release shipped: two candidates, both absent, no fog anywhere.
-        /// </summary>
-        private static readonly string[] CandidateShaders =
-        {
-            "Particles/Standard Unlit",
-            "Legacy Shaders/Particles/Alpha Blended",
-            "Sprites/Default",
-            "UI/Default",
-            "Particles/Standard Surface",
-            "Legacy Shaders/Particles/Additive",
-        };
-
-        /// <summary>
-        /// A soft radial-falloff blob, generated rather than shipped. Shader.Find can return
-        /// null on stripped builds (the ShieldDome lesson in every server log), so every
-        /// candidate is tried before giving up — and the chosen one is logged, because two
-        /// clients disagreeing about fog appearance will otherwise be undiagnosable.
-        /// </summary>
-        private static Material BuildMaterial()
-        {
-            Shader shader = null;
-            foreach (string name in CandidateShaders)
-            {
-                shader = Shader.Find(name);
-                if (shader != null)
-                {
-                    RagnaroksWrath.Log.LogInfo($"PlagueFog: using shader '{name}'.");
-                    break;
-                }
-            }
-            if (shader == null) throw new InvalidOperationException("no particle shader available");
-
-            const int size = 64;
-            var tex = new Texture2D(size, size, TextureFormat.RGBA32, mipChain: false);
-            float half = (size - 1) / 2f;
-
-            for (int y = 0; y < size; y++)
-            for (int x = 0; x < size; x++)
-            {
-                float dx = (x - half) / half;
-                float dy = (y - half) / half;
-                float d = Mathf.Sqrt(dx * dx + dy * dy);
-                float a = Mathf.Clamp01(1f - d);
-                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a * a));   // squared: soft edge, dense heart
-            }
-            tex.Apply();
-
-            var mat = new Material(shader) { mainTexture = tex };
-            return mat;
-        }
+        // Shader chain and material generation live in ParticleKit — shared with FrostBreath
+        // so the stripped-shader lesson cannot fork between emitters.
     }
 }

@@ -306,9 +306,11 @@ The lesson this pass paid for: **Valheim strips Unity's standard particle shader
 shader is logged at build, because two clients disagreeing about fog is otherwise
 undiagnosable.
 
-Still to come on this substrate, in whatever order earns it: storm gusts and frost breath
-(same sync, new emitters), farming's growth/yield consumer (client reads depletion),
-HealthSystem delivery.
+Still to come on this substrate, in whatever order earns it: storm gusts (same sync, new
+emitter), farming's growth/yield consumer (client reads depletion). Delivered since:
+HealthSystem (task 11, 0.8.x) and **frost breath (0.9.0)** — built to this template after
+the chill's first live test came back "no vfx", with the shader chain extracted to
+`ParticleKit` so the stripped-shader lesson cannot fork between emitters.
 
 ## 10. Packaging — DONE 2026-08-26
 
@@ -342,6 +344,28 @@ Also in 0.8.1: `SE_Plaguesick` overrides `GetIconText` (virtual; `Hud` calls it
 unconditionally and shows any non-empty string — both decompile-verified, since "no ttl
 means no text" was the plausible assumption) to carry severity while worsening and a real
 `GetTimeString` countdown while recovering.
+
+**VERIFIED IN-GAME 2026-08-26 (0.8.1, dedicated server, live player):**
+
+- **Accrual to prediction** (four decimals, see above) and tiers 1 and 2 crossing on
+  schedule with their messages and the icon; the 0.8.1 step made tier 1 FELT ("stamina
+  bites now" — the player's words, and the acceptance that matters).
+- **Relog is not a cure:** exposure froze at 0.574 for the 137s of a quit/deploy/rejoin,
+  then resumed. **Survived a full server restart** at 0.6824 unchanged — the ledger, not
+  the session, owns the condition.
+- **Decay on leaving plagued ground** at the predicted rate; the icon's countdown branch
+  ran live.
+- **Frost chill, both directions:** staged frost 0.75 in zone (1,0) by store edit (fresh
+  contact stamp — a stale one would have credited a backlog and drained the frost before
+  it was felt), chill landed on entry AND a campfire cancelled it — the gate proven, not
+  assumed. Contact recovery visibly draining the staged frost (0.750 -> 0.7479) is
+  BiomeDrift agreeing the player was there.
+
+Unobserved, accepted: the tier-3 centre-screen line (same code path as tiers 1-2, higher
+threshold — the player peaked at 0.6963) and the live rate-change from poison-resist mead /
+rested (the remedy REPORT wire ran throughout; the rate maths is harness-pinned).
+0.8.2 (flush-on-shutdown) awaits its verification at the next server stop: the ledger
+mtime must land beside Dedicated.db's instead of up to a minute earlier.
 
 Off-game: 139/139 including 22 new Exposure/HealthStore tests, every rate matching its
 hand prediction. Build clean; every runtime member access decompile-verified first.
