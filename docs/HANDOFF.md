@@ -61,9 +61,21 @@ obeys.
   then horns refill at 100% chance from 40-80m out. Whether refill pressure is enough
   wild-side teeth, or phase D needs its own modest spawn budget, is a DESIGN DECISION
   for Raven Iron — the "no spawn patch at all" intent has now met vanilla's ceiling.
-  **STILL OPEN on phase D:** (1) wildlife actually ARRIVING — hunt 2-3 local deer/boar
-  first (see engine fact above), then expect `Spawned Deer x 1`+ within ~2 min and
-  animals from the treeline; (2) the resolution edge. A dead-ledger edit CANNOT test resolution: a
+  **WILD SIDE VERIFIED LIVE 2026-08-26 15:18 (0.15.2):** the 0.15.2 war census (verbose-
+  gated, 60s, logs per-target instances loaded + within 200m — the numbers vanilla's
+  budget actually sees) showed the truth in one line: 6 deer and 8 boar ALREADY within
+  200m, invisible in the fog — the population was above vanilla's caps the whole time,
+  "no animals came" was "the animals were already here". Owner culled deer 6 -> 2;
+  next attempt logged `Spawned Deer x 2`. Boar stayed `x 0` at 5 loaded >= its raw cap —
+  the negative control proving the gate-not-budget engine fact in the same breath (and
+  tamed boar COUNT: a pen near war ground permanently mutes the boar horn, same vanilla
+  behavior that stops wild boar near pens). Full loop: war computed -> synced -> horns
+  -> pheromone -> vanilla spawner -> budget open -> creatures spawned. Census stays in
+  the shipping code behind VerboseLogging.
+  **STILL OPEN on phase D:** (1) the resolution edge (config half-life route above);
+  (2) the design decision: refill-pressure-only vs own spawn budget — and whether
+  ContestWildSpawnChance=100 / ContestWildMaxSpawned=15 become the shipped defaults
+  (the max override is gate-only; yield above vanilla's cap is impossible either way). A dead-ledger edit CANNOT test resolution: a
   restart re-derives war from the store, so care edited below 0.3 just means no war and
   no edge (the Winterborn shrug — UpdateWar's own comment). Live route instead: set
   `RivalryHalfLifeHours = 0.05` in the server cfg, restart, stand within 64m of (0,-64);
