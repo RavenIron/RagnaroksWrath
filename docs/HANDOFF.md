@@ -13,11 +13,14 @@ obeys.
   landed in 0.17.2). Both repos on GitHub under **RavenIron**, clean and pushed.
 - **First release artifact exists:** `tools\package.ps1` → `dist\RavenIron-RagnaroksWrath-<v>.zip`.
   Not yet uploaded to Thunderstore — that step is the user's, in a browser.
-- **Remaining, unnumbered:** design conversations for HealthSystem / Consequence / Rivalry /
-  Relic (no spec anywhere — do not invent them without asking); storm-gust and frost-breath
-  emitters on the existing ZoneSync; farming's growth/yield consumer (client-side, reads
-  synced depletion); the nameplate RENDER check (needs a second player looking at a titled
-  one — everything up to the pixels is verified).
+- **Design conversations DONE 2026-08-26:** HealthSystem / Consequence / Rivalry / Relic
+  are all specced as backlog tasks 11–14 (owner's calls recorded per task — do not
+  re-litigate them; build order 11 -> 12 -> 13 -> 14, Relic is the capstone). Each spec
+  names its decompile gates; honour them before writing code.
+- **Remaining, unnumbered:** build tasks 11–14; storm-gust and frost-breath emitters on the
+  existing ZoneSync; farming's growth/yield consumer (client-side, reads synced depletion);
+  the nameplate RENDER check (needs a second player looking at a titled one — everything up
+  to the pixels is verified).
 
 ## The live world (Dedicated, uid 4690126)
 
