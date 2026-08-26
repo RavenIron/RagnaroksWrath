@@ -137,6 +137,7 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> RivalryHalfLifeHours;
         public static ConfigEntry<float> CarePerHealedPoint;
         public static ConfigEntry<float> TendingCarePerPlant;
+        public static ConfigEntry<float> ArsonHarmPerScorchPoint;
 
         // ---- Per-system master switches -------------------------------------------------
 
@@ -697,6 +698,15 @@ namespace RavenIron.RagnaroksWrath.Config
                     "against replant-farming and restarts). Uses the same crop prefab list " +
                     "as Farming.",
                     new AcceptableValueRange<float>(0f, 1f)));
+
+            ArsonHarmPerScorchPoint = cfg.Bind(rivalry, "ArsonHarmPerScorchPoint", 1f,
+                new ConfigDescription(
+                    "Harm booked to a fire event's igniter per point of scorch their fire " +
+                    "burns into each zone — fully charring one zone books its arsonist one " +
+                    "point at the default. Needs FireFront 0.17.3+ (the igniter surface); " +
+                    "with an older FireFront, arson attribution is dormant and scorch " +
+                    "still accrues. Natural and creature fires book nobody.",
+                    new AcceptableValueRange<float>(0f, 10f)));
 
             const string systems = "4 - Systems";
 

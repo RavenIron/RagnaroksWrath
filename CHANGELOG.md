@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.1
+
+- **Arson has a name now.** With FireFront 0.17.3+, the scorch a fire burns into each zone
+  is booked as harm to whoever lit it — spread fires inherit their arsonist, natural and
+  creature fires book nobody. With an older FireFront, attribution stays quietly dormant
+  and fire scars accrue exactly as before. The ledger's harm column has its first writer;
+  grudges come next.
+
 ## 0.11.0
 
 - **The world keeps score (first ledger).** Every zone now remembers who tended it: planting

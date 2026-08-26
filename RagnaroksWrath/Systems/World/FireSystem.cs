@@ -48,6 +48,13 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         private PropertyInfo _instanceProperty;
         private MethodInfo _collectMethod;
 
+        // The OPTIONAL igniter surface (FireFront 0.17.3+): unlike the load-bearing
+        // position method, an older FireFront is a legitimate configuration, so absence
+        // logs once and goes quiet instead of warning per tick. Arson attribution simply
+        // stays dormant until the surface exists.
+        private PropertyInfo _igniterProperty;
+        private bool _igniterAbsenceLogged;
+
         // Reused per tick so a steady state allocates nothing.
         private readonly List<Vector3> _firePositions = new List<Vector3>(64);
         private readonly List<ZoneKey> _burningZones = new List<ZoneKey>(16);
@@ -85,6 +92,15 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             float delta = FireScorch.ScorchDelta(ModConfig.FireScorchPerMinute.Value, deltaSeconds);
             if (delta <= 0f) return;
 
+            // Task 13's arson writer: the fire event's culprit, from FireFront's optional
+            // igniter surface, booked the same scorch this tick burns into each zone. One
+            // igniter per event — spread fires inherit their arsonist by FireFront's own
+            // capture-once rule. 0 means natural fire, attributed to nobody.
+            long igniter = TryReadIgniter();
+            float harmPerPoint = ModConfig.ArsonHarmPerScorchPoint.Value;
+            bool bookHarm = igniter != 0 && harmPerPoint > 0f
+                            && ModConfig.EnableRivalry.Value && RivalryLedger.IsLoaded;
+
             for (int i = 0; i < _burningZones.Count; i++)
             {
                 ZoneKey zone = _burningZones[i];
@@ -94,11 +110,55 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 // Set clamps to 0..1 and enforces sparseness; scorch recovery is BiomeDrift's
                 // job, on the zone clock. This system only ever adds.
                 Persistence.Set(zone, state);
+
+                if (bookHarm)
+                    RivalryLedger.AddHarm(zone, igniter, delta * harmPerPoint);
             }
 
             if (ModConfig.VerboseLogging.Value)
                 RagnaroksWrath.Log.LogInfo(
                     $"[{Name}] {_firePositions.Count} fire(s) scorching {_burningZones.Count} zone(s).");
+        }
+
+        /// <summary>
+        /// The current fire event's igniter player id via FireFront's OPTIONAL
+        /// `CurrentFireIgniterPlayerId` property (0.17.3+), or 0 when absent, unreadable,
+        /// or genuinely nobody. Only called on ticks that already resolved the instance.
+        /// </summary>
+        private long TryReadIgniter()
+        {
+            try
+            {
+                if (_igniterProperty == null)
+                {
+                    System.Type manager = _collectMethod?.DeclaringType;
+                    if (manager == null) return 0L;
+
+                    _igniterProperty = manager.GetProperty("CurrentFireIgniterPlayerId",
+                        BindingFlags.Public | BindingFlags.Instance);
+
+                    if (_igniterProperty == null)
+                    {
+                        if (!_igniterAbsenceLogged)
+                        {
+                            _igniterAbsenceLogged = true;
+                            RagnaroksWrath.Log.LogInfo(
+                                $"[{Name}] FireFront predates the igniter surface (0.17.3) — " +
+                                "arson attribution dormant; scorch still accrues.");
+                        }
+                        return 0L;
+                    }
+                }
+
+                object instance = _instanceProperty?.GetValue(null);
+                if (instance == null) return 0L;
+
+                return (long)_igniterProperty.GetValue(instance);
+            }
+            catch (Exception)
+            {
+                return 0L;   // attribution is optional; scorch must never depend on it
+            }
         }
 
         /// <summary>

@@ -591,11 +591,17 @@ quarantine, no BOM) + `RivalrySystem` phase-A writers. Decisions the build made:
   between its own looks and splits care among the ring-present (BiomeDrift's own reach);
   baselines are forgotten for uncovered zones so a returning player cannot inherit the gap.
   No hooks into BiomeStateSystem — the store itself is the signal.
-- **ARSON IS DORMANT, deliberately:** the igniter-aware hook the spec assumed lives in
-  FireFront, whose cross-mod surface carries positions only. Booking harm by presence
-  would frame bystanders. The harm column exists, unwritten, gated on a FireFront 0.17.3
-  igniter surface (its own cross-repo mini-design). Phase B's grudge teeth need harm to
-  bite on — sequence that FireFront work before or with phase B.
+- **ARSON ARMED at RW 0.11.1 + FireFront 0.17.3** (same day; in-game verification
+  pending). FireFront's new contract: `FireManager.CurrentFireIgniterPlayerId`, the
+  persistent player id behind the current fire event, captured once beside `_fireOrigin`
+  (spread inherits its arsonist, capture-once means later fire-throwers do not steal the
+  event) and reset when the fires die. The id comes from `HitData.m_attacker` at the
+  ignition patches — NOT the RPC sender, who is the object's OWNER and not the arsonist
+  in someone else's loaded area. The ignite RPC was renamed (…IgniteRequest2) so a
+  mixed-version pair no-ops cleanly; FireFront deploys both sides together as ever.
+  RW's FireSystem books `scorchDelta x ArsonHarmPerScorchPoint` to the igniter in every
+  zone it scorches, resolves the property optionally (absence = one info line, dormant,
+  scorch unaffected — an older FireFront is legitimate). Natural fire books nobody.
 - The ledger is the third write-behind store, so it appears in `WorldTick.OnDestroy` per
   the 0.8.2 rule.
 
