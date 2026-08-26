@@ -157,6 +157,8 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> ContestStarBonus;
         public static ConfigEntry<float> ContestWildSpawnChance;
         public static ConfigEntry<int>   ContestWildMaxSpawned;
+        public static ConfigEntry<bool>  EnableNemesis;
+        public static ConfigEntry<int>   NemesisMaxLevel;
 
         // ---- Per-system master switches -------------------------------------------------
 
@@ -850,6 +852,17 @@ namespace RavenIron.RagnaroksWrath.Config
                     "— it can never crowd past it. Decided 2026-08-26: refill pressure is " +
                     "the design; no mod-owned spawner.",
                     new AcceptableValueRange<int>(1, 20)));
+
+            EnableNemesis = cfg.Bind(rivalry, "EnableNemesis", true,
+                "Phase E: the creature that kills a player is marked — starred up, its " +
+                "nameplate remembering who it slew. The mark lives in the creature's own " +
+                "ZDO and travels with the world save; a despawn means it got away.");
+
+            NemesisMaxLevel = cfg.Bind(rivalry, "NemesisMaxLevel", 3,
+                new ConfigDescription(
+                    "Highest level a nemesis climbs to through player kills (vanilla level " +
+                    "3 = two stars). A cap below a creature's current level never demotes it.",
+                    new AcceptableValueRange<int>(1, 5)));
 
             const string systems = "4 - Systems";
 

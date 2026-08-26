@@ -776,7 +776,18 @@ intensify — blight-side spawns starred via task 12's surface, wild-side spawn 
 Resolution when one side's drift wins the ground; one MessageFeed landmark line per
 resolution. Dangerous ground that resolves itself.
 
-**Phase E — the nemesis. GATE DECIDED 2026-08-26: GO for the reduced form**, with one
+**Phase E — the nemesis. BUILT 2026-08-26 at 0.16.0 (in-game verification pending).**
+`Core/NemesisMark.cs` (pure: level step with never-demote cap, TMP suffix — 12 harness
+checks) + `Patches/Patch_Nemesis.cs` (Player.OnDeath observing postfix on the victim's
+client: m_lastHit via cached FieldRef (rule 5 — it is protected), owner-gated ZDO write
+of victim/kills/name keys, SetLevel step; Character.GetHoverName decorating postfix for
+the plate — Player's own override keeps player plates untouched by construction).
+Config: EnableNemesis (default true, under EnableRivalry), NemesisMaxLevel (default 3).
+No server-side code at all — the world save is the ledger. ACCEPTANCE, in-game: die to a
+creature; its plate gains "slayer of <you>" and a star; a second death to it increments
+the count; the mark survives a server restart (the ZDO-key fact doing its job); a
+non-owned killer logs "owned elsewhere" instead of writing graffiti.
+**GATE DECIDED 2026-08-26: GO for the reduced form**, with one
 design correction the decompile forced. Facts in
 `docs/reference/CREATURE-PERSISTENCE-AND-NEMESIS-FACTS.md` (read on this machine against
 the live install):

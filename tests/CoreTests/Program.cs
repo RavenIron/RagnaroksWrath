@@ -49,6 +49,7 @@ namespace RagnaroksWrath.Tests
             ConsequenceTests();
             RivalryTests();
             ContestTests();
+            NemesisTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -1332,6 +1333,28 @@ namespace RagnaroksWrath.Tests
                 && Math.Abs((1f - merciful) - (1f - plain) * 1.5f) < 1e-5f
                 && ExposureMath.Decay(1f, 20f, false, 2f, 60f, 0.1f) == plain
                 && ExposureMath.Decay(1f, 20f, false, 2f, 60f, float.NaN) == plain);
+        }
+
+        private static void NemesisTests()
+        {
+            Console.WriteLine("\nNemesis");
+
+            Check("a first kill lifts level 1 to 2", NemesisMark.NextLevel(1, 3) == 2);
+            Check("the cap holds at the top", NemesisMark.NextLevel(3, 3) == 3);
+            Check("a cap below current never demotes", NemesisMark.NextLevel(3, 2) == 3);
+            Check("a garbage level is floored to 1 before stepping", NemesisMark.NextLevel(0, 3) == 2);
+            Check("a garbage cap is floored to 1, and current still wins", NemesisMark.NextLevel(2, 0) == 2);
+
+            Check("one kill reads as a single slaying",
+                NemesisMark.Suffix("Nomad", 1) == "\n<size=70%><color=#b45050>slayer of Nomad</color></size>");
+            Check("repeat kills carry the count",
+                NemesisMark.Suffix("Nomad", 3) == "\n<size=70%><color=#b45050>slayer of Nomad x3</color></size>");
+            Check("a padded victim name is trimmed",
+                NemesisMark.Suffix("  Nomad ", 1) == "\n<size=70%><color=#b45050>slayer of Nomad</color></size>");
+            Check("no name, no story", NemesisMark.Suffix("", 2) == "");
+            Check("whitespace is not a name", NemesisMark.Suffix("   ", 2) == "");
+            Check("no kills, no story", NemesisMark.Suffix("Nomad", 0) == "");
+            Check("negative kills are no story either", NemesisMark.Suffix("Nomad", -1) == "");
         }
 
         // ---- harness ----------------------------------------------------------------

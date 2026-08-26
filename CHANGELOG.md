@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.0
+
+- **The nemesis.** The creature that kills you is marked in that moment: it climbs a
+  level (up to two stars) and its nameplate remembers — *slayer of Nomad*, counted on
+  repeat offenses. The mark lives in the creature's own body and travels with the world
+  save; a nemesis that despawns got away. Kill it for the only cure.
+
 ## 0.15.3
 
 - **The wild side's design is settled: refill pressure.** On contested ground the war
