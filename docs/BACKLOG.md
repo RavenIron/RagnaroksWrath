@@ -650,9 +650,9 @@ own decompile gates rather than riding along untestable. Decisions:
 
 **PHASE B VERIFIED LIVE 2026-08-26 (0.12.0, staged harm 0.6):** Ashbringer landed on
 schedule, once, no flap (owner-reported); pickables refused the grudged hand with the
-personal line (owner-reported); and the drift tooth measured **0.01753/h against a
-0.01750/h prediction** — the x0.7 grudge signature to the fourth digit, on save-to-save
-endpoints. THE MEASUREMENT STORY IS THE LESSON: the first window read 0.0578/h — triple
+personal line (owner-reported); and the drift tooth measured **0.01753/h interim, then
+0.01750/h EXACT over the full 13-minute formal window, against a 0.01750/h prediction** —
+the x0.7 grudge signature to every digit the ledger stores, on save-to-save endpoints. THE MEASUREMENT STORY IS THE LESSON: the first window read 0.0578/h — triple
 the prediction — because the player's returning footsteps paid a ~20min credit-on-contact
 backlog INSIDE the window. The runbook's own most-documented trap caught the person who
 documented it; the instrument was honest, the window was not. Re-baselined after the
