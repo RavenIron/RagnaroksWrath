@@ -30,6 +30,15 @@ namespace RavenIron.RagnaroksWrath.Patches
                 ModConfig.BarrenPlagueThreshold.Value, ModConfig.BarrenScorchThreshold.Value);
         }
 
+        /// <summary>Task 13 phase B, the personal refusal: the land here holds a grudge
+        /// against THE LOCAL PLAYER specifically. Distinct from Barren, which refuses
+        /// everyone — another player picks this same bush without trouble.</summary>
+        public static bool ShunnedAt(Vector3 pos)
+        {
+            if (!ModConfig.EnableRivalry.Value) return false;
+            return ZoneSync.GrudgeAt(ZoneKey.FromWorldPos(pos)) >= ModConfig.GrudgePickRefuse.Value;
+        }
+
         public static bool WithersAt(Vector3 pos)
         {
             if (!ModConfig.EnableConsequence.Value || !ModConfig.ConsequenceWither.Value) return false;
@@ -59,10 +68,14 @@ namespace RavenIron.RagnaroksWrath.Patches
             try
             {
                 if (!__runOriginal) return true;   // someone earlier already cancelled; no opinion
-                if (!ConsequenceGate.BarrenAt(__instance.transform.position)) return true;
+
+                bool barren = ConsequenceGate.BarrenAt(__instance.transform.position);
+                bool shunned = !barren && ConsequenceGate.ShunnedAt(__instance.transform.position);
+                if (!barren && !shunned) return true;
 
                 if (character != null)
-                    character.Message(MessageHud.MessageType.TopLeft, "The land here bears nothing.");
+                    character.Message(MessageHud.MessageType.TopLeft,
+                        barren ? "The land here bears nothing." : "The land refuses your hand.");
 
                 // Mimic vanilla's own refusal shape (the tar case): the interact animation
                 // may still play, the pick does not happen, nothing is consumed.
@@ -85,9 +98,11 @@ namespace RavenIron.RagnaroksWrath.Patches
             try
             {
                 if (string.IsNullOrEmpty(__result)) return;   // picked/disabled — nothing to explain
-                if (!ConsequenceGate.BarrenAt(__instance.transform.position)) return;
 
-                __result += "\n<color=#9a8f6a>withered — this land bears nothing</color>";
+                if (ConsequenceGate.BarrenAt(__instance.transform.position))
+                    __result += "\n<color=#9a8f6a>withered — this land bears nothing</color>";
+                else if (ConsequenceGate.ShunnedAt(__instance.transform.position))
+                    __result += "\n<color=#9a8f6a>the land remembers what you did here</color>";
             }
             catch (Exception)
             {

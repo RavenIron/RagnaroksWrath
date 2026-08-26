@@ -66,5 +66,40 @@ namespace RavenIron.RagnaroksWrath.Core
         /// </summary>
         public static bool IsNewPlant(long plantTimeTicks, long watermarkTicks)
             => plantTimeTicks > 0 && plantTimeTicks > watermarkTicks;
+
+        // ---- phase B: the grudge -------------------------------------------------------
+
+        /// <summary>
+        /// A zone's grudge against one player: their harm net of their care, scaled and
+        /// clamped to 0..1. Care OFFSETS harm — tending a zone you burned genuinely
+        /// mollifies it — and a net carer holds no grudge at all, never a negative one
+        /// (mercies are phase C's business, not a sign flip here).
+        /// </summary>
+        public static float GrudgeFor(float harm, float care, float scale)
+        {
+            if (float.IsNaN(harm) || float.IsNaN(care) || float.IsNaN(scale)) return 0f;
+
+            float g = (harm - care) * Math.Max(0f, scale);
+            if (g <= 0f) return 0f;
+            return g > 1f ? 1f : g;
+        }
+
+        /// <summary>Recovery slows on grudged ground for the grudged: x(1 - g/2), so even a
+        /// full grudge only HALVES healing — the land sulks, it does not refuse.</summary>
+        public static float GrudgedRecovery(float recoveryPerHour, float grudge)
+        {
+            if (float.IsNaN(recoveryPerHour) || float.IsNaN(grudge)) return recoveryPerHour;
+            float g = grudge < 0f ? 0f : (grudge > 1f ? 1f : grudge);
+            return recoveryPerHour * (1f - g * 0.5f);
+        }
+
+        /// <summary>Harmful pressure quickens on grudged ground: x(1 + g), up to doubled at a
+        /// full grudge. Applied to frost pressure and plague growth alike.</summary>
+        public static float GrudgedPressure(float pressurePerHour, float grudge)
+        {
+            if (float.IsNaN(pressurePerHour) || float.IsNaN(grudge)) return pressurePerHour;
+            float g = grudge < 0f ? 0f : (grudge > 1f ? 1f : grudge);
+            return pressurePerHour * (1f + g);
+        }
     }
 }

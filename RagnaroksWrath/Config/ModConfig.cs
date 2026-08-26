@@ -138,6 +138,9 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> CarePerHealedPoint;
         public static ConfigEntry<float> TendingCarePerPlant;
         public static ConfigEntry<float> ArsonHarmPerScorchPoint;
+        public static ConfigEntry<float> GrudgeScale;
+        public static ConfigEntry<float> GrudgePickRefuse;
+        public static ConfigEntry<float> AshbringerGrudge;
 
         // ---- Per-system master switches -------------------------------------------------
 
@@ -707,6 +710,28 @@ namespace RavenIron.RagnaroksWrath.Config
                     "with an older FireFront, arson attribution is dormant and scorch " +
                     "still accrues. Natural and creature fires book nobody.",
                     new AcceptableValueRange<float>(0f, 10f)));
+
+            GrudgeScale = cfg.Bind(rivalry, "GrudgeScale", 1f,
+                new ConfigDescription(
+                    "How strongly net harm (harm minus care) becomes grudge, clamped to " +
+                    "0..1 after scaling. At 1.0, fully charring a zone earns its full " +
+                    "grudge; tending genuinely mollifies. The grudge drives every phase-B " +
+                    "tooth: drift harshness, the personal pick refusal, the title.",
+                    new AcceptableValueRange<float>(0f, 10f)));
+
+            GrudgePickRefuse = cfg.Bind(rivalry, "GrudgePickRefuse", 0.25f,
+                new ConfigDescription(
+                    "Grudge at which a zone's pickables refuse THAT PLAYER specifically — " +
+                    "another player picks the same bush untroubled. Tend the land or let " +
+                    "the grudge fade (48h half-life) to be forgiven.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            AshbringerGrudge = cfg.Bind(rivalry, "AshbringerGrudge", 0.5f,
+                new ConfigDescription(
+                    "Worst-zone grudge at which the Ashbringer title lands (harm is all " +
+                    "fire today, so the name is true). Awarded once per crossing — latest " +
+                    "earned wins, like every title.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
 
             const string systems = "4 - Systems";
 

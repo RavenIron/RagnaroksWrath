@@ -44,15 +44,24 @@ namespace RavenIron.RagnaroksWrath.Systems
             if (peers == null) return;
 
             int radius = Math.Max(1, ModConfig.ZoneSyncRadiusZones.Value);
+            ZDOMan zdoMan = ZDOMan.instance;
 
             for (int i = 0; i < peers.Count; i++)
             {
                 ZNetPeer peer = peers[i];
                 if (peer == null || !peer.IsReady()) continue;
 
+                // The peer's IDENTITY long, for the per-player grudge column: their
+                // character ZDO carries it (the HealthSystem mapping, inlined). 0 while
+                // the character is still spawning in — the grudge column sends as 0 then,
+                // which is the right answer for a player who is not yet anywhere.
+                long playerId = 0;
+                ZDO character = zdoMan?.GetZDO(peer.m_characterID);
+                if (character != null) playerId = character.GetLong(ZDOVars.s_playerID, 0L);
+
                 // m_refPos over the character ZDO: always populated once the peer is ready,
                 // ~2s stale, and never gated by the player's map-visibility toggle.
-                ZoneSync.SendRing(peer.m_uid, ZoneKey.FromWorldPos(peer.m_refPos), radius);
+                ZoneSync.SendRing(peer.m_uid, playerId, ZoneKey.FromWorldPos(peer.m_refPos), radius);
             }
         }
     }

@@ -41,6 +41,11 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         // Rebuilt every tick. Kept as a field so a steady state does not allocate a list per pass.
         private readonly List<ZoneKey> _contacted = new List<ZoneKey>(64);
 
+        // Task 13 phase B: the worst grudge among the players whose contact covers each
+        // zone — the land reacts to the most hated person present. Rebuilt beside
+        // _contacted; empty whenever rivalry is off or nobody present is resented.
+        private readonly Dictionary<ZoneKey, float> _grudgeByZone = new Dictionary<ZoneKey, float>(64);
+
         // Round-robin position, in the same shape as WorldTick's: it persists across ticks so a
         // pass cut short by the budget resumes rather than restarting, and the zones at the front
         // of the list cannot starve the ones behind them.
@@ -60,7 +65,8 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             if (!Persistence.IsLoaded) return;   // nothing to write into yet
 
             _contacted.Clear();
-            CollectContactedZones(_contacted);
+            _grudgeByZone.Clear();
+            CollectContactedZones(_contacted, _grudgeByZone);
 
             if (_contacted.Count == 0)
             {
@@ -94,9 +100,19 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 double elapsed = ZoneClock.CreditOnContact(zone);
                 if (elapsed <= 0.0) continue;
 
+                // Phase B, tooth one: grudged ground drifts harsher UNDER THE GRUDGED.
+                // Recovery slows (never below half), pressure quickens (up to doubled) —
+                // scaled per zone here so BiomeDrift's pure math stays untouched and
+                // harness-covered. A zone with no resented player present pays nothing.
+                float g = _grudgeByZone.TryGetValue(zone, out float zg) ? zg : 0f;
+
                 ZoneState before = Persistence.Get(zone);
-                ZoneState after  = BiomeDrift.Apply(before, elapsed, recovery, frostPressure, cold, fireRisk,
-                    plagueGrowth, corruptionBoost);
+                ZoneState after  = BiomeDrift.Apply(before, elapsed,
+                    RivalryMath.GrudgedRecovery(recovery, g),
+                    RivalryMath.GrudgedPressure(frostPressure, g),
+                    cold, fireRisk,
+                    RivalryMath.GrudgedPressure(plagueGrowth, g),
+                    corruptionBoost);
 
                 // Set clamps, and removes the entry outright if the zone has healed back to
                 // default. Sparseness is enforced at that boundary, not here.
@@ -120,12 +136,14 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         /// where players actually are - Player.GetAllPlayers() is not authoritative there, while
         /// position on a character ZDO is replicated state kept fresh by its owner.
         /// </summary>
-        private static void CollectContactedZones(List<ZoneKey> into)
+        private static void CollectContactedZones(List<ZoneKey> into, Dictionary<ZoneKey, float> grudges)
         {
             ZNet znet = ZNet.instance;
             if (znet == null) return;
 
             int radius = ModConfig.BiomeContactRadiusZones.Value;
+            bool trackGrudges = ModConfig.EnableRivalry.Value && RivalryLedger.IsLoaded;
+            float scale = ModConfig.GrudgeScale.Value;
 
             List<ZDO> characters;
             try
@@ -146,6 +164,7 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 ZDO zdo = characters[i];
                 if (zdo == null || !zdo.IsValid()) continue;
 
+                long playerId = trackGrudges ? zdo.GetLong(ZDOVars.s_playerID, 0L) : 0L;
                 ZoneKey centre = ZoneKey.FromWorldPos(zdo.GetPosition());
 
                 for (int dx = -radius; dx <= radius; dx++)
@@ -158,6 +177,14 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                         // ring area, which is tens of entries at worst, and staying
                         // allocation-free matters more here than the asymptotics.
                         if (!into.Contains(zone)) into.Add(zone);
+
+                        if (playerId != 0)
+                        {
+                            RivalryLedger.Row row = RivalryLedger.Get(zone, playerId);
+                            float g = RivalryMath.GrudgeFor(row.Harm, row.Care, scale);
+                            if (g > 0f && (!grudges.TryGetValue(zone, out float worst) || g > worst))
+                                grudges[zone] = g;
+                        }
                     }
                 }
             }

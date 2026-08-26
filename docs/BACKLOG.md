@@ -620,8 +620,31 @@ pre-0.8.2 code lost. Observed, not argued.
 
 **Phase A is COMPLETE and fully live-verified: all three writers** (tending, healing
 presence, arson) plus decay, watermark, sparse pruning, and the shutdown flush.
-Remaining before phase B: the grudge design reads harm - care per zone; the ledger now
-genuinely contains both columns.
+
+**PHASE B BUILT 2026-08-26 at 0.12.0 (in-game verification pending) — three of four
+teeth, scoped by the acceptance list:** drift-harsher, pickable-refusal and the grudge
+title are B's acceptance criteria and are built; the wildlife-flee bump and
+hostiles-seek-you have NO acceptance criteria in the spec and sit on the riskiest patch
+surface in the mod (BaseAI targeting), so they are deferred to their own pass with their
+own decompile gates rather than riding along untestable. Decisions:
+
+- **Grudge = clamp01((harm - care) x GrudgeScale)** per zone per player. Care offsets
+  harm point for point — tending genuinely mollifies, and a net carer holds no grudge
+  (negative grudge is phase C's mercies, not a sign flip here).
+- **Drift tooth:** BiomeStateSystem's contact collection now carries WHO contacts; each
+  zone drifts under the WORST present grudge — recovery x(1-g/2) (the land sulks, never
+  refuses), frost/plague pressure x(1+g). Scaled at the rate arguments so BiomeDrift's
+  pure math stays untouched and harness-covered.
+- **Refusal tooth:** the task 12 pickable surface gained a personal gate — Barren refuses
+  everyone, Shunned refuses YOU ("the land remembers what you did here"). Distinct
+  messages, distinct hover lines, checked in that order.
+- **Title tooth:** Ashbringer (harm is all fire today, so the name is true) at worst-zone
+  grudge >= 0.5, EDGE-TRIGGERED — a persistent grudge would otherwise alternate with
+  Plaguewalker every tick, announcing each swap. (The same latent flap exists between
+  Stormrider and Plaguewalker when both hold; pre-existing, unobserved, noted.)
+- **Wire:** ZoneSync's per-peer ring gained the receiving player's grudge per zone and
+  was renamed (...zone_state2) so a version-skewed pair no-ops cleanly — the FireFront
+  0.17.3 lesson applied to our own wire. GrudgeAt mirrors StateAt's authority rule.
 - The ledger is the third write-behind store, so it appears in `WorldTick.OnDestroy` per
   the 0.8.2 rule.
 

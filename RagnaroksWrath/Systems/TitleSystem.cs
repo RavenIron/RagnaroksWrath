@@ -34,10 +34,19 @@ namespace RavenIron.RagnaroksWrath.Systems
         public const string Stormrider = "Stormrider";
         public const string Plaguewalker = "Plaguewalker";
         public const string Winterborn = "Winterborn";
+        public const string Ashbringer = "Ashbringer";
 
         private readonly Dictionary<long, float> _winterSeconds = new Dictionary<long, float>(8);
         private readonly HashSet<long> _knownOnline = new HashSet<long>();
         private readonly HashSet<long> _seenThisTick = new HashSet<long>();
+
+        // Ashbringer awards on the RISING EDGE of its condition only. The zonal titles
+        // re-award every tick their condition holds, which is fine while conditions are
+        // mutually exclusive in practice — but a grudge PERSISTS across zones, so a grudged
+        // player standing in the outbreak would otherwise alternate Ashbringer and
+        // Plaguewalker every tick, announcing each swap. Edge-triggered, the grudge title
+        // lands once and then cedes to whatever the player walks into next.
+        private readonly HashSet<long> _ashbringerHeld = new HashSet<long>();
         private bool _storeLoaded;
 
         public void Initialise()
@@ -109,6 +118,19 @@ namespace RavenIron.RagnaroksWrath.Systems
                     _winterSeconds[playerId] = s;
                     if (s >= ModConfig.WinterbornSeconds.Value)
                         Award(playerId, zdo, Winterborn);
+                }
+
+                // Task 13 phase B: the land's grudge made visible to everyone. Harm is
+                // all fire today, so the name is true; more harm writers may earn more
+                // names later. Edge-triggered — see _ashbringerHeld.
+                if (ModConfig.EnableRivalry.Value && RivalryLedger.IsLoaded)
+                {
+                    bool grudged = RivalryLedger.MaxGrudgeFor(playerId, ModConfig.GrudgeScale.Value)
+                                   >= ModConfig.AshbringerGrudge.Value;
+                    if (grudged && _ashbringerHeld.Add(playerId))
+                        Award(playerId, zdo, Ashbringer);
+                    else if (!grudged)
+                        _ashbringerHeld.Remove(playerId);   // re-arm once the land forgives
                 }
             }
 

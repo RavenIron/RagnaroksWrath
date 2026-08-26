@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.0
+
+- **The land holds grudges.** Zones remember who hurt them (net of who tended them), and
+  react to that person specifically:
+  - Ground you wronged **drifts harsher under your feet** — healing up to halved, rot up
+    to doubled, scaling with the grudge. Your friends walk the same ground untroubled.
+  - Past a threshold, **its pickables refuse your hand** — "the land remembers what you
+    did here" — while anyone else picks freely.
+  - The worst offenders wear it: the **Ashbringer** title lands when any zone's grudge
+    crosses the line, announced like every title.
+- Grudges fade (48-hour half-life) and tending genuinely mollifies — care offsets harm
+  point for point. The atonement loop is real: heal what you burned and the land forgets.
+- Wire note: the zone sync now carries your personal grudge per zone (renamed RPC; server
+  and clients update together, as ever).
+
 ## 0.11.1
 
 - **Arson has a name now.** With FireFront 0.17.3+, the scorch a fire burns into each zone

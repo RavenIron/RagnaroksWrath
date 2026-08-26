@@ -21,11 +21,19 @@ namespace RavenIron.RagnaroksWrath.Net
     /// </summary>
     public static class ZoneSync
     {
-        public const string RpcName = "com.raveniron.ragnarokswrath.zone_state";
+        // "2" suffix (0.12.0): each zone row now carries the RECEIVING player's grudge —
+        // the wire is per-peer already, so the personal number rides the same push. A
+        // renamed RPC makes a version-skewed pair no-op cleanly instead of mis-parsing
+        // the old five-float rows (the FireFront 0.17.3 lesson, applied to our own wire).
+        public const string RpcName = "com.raveniron.ragnarokswrath.zone_state2";
 
         // Client-side cache the visuals read. On a HOST (server + local player in one
         // process) reads bypass this entirely — see StateAt.
         private static readonly Dictionary<ZoneKey, ZoneState> _cache = new Dictionary<ZoneKey, ZoneState>(64);
+
+        // The LOCAL player's grudge per zone, from the same push. Per-player by
+        // construction: the server computes it for the peer it is sending to.
+        private static readonly Dictionary<ZoneKey, float> _grudgeCache = new Dictionary<ZoneKey, float>(64);
         private static ZRoutedRpc _registeredOn;
 
         /// <summary>
@@ -38,6 +46,23 @@ namespace RavenIron.RagnaroksWrath.Net
             return _cache.TryGetValue(zone, out ZoneState s) ? s : default;
         }
 
+        /// <summary>
+        /// The LOCAL player's grudge in a zone, same authority rule as StateAt: a listen
+        /// host computes from its own ledger, a pure client reads the synced cache. Zero
+        /// when rivalry is off, unloaded, or the land simply holds nothing against you.
+        /// </summary>
+        public static float GrudgeAt(ZoneKey zone)
+        {
+            if (RivalryLedger.IsLoaded)
+            {
+                Player local = Player.m_localPlayer;
+                if (local == null) return 0f;
+                RivalryLedger.Row row = RivalryLedger.Get(zone, local.GetPlayerID());
+                return RivalryMath.GrudgeFor(row.Harm, row.Care, Config.ModConfig.GrudgeScale.Value);
+            }
+            return _grudgeCache.TryGetValue(zone, out float g) ? g : 0f;
+        }
+
         public static void EnsureRegistered()
         {
             ZRoutedRpc rpc = ZRoutedRpc.instance;
@@ -48,6 +73,7 @@ namespace RavenIron.RagnaroksWrath.Net
                 rpc.Register<ZPackage>(RpcName, RPC_ZoneState);
                 _registeredOn = rpc;
                 _cache.Clear();
+                _grudgeCache.Clear();
             }
             catch (Exception ex)
             {
@@ -56,14 +82,18 @@ namespace RavenIron.RagnaroksWrath.Net
             }
         }
 
-        /// <summary>Server-side: push the ring around one peer's position to that peer.</summary>
-        public static void SendRing(long peerUid, ZoneKey centre, int radius)
+        /// <summary>Server-side: push the ring around one peer's position to that peer,
+        /// each zone carrying THAT PLAYER's grudge (0 when rivalry is off or unloaded).</summary>
+        public static void SendRing(long peerUid, long playerId, ZoneKey centre, int radius)
         {
             ZRoutedRpc rpc = ZRoutedRpc.instance;
             if (rpc == null) return;
 
             try
             {
+                float scale = Config.ModConfig.GrudgeScale.Value;
+                bool haveLedger = RivalryLedger.IsLoaded && playerId != 0;
+
                 var pkg = new ZPackage();
                 int side = radius * 2 + 1;
                 pkg.Write(side * side);
@@ -80,6 +110,14 @@ namespace RavenIron.RagnaroksWrath.Net
                     pkg.Write(s.Scorch);
                     pkg.Write(s.Frost);
                     pkg.Write(s.Plague);
+
+                    float grudge = 0f;
+                    if (haveLedger)
+                    {
+                        RivalryLedger.Row row = RivalryLedger.Get(zone, playerId);
+                        grudge = RivalryMath.GrudgeFor(row.Harm, row.Care, scale);
+                    }
+                    pkg.Write(grudge);
                 }
 
                 rpc.InvokeRoutedRPC(peerUid, RpcName, pkg);
@@ -112,6 +150,10 @@ namespace RavenIron.RagnaroksWrath.Net
 
                     if (s.IsDefault) _cache.Remove(zone);
                     else _cache[zone] = s;
+
+                    float grudge = pkg.ReadSingle();
+                    if (float.IsNaN(grudge) || grudge <= 0f) _grudgeCache.Remove(zone);
+                    else _grudgeCache[zone] = grudge > 1f ? 1f : grudge;
                 }
             }
             catch (Exception ex)

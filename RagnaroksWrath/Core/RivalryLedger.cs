@@ -77,6 +77,20 @@ namespace RavenIron.RagnaroksWrath.Core
 
         public static IEnumerable<KeyValuePair<Key, Row>> All() => _rows;
 
+        /// <summary>The worst grudge any zone holds against this player — the title layer's
+        /// question. Rows are few by construction (sparse, decaying), so a scan is fine.</summary>
+        public static float MaxGrudgeFor(long playerId, float scale)
+        {
+            float worst = 0f;
+            foreach (KeyValuePair<Key, Row> kv in _rows)
+            {
+                if (kv.Key.Player != playerId) continue;
+                float g = RivalryMath.GrudgeFor(kv.Value.Harm, kv.Value.Care, scale);
+                if (g > worst) worst = g;
+            }
+            return worst;
+        }
+
         public static void AddHarm(ZoneKey zone, long playerId, float amount)
             => Add(zone, playerId, amount, 0f);
 

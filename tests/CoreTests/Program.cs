@@ -1127,6 +1127,25 @@ namespace RagnaroksWrath.Tests
                 && !RivalryMath.IsNewPlant(50, 50)
                 && !RivalryMath.IsNewPlant(0, 0));
 
+            // Phase B: the grudge and its teeth.
+            Check("grudge is net harm, clamped, and care genuinely mollifies",
+                Math.Abs(RivalryMath.GrudgeFor(0.5f, 0.2f, 1f) - 0.3f) < 1e-5f
+                && RivalryMath.GrudgeFor(0.2f, 0.5f, 1f) == 0f
+                && RivalryMath.GrudgeFor(5f, 0f, 1f) == 1f
+                && RivalryMath.GrudgeFor(0.25f, 0f, 2f) == 0.5f
+                && RivalryMath.GrudgeFor(float.NaN, 0f, 1f) == 0f);
+
+            Check("a full grudge halves recovery and doubles pressure, never more",
+                Math.Abs(RivalryMath.GrudgedRecovery(0.02f, 1f) - 0.01f) < 1e-6f
+                && Math.Abs(RivalryMath.GrudgedPressure(0.03f, 1f) - 0.06f) < 1e-6f
+                && RivalryMath.GrudgedRecovery(0.02f, 0f) == 0.02f
+                && RivalryMath.GrudgedPressure(0.03f, 0f) == 0.03f
+                && Math.Abs(RivalryMath.GrudgedRecovery(0.02f, 9f) - 0.01f) < 1e-6f);
+
+            Check("a half grudge sits exactly between",
+                Math.Abs(RivalryMath.GrudgedRecovery(0.02f, 0.5f) - 0.015f) < 1e-6f
+                && Math.Abs(RivalryMath.GrudgedPressure(0.02f, 0.5f) - 0.03f) < 1e-6f);
+
             // The ledger itself, through the shipping writer.
             string dir = Path.Combine(Path.GetTempPath(), "rw_rivalry_" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(dir);
@@ -1160,6 +1179,12 @@ namespace RagnaroksWrath.Tests
 
                 RivalryLedger.AddHarm(zoneA, 0L, 9f);
                 Check("player id 0 is never recorded", RivalryLedger.Get(zoneA, 0L).Harm == 0f);
+
+                float worst = RivalryLedger.MaxGrudgeFor(111L, 1f);
+                Check($"the worst grudge finds the right zone and nets out care ({worst:F2})",
+                    Math.Abs(worst - 0.25f) < 1e-4f     // zone A: 0.5 harm - 0.25 care
+                    && RivalryLedger.MaxGrudgeFor(222L, 1f) == 0f    // pure carer, no grudge
+                    && RivalryLedger.MaxGrudgeFor(999L, 1f) == 0f);  // stranger, no rows
 
                 RivalryLedger.DecayAll(0.5f);
                 Check($"decay halves every column ({RivalryLedger.Get(zoneA, 111L).Harm:F3})",
