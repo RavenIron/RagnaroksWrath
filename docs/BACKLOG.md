@@ -308,9 +308,13 @@ undiagnosable.
 
 Still to come on this substrate, in whatever order earns it: storm gusts (same sync, new
 emitter), farming's growth/yield consumer (client reads depletion). Delivered since:
-HealthSystem (task 11, 0.8.x) and **frost breath (0.9.0)** — built to this template after
-the chill's first live test came back "no vfx", with the shader chain extracted to
-`ParticleKit` so the stripped-shader lesson cannot fork between emitters.
+HealthSystem (task 11, 0.8.x) and **frost breath (0.9.0, VERIFIED LIVE 2026-08-26)** —
+built to this template after the chill's first live test came back "no vfx", shader chain
+extracted to `ParticleKit` so the stripped-shader lesson cannot fork between emitters.
+Verified by eye on the staged frost-0.75 zone: puffs on arrival ('Sprites/Default',
+emitter built 61s after 0.9.0 load), a roof kills the breath, a campfire does NOT — while
+the campfire DOES kill the chill. The two effects obeying different gates (cold air vs
+cold body) is the design, observed working in one spot.
 
 ## 10. Packaging — DONE 2026-08-26
 
