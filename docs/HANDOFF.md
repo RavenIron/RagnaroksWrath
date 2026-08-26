@@ -26,13 +26,20 @@ obeys.
 - **0.8.2 flush-fix verification PENDING:** needs a player to get exposed, then a server
   stop — the health ledger's mtime must land beside Dedicated.db's instead of up to 60s
   earlier. Today's stops had an empty ledger, so it has never been observed doing its job.
-- **Tasks 13–14 specced, not built** (owner's calls recorded per task — do not re-litigate;
-  13 then 14, Relic capstone). Honour each spec's decompile gates.
-- **Remaining, unnumbered:** build tasks 13–14; the storm-gust emitter (`Visuals\ParticleKit`
-  is the shared substrate); farming's growth/yield consumer; the nameplate RENDER check
-  (needs a second player); crop-wither quick half; the 0.8.2 flush verification (stop the
-  server WHILE a player stands in plague — a logged-out player's ledger may already be
-  cadence-clean); package + Thunderstore upload of 0.10.0.
+- **Task 13 PHASE A COMPLETE and live-verified (RW 0.11.1 + FireFront 0.17.3):** the
+  influence ledger with ALL THREE writers proven — tending (watermarked, no re-booking
+  observed over 30min), healing presence (care appeared the tick the player did), and
+  arson (the four-zone fire billed one arsonist through FireFront's new
+  `CurrentFireIgniterPlayerId` contract; both mods deploy in lockstep now — the ignite
+  RPC was renamed in 0.17.3). The 0.8.2 shutdown flush was ALSO verified at this
+  session's last stop (ledger mtime beside Dedicated.db, 56s fresher than its cadence).
+  Phases B–E not started; B (grudges) now has real harm to bite on.
+- **Task 14 specced, not built** (owner's calls recorded; Relic is the capstone, after 13).
+- **Remaining, unnumbered:** task 13 phases B–E, task 14; the storm-gust emitter
+  (`Visuals\ParticleKit` is the substrate); farming's growth/yield consumer; the nameplate
+  RENDER check (needs a second player); the crop-wither slow half (a turnip stands in the
+  outbreak at blight 1.0 — it should be visibly unhealthy now and die at grow time);
+  package + Thunderstore upload (now 0.11.1 + FireFront 0.17.3 as a pair).
 
 ## The live world (Dedicated, uid 4690126)
 
@@ -45,8 +52,14 @@ Genuine state, not test residue — do not wipe:
   nothing but time off drains corruption. Seeded neighbours sit below the 0.15 floor.
 - **A cold scar at zone (1,0), frost ~0.74** — staged for the chill/breath test and KEPT
   deliberately (owner's call): breath fogs there, the chill bites, and it only drains while
-  someone stands in it. A `.prefrost` backup of the zone store sits beside it if it ever
-  needs restoring.
+  someone stands in it. `.prefrost`/`.pretask12` zone-store backups sit beside it.
+- **A burn scar across zones (1,-1)/(1,0)/(0,-1)/(1,-2)** — the owner's own arson test
+  (2026-08-26): a beech lit south of the scar spread four zones before the extinguish key
+  and a server cycle killed it. Scorch ~0.21 in (1,-1), and the rivalry ledger bills
+  775624 exactly 0.2664 harm for it. Genuine history now — do not clean it up.
+- **The rivalry ledger** `ragnarokswrath_rivalry_4690126.dat`: 775624 carries care across
+  a dozen zones (tending + healing presence) and the arson harm above. Both columns decay
+  at a 48h half-life.
 - Titles ledger: `ragnarokswrath_titles_4690126.dat` — Nomad (775624) = Plaguewalker.
 - Health ledger `ragnarokswrath_health_4690126.dat`: header-only right now (Nomad recovered
   fully; the row through-zero-deleted itself, which is correct).

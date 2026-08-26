@@ -602,6 +602,26 @@ quarantine, no BOM) + `RivalrySystem` phase-A writers. Decisions the build made:
   RW's FireSystem books `scorchDelta x ArsonHarmPerScorchPoint` to the igniter in every
   zone it scorches, resolves the property optionally (absence = one info line, dormant,
   scorch unaffected — an older FireFront is legitimate). Natural fire books nobody.
+
+**ARSON VERIFIED LIVE 2026-08-26 (RW 0.11.1 + FF 0.17.3, dedicated server).** The whole
+chain observed link by link: `fireignite` on a beech -> the v2 RPC logged
+`peer -482070028 ... igniter=775624` (SESSION id and IDENTITY id visibly different in one
+line — the design's whole point) -> event captured -> reflection read -> first harm row
+0.0067 = exactly two 10s ticks of one zone. The fire then crossed THREE zone borders
+(into the outbreak, the frost scar, and (1,-2)) and every zone billed the same arsonist —
+0.2664 total to 775624 — proving spread inherits its culprit across zones via FireFront's
+capture-once event. The owner fought their own fire with the extinguish key while their
+own ledger billed them, and the burn zone banked 0.209 scorch. Zero errors either side.
+
+**0.8.2 FLUSH VERIFIED at the same stop:** the rivalry ledger (same write-behind contract
+as HealthStore, same OnDestroy site) rewrote at shutdown 12:23:29.484 — 2ms after the
+zone store's flush and 56s after its last cadence save, which is exactly the minute the
+pre-0.8.2 code lost. Observed, not argued.
+
+**Phase A is COMPLETE and fully live-verified: all three writers** (tending, healing
+presence, arson) plus decay, watermark, sparse pruning, and the shutdown flush.
+Remaining before phase B: the grudge design reads harm - care per zone; the ledger now
+genuinely contains both columns.
 - The ledger is the third write-behind store, so it appears in `WorldTick.OnDestroy` per
   the 0.8.2 rule.
 
