@@ -46,7 +46,7 @@ namespace RavenIron.RagnaroksWrath.Client
         private float _nextErrorLog;
         private float _chillMessageAt = -999f;
 
-        private SE_Stats _sickTemplate;
+        private SE_Plaguesick _sickTemplate;
         private SE_Stats _chillTemplate;
         private int _sickHash;
         private int _chillHash;
@@ -84,7 +84,13 @@ namespace RavenIron.RagnaroksWrath.Client
                     ModConfig.ExposureTier1.Value, ModConfig.ExposureTier2.Value,
                     ModConfig.ExposureTier3.Value);
 
-                ApplySickness(player, exposure, tier);
+                // Recovering is the server's own branch, recomputed from the same synced
+                // data rather than guessed from a trend: below the fog floor, exposure falls.
+                float plagueUnderfoot =
+                    ZoneSync.StateAt(ZoneKey.FromWorldPos(player.transform.position)).Plague;
+                bool recovering = plagueUnderfoot < FogMath.VisibleFloor;
+
+                ApplySickness(player, exposure, tier, recovering);
                 AnnounceTier(tier);
                 ApplyChill(player);
             }
@@ -101,7 +107,7 @@ namespace RavenIron.RagnaroksWrath.Client
             }
         }
 
-        private void ApplySickness(Player player, float exposure, int tier)
+        private void ApplySickness(Player player, float exposure, int tier, bool recovering)
         {
             SEMan seman = player.GetSEMan();
             if (seman == null) return;
@@ -114,7 +120,7 @@ namespace RavenIron.RagnaroksWrath.Client
 
             if (_sickTemplate == null)
             {
-                _sickTemplate = BuildEffect("RW_Plaguesick", "Plaguesick",
+                _sickTemplate = BuildEffect<SE_Plaguesick>("RW_Plaguesick", "Plaguesick",
                     SEMan.s_statusEffectPoison,
                     "The blight sickens you. Stamina fails first, then the flesh forgets how " +
                     "to heal. It fades away from plagued ground — faster rested, slower to " +
@@ -126,13 +132,35 @@ namespace RavenIron.RagnaroksWrath.Client
                 seman.AddStatusEffect(_sickTemplate);
 
             // Mutate the LIVE clone: the multipliers are read fresh every regen pass.
-            if (seman.GetStatusEffect(_sickHash) is SE_Stats live)
+            if (seman.GetStatusEffect(_sickHash) is SE_Plaguesick live)
             {
                 live.m_staminaRegenMultiplier = ExposureMath.StaminaRegenMultiplier(exposure,
-                    ModConfig.ExposureTier1.Value, ModConfig.SicknessStaminaRegenAtMax.Value);
+                    ModConfig.ExposureTier1.Value,
+                    ModConfig.SicknessStaminaRegenAtTier1.Value,
+                    ModConfig.SicknessStaminaRegenAtMax.Value);
                 live.m_healthRegenMultiplier = ExposureMath.HealthRegenMultiplier(exposure,
-                    ModConfig.ExposureTier2.Value, ModConfig.SicknessHealthRegenAtMax.Value);
+                    ModConfig.ExposureTier2.Value,
+                    ModConfig.SicknessHealthRegenAtTier2.Value,
+                    ModConfig.SicknessHealthRegenAtMax.Value);
+
+                live.Severity = exposure;
+                live.SecondsToClean = recovering ? EstimateSecondsToClean(player, exposure) : 0f;
             }
+        }
+
+        /// <summary>
+        /// Seconds until clean at this client's configured recovery rate — the same
+        /// arithmetic the server runs, mirrored for display only. Rested doubles the drain
+        /// there, so it halves the wait here.
+        /// </summary>
+        private static float EstimateSecondsToClean(Player player, float exposure)
+        {
+            float perSecond = 1f / Math.Max(1f, ModConfig.ExposureRecoveryMinutes.Value * 60f);
+
+            if ((HealthSync.ComputeLocalRemedyBits(player) & HealthSync.RemedyRested) != 0)
+                perSecond *= Math.Max(1f, ModConfig.ExposureRestedRecoveryMultiplier.Value);
+
+            return exposure / perSecond;
         }
 
         private void AnnounceTier(int tier)
@@ -197,7 +225,7 @@ namespace RavenIron.RagnaroksWrath.Client
 
             if (_chillTemplate == null)
             {
-                _chillTemplate = BuildEffect("RW_Chill", "Chilled",
+                _chillTemplate = BuildEffect<SE_Stats>("RW_Chill", "Chilled",
                     SEMan.s_statusEffectCold,
                     "The land's frost seeps into your bones. A fire, shelter, or frost " +
                     "resistance keeps it out.");
@@ -242,10 +270,10 @@ namespace RavenIron.RagnaroksWrath.Client
         /// explicitly. The icon is borrowed from a vanilla effect so the status bar speaks
         /// the game's own visual language; a missing icon degrades to a blank slot, logged.
         /// </summary>
-        private static SE_Stats BuildEffect(string objectName, string displayName,
-                                            int iconFromHash, string tooltip)
+        private static T BuildEffect<T>(string objectName, string displayName,
+                                        int iconFromHash, string tooltip) where T : SE_Stats
         {
-            var se = ScriptableObject.CreateInstance<SE_Stats>();
+            var se = ScriptableObject.CreateInstance<T>();
             se.name = objectName;
             se.m_name = displayName;
             se.m_tooltip = tooltip;

@@ -105,7 +105,9 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> ExposureTier1;
         public static ConfigEntry<float> ExposureTier2;
         public static ConfigEntry<float> ExposureTier3;
+        public static ConfigEntry<float> SicknessStaminaRegenAtTier1;
         public static ConfigEntry<float> SicknessStaminaRegenAtMax;
+        public static ConfigEntry<float> SicknessHealthRegenAtTier2;
         public static ConfigEntry<float> SicknessHealthRegenAtMax;
         public static ConfigEntry<bool>  FrostChillEnabled;
         public static ConfigEntry<float> FrostChillThreshold;
@@ -502,16 +504,32 @@ namespace RavenIron.RagnaroksWrath.Config
                     "fires.",
                     new AcceptableValueRange<float>(0.01f, 1f)));
 
-            SicknessStaminaRegenAtMax = cfg.Bind(health, "SicknessStaminaRegenAtMax", 0.4f,
+            SicknessStaminaRegenAtTier1 = cfg.Bind(health, "SicknessStaminaRegenAtTier1", 0.85f,
                 new ConfigDescription(
-                    "Stamina regen multiplier at exposure 1.0 (ramps linearly from 1.0 at " +
-                    "Tier1). NEVER a damage number: the sickness weakens, the world kills.",
+                    "Stamina regen multiplier the INSTANT Tier1 is crossed — the step that " +
+                    "makes 'a sickness takes root in you' true when it is announced. Setting " +
+                    "this to 1.0 restores the 0.8.0 behaviour where the first tier was " +
+                    "announced but could not be felt.",
                     new AcceptableValueRange<float>(0.05f, 1f)));
 
-            SicknessHealthRegenAtMax = cfg.Bind(health, "SicknessHealthRegenAtMax", 0.5f,
+            SicknessStaminaRegenAtMax = cfg.Bind(health, "SicknessStaminaRegenAtMax", 0.3f,
                 new ConfigDescription(
-                    "Health regen multiplier at exposure 1.0 (ramps linearly from 1.0 at " +
-                    "Tier2).",
+                    "Stamina regen multiplier at exposure 1.0, ramping from the Tier1 step. " +
+                    "With the defaults this reproduces the agreed table: x0.85 at 0.25, " +
+                    "x0.67 at 0.5, x0.45 at 0.8. NEVER a damage number: the sickness " +
+                    "weakens, the world kills.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            SicknessHealthRegenAtTier2 = cfg.Bind(health, "SicknessHealthRegenAtTier2", 0.8f,
+                new ConfigDescription(
+                    "Health regen multiplier the instant Tier2 is crossed — the wound half " +
+                    "of the sickness arriving where 'the sickness deepens' is announced.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            SicknessHealthRegenAtMax = cfg.Bind(health, "SicknessHealthRegenAtMax", 0.38f,
+                new ConfigDescription(
+                    "Health regen multiplier at exposure 1.0, ramping from the Tier2 step " +
+                    "(x0.80 at 0.5, x0.55 at 0.8 with the defaults).",
                     new AcceptableValueRange<float>(0.05f, 1f)));
 
             FrostChillEnabled = cfg.Bind(health, "FrostChillEnabled", true,

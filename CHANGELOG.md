@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.1
+
+- **The sickness can now actually be felt.** In 0.8.0 the penalties ramped up from nothing at
+  the moment a tier was announced, so "a sickness takes root in you" came with a 2% stamina
+  penalty — invisible in the hands. Crossing a tier now bites at once (stamina ×0.85 the
+  instant it takes hold, deepening as exposure climbs) and keeps ramping from there.
+- **The sickness icon carries a readout.** While it is getting worse, the icon shows how far
+  gone you are; once you are off plagued ground it becomes a real countdown to clean, in the
+  game's own timer format — and it shortens when you are rested.
+
 ## 0.8.0
 
 - **Plague sickness.** Standing on plagued ground now builds exposure on YOU — slowly, over

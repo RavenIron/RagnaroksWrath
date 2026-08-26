@@ -921,7 +921,8 @@ namespace RagnaroksWrath.Tests
             Check("NaN inputs are neutralised, not propagated",
                 !float.IsNaN(ExposureMath.Accrue(float.NaN, float.NaN, 30f, false, float.NaN, 60f))
                 && ExposureMath.Decay(float.NaN, 20f, false, 2f, 60f) == 0f
-                && ExposureMath.TierFor(float.NaN, 0.25f, 0.5f, 0.8f) == 0);
+                && ExposureMath.TierFor(float.NaN, 0.25f, 0.5f, 0.8f) == 0
+                && ExposureMath.StaminaRegenMultiplier(float.NaN, 0.25f, 0.85f, 0.3f) == 1f);
 
             Check("tiers begin at their thresholds, inclusive",
                 ExposureMath.TierFor(0.2f, 0.25f, 0.5f, 0.8f) == 0
@@ -932,17 +933,37 @@ namespace RagnaroksWrath.Tests
             // The owner's palette call: stamina fails FIRST. At exposure 0.4 (past tier 1,
             // short of tier 2) stamina already sags while health regen is untouched.
             Check("stamina fails before health regen",
-                ExposureMath.StaminaRegenMultiplier(0.4f, 0.25f, 0.4f) < 1f
-                && ExposureMath.HealthRegenMultiplier(0.4f, 0.5f, 0.5f) == 1f);
+                ExposureMath.StaminaRegenMultiplier(0.4f, 0.25f, 0.85f, 0.3f) < 1f
+                && ExposureMath.HealthRegenMultiplier(0.4f, 0.5f, 0.8f, 0.38f) == 1f);
 
-            float midStamina = ExposureMath.StaminaRegenMultiplier(0.625f, 0.25f, 0.4f);
-            Check($"stamina ramps linearly to its floor ({midStamina:F2})",
-                Math.Abs(midStamina - 0.7f) < 1e-4f
-                && Math.Abs(ExposureMath.StaminaRegenMultiplier(1f, 0.25f, 0.4f) - 0.4f) < 1e-4f);
+            // THE 0.8.0 REGRESSION, pinned. A ramp starting at 1.0 on the threshold gave
+            // x0.98 here — announced as "a sickness takes root in you" and imperceptible in
+            // the hands. Crossing a tier must be FELT on the pass it is announced.
+            float atTier1 = ExposureMath.StaminaRegenMultiplier(0.25f, 0.25f, 0.85f, 0.3f);
+            Check($"crossing tier 1 is felt immediately, not approached ({atTier1:F2})",
+                Math.Abs(atTier1 - 0.85f) < 1e-4f);
+
+            float atTier2 = ExposureMath.HealthRegenMultiplier(0.5f, 0.5f, 0.8f, 0.38f);
+            Check($"crossing tier 2 lands the wound half at once ({atTier2:F2})",
+                Math.Abs(atTier2 - 0.8f) < 1e-4f);
+
+            // The three points the owner agreed to, reproduced by one ramp off the step.
+            float s50 = ExposureMath.StaminaRegenMultiplier(0.5f, 0.25f, 0.85f, 0.3f);
+            float s80 = ExposureMath.StaminaRegenMultiplier(0.8f, 0.25f, 0.85f, 0.3f);
+            Check($"the agreed stamina table holds at every tier (0.85 / {s50:F2} / {s80:F2})",
+                Math.Abs(s50 - 0.667f) < 0.02f && Math.Abs(s80 - 0.45f) < 0.02f);
+
+            float h80 = ExposureMath.HealthRegenMultiplier(0.8f, 0.5f, 0.8f, 0.38f);
+            Check($"the agreed health table holds too (0.80 / {h80:F2})",
+                Math.Abs(h80 - 0.55f) < 0.02f);
+
+            Check("the ramp still reaches its floor at full exposure",
+                Math.Abs(ExposureMath.StaminaRegenMultiplier(1f, 0.25f, 0.85f, 0.3f) - 0.3f) < 1e-4f
+                && Math.Abs(ExposureMath.HealthRegenMultiplier(1f, 0.5f, 0.8f, 0.38f) - 0.38f) < 1e-4f);
 
             Check("below its start tier every multiplier is exactly 1",
-                ExposureMath.StaminaRegenMultiplier(0.2f, 0.25f, 0.4f) == 1f
-                && ExposureMath.HealthRegenMultiplier(0.45f, 0.5f, 0.5f) == 1f);
+                ExposureMath.StaminaRegenMultiplier(0.2499f, 0.25f, 0.85f, 0.3f) == 1f
+                && ExposureMath.HealthRegenMultiplier(0.45f, 0.5f, 0.8f, 0.38f) == 1f);
 
             Check("quantized sync fires on a full step or a zero transition, not on dust",
                 !ExposureMath.QuantizedDiffer(0.5f, 0.505f)

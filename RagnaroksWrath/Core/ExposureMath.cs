@@ -71,19 +71,21 @@ namespace RavenIron.RagnaroksWrath.Core
         }
 
         /// <summary>
-        /// Stamina regen multiplier: 1.0 below the first tier, then ramping linearly to
+        /// Stamina regen multiplier: 1.0 below the first tier, then STEPPING to
+        /// <paramref name="atTier"/> the moment the tier is crossed and ramping on to
         /// <paramref name="atMax"/> at exposure 1. Stamina fails FIRST — sickness in the body
         /// before the wound (the owner's palette call).
         /// </summary>
-        public static float StaminaRegenMultiplier(float exposure, float tier1, float atMax)
-            => Ramp(exposure, tier1, atMax);
+        public static float StaminaRegenMultiplier(float exposure, float tier1, float atTier, float atMax)
+            => Ramp(exposure, tier1, atTier, atMax);
 
         /// <summary>
-        /// Health regen multiplier: 1.0 below the SECOND tier, then ramping linearly to
-        /// <paramref name="atMax"/> at exposure 1 — the wound half arrives after the fatigue.
+        /// Health regen multiplier: 1.0 below the SECOND tier, then stepping to
+        /// <paramref name="atTier"/> and ramping on to <paramref name="atMax"/> at exposure 1
+        /// — the wound half arrives after the fatigue.
         /// </summary>
-        public static float HealthRegenMultiplier(float exposure, float tier2, float atMax)
-            => Ramp(exposure, tier2, atMax);
+        public static float HealthRegenMultiplier(float exposure, float tier2, float atTier, float atMax)
+            => Ramp(exposure, tier2, atTier, atMax);
 
         /// <summary>True when two exposure values differ by a full sync/persist step, or one
         /// is exactly clean and the other is not (zero is a state, not just a number).</summary>
@@ -94,14 +96,29 @@ namespace RavenIron.RagnaroksWrath.Core
             return Math.Abs(a - b) >= QuantizeStep;
         }
 
-        private static float Ramp(float exposure, float from, float atMax)
+        /// <summary>
+        /// 1.0 below the tier; AT the tier it steps straight to <paramref name="atStart"/>,
+        /// then ramps linearly to <paramref name="atMax"/> at exposure 1.
+        ///
+        /// THE STEP IS THE POINT, and it was missing in 0.8.0: a ramp that begins at 1.0 on
+        /// the threshold makes crossing a tier produce a ~2% penalty nobody can feel, so the
+        /// mod announced "a sickness takes root in you" and then did nothing measurable. The
+        /// step lands on the same pass as the message, which is what makes the message true.
+        /// Verified against the agreed tier table (0.25 -> x0.85, 0.5 -> x0.65, 0.8 -> x0.45
+        /// for stamina): those three points are collinear from the step, so one ramp
+        /// reproduces all of them.
+        /// </summary>
+        private static float Ramp(float exposure, float from, float atStart, float atMax)
         {
-            if (float.IsNaN(exposure) || float.IsNaN(from) || float.IsNaN(atMax)) return 1f;
-            if (exposure <= from || from >= 1f) return 1f;
+            if (float.IsNaN(exposure) || float.IsNaN(from)
+                || float.IsNaN(atStart) || float.IsNaN(atMax)) return 1f;
+            if (exposure < from) return 1f;
+
+            float start = Clamp01(atStart);
+            if (from >= 1f) return start;
 
             float t = Clamp01((exposure - from) / (1f - from));
-            float floor = Clamp01(atMax);
-            return 1f + (floor - 1f) * t;
+            return start + (Clamp01(atMax) - start) * t;
         }
 
         private static float Clamp01(float v)

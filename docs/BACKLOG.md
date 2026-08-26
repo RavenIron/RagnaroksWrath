@@ -319,7 +319,29 @@ reference-only; nothing is linked or copied from it.
 
 ---
 
-## 11. `HealthSystem` — BUILT 2026-08-26 at 0.8.0 (in-game verification pending)
+## 11. `HealthSystem` — BUILT 2026-08-26 at 0.8.0, corrected in 0.8.1
+
+**VERIFIED HEADLESS at 0.8.0 on the live dedicated server.** Exposure accrued on a real
+connected player at the predicted rate: 0.0084 at 09:23:26 -> **0.2752** at 09:31:26 against
+**0.27503** predicted (plague 0.9998 underfoot, 30min-to-max), agreeing to the four decimals
+the ledger stores. Tier 1 crossed at 09:30:41 against 09:30:40 predicted. Ledger written
+beside the zone store; zero warnings or errors across the run.
+
+**The 0.8.0 defect the live test caught, and the lesson.** The player reported the icon
+appearing while stamina "feels normal" — and it was: `Ramp` started at 1.0 ON the tier
+threshold, so crossing tier 1 gave x0.98. The MOD ANNOUNCED SOMETHING IT HAD NOT DONE. The
+spec's agreed table (0.25 -> x0.85) was written as tier VALUES and implemented as a ramp
+that only reaches x0.85 at exposure 0.4375 — a spec-to-code translation error that every
+off-game test passed straight over, because the tests asserted the ramp's shape rather than
+the promise the tier made. 0.8.1 steps to the tier value on crossing, then ramps; the
+regression is pinned by tests that were RUN AGAINST THE OLD CODE FIRST and observed to fail
+(x1.00 at the threshold). **Generalised: assert what the player was promised, not what the
+function computes.**
+
+Also in 0.8.1: `SE_Plaguesick` overrides `GetIconText` (virtual; `Hud` calls it
+unconditionally and shows any non-empty string — both decompile-verified, since "no ttl
+means no text" was the plausible assumption) to carry severity while worsening and a real
+`GetTimeString` countdown while recovering.
 
 Off-game: 139/139 including 22 new Exposure/HealthStore tests, every rate matching its
 hand prediction. Build clean; every runtime member access decompile-verified first.
