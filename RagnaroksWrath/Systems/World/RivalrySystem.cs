@@ -380,6 +380,13 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                     $"[{Name}] war in {zone} resolved: {winner}.");
             }
 
+            // Edge log, always on: wars are rare and this line is the difference between
+            // "the server never computed a war" and "the wire lost it" — the exact
+            // ambiguity that cost a round-trip on 2026-08-26.
+            if (_warScratch.Count != _warIntensity.Count)
+                RagnaroksWrath.Log.LogInfo(
+                    $"[{Name}] war state: {_warScratch.Count} contested zone(s).");
+
             _warIntensity.Clear();
             foreach (KeyValuePair<ZoneKey, float> kv in _warScratch)
                 _warIntensity[kv.Key] = kv.Value;

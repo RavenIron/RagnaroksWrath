@@ -44,6 +44,7 @@ namespace RavenIron.RagnaroksWrath.Client
         // wild answers the war horn through the game's own rules, no spawn patch at all.
         private readonly List<SE_Stats> _warHorns = new List<SE_Stats>(4);
         private bool _warHornsBuilt;
+        private bool _warSeenLogged;
         private float _nextWarHorn;
 
         private void Update()
@@ -133,6 +134,12 @@ namespace RavenIron.RagnaroksWrath.Client
 
             float war = ZoneSync.WarAt(ZoneKey.FromWorldPos(origin));
             if (war <= 0f) return;   // horns fall silent by TTL expiry, no bookkeeping
+
+            if (!_warSeenLogged)
+            {
+                _warSeenLogged = true;   // once per session: the client SAW the war
+                RagnaroksWrath.Log.LogInfo($"ConsequenceEffects: war intensity {war:F1} underfoot.");
+            }
 
             if (!_warHornsBuilt) BuildWarHorns();
 
