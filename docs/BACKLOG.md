@@ -459,7 +459,31 @@ its full client-side caller list must be enumerated first (other systems consult
 
 ---
 
-## 12. `ConsequenceSystem` — DESIGN AGREED 2026-08-26, not built
+## 12. `ConsequenceSystem` — BUILT 2026-08-26 at 0.10.0 (in-game verification pending)
+
+Off-game: 151/151 (8 new ConsequenceMath tests). All four flavors landed exactly on the
+spec's surfaces, decompile gates honoured first:
+
+- **Barren:** `Pickable.Interact` Priority.Low prefix honouring `__runOriginal`, refusal
+  shaped like vanilla's own tar case; hover postfix explains. Both surfaces public.
+- **Empowered:** `SpawnSystem.Spawn` exposes `levelUpMultiplier` as an ARGUMENT — the
+  prefix scales vanilla's own roll and every vanilla cap/path stays in charge.
+  `CreatureSpawner.Spawn` returns the spawned ZNetView; postfix rolls one star at
+  vanilla's base chance x our multiplier. Passive list excluded from both.
+- **Sickening:** `ConsequenceEffects` doses owned passive wildlife with a TTL'd SE_Stats
+  slow (`m_speedModifier` decompile-verified) — expiry IS the cure, no removal
+  bookkeeping. One `AddStatusEffect(template, resetTime: true)` covers add AND refresh.
+  The spec's lethal edge ("a starving deer may die") is NOT built: SE health-over-time
+  only heals (negative values never arm the ticker) — deferred until it earns a pass.
+- **Withering:** `Plant.UpdateHealth` postfix sets unhealthy status -> vanilla's withered
+  visual and `m_destroyIfCantGrow` death for free. `Plant.m_status` is PRIVATE at runtime
+  (rule 5 catch — publicized compile hides it): reached via cached FieldRefAccess, lazily
+  resolved, error names the field if Valheim's API moves. Hover postfix blames the soil,
+  not the biome.
+- **Reach rule enforced by construction:** all four surfaces only exist as live instances
+  on machines near a player; a dedicated server holds ZDOs, an AFH keeper holds no client.
+  The server half is only the announcer: one line per zone per session, worded by the
+  worst flag (`Empowered > Barren > Sickening > Withering`).
 
 The drift store growing hands. Spec settled in a design conversation with the owner; the
 four framing calls and three flavor calls below are theirs:

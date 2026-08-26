@@ -46,6 +46,7 @@ namespace RagnaroksWrath.Tests
             FogTests();
             ExposureTests();
             HealthStoreTests();
+            ConsequenceTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -1028,6 +1029,60 @@ namespace RagnaroksWrath.Tests
                 HealthStore.OverridePath = null;
                 try { Directory.Delete(dir, true); } catch { }
             }
+        }
+
+        // ---- Consequence ---------------------------------------------------------------
+
+        private static void ConsequenceTests()
+        {
+            Console.WriteLine("\nConsequence");
+
+            Check("plagued OR scorched ground is barren, inclusive at each threshold",
+                ConsequenceMath.Barren(0.4f, 0f, 0.4f, 0.5f)
+                && ConsequenceMath.Barren(0f, 0.5f, 0.4f, 0.5f)
+                && !ConsequenceMath.Barren(0.39f, 0.49f, 0.4f, 0.5f));
+
+            Check("blight for crops is the WORSE of plague and corruption",
+                ConsequenceMath.WithersCrops(0.7f, 0f, 0.6f)
+                && ConsequenceMath.WithersCrops(0f, 0.65f, 0.6f)
+                && !ConsequenceMath.WithersCrops(0.3f, 0.3f, 0.6f));
+
+            Check("wildlife sickens at its threshold and not below",
+                ConsequenceMath.SickensWildlife(0.4f, 0.4f)
+                && !ConsequenceMath.SickensWildlife(0.399f, 0.4f));
+
+            float atFull = ConsequenceMath.EmpowerLevelUpMultiplier(1f, 0.5f, 6f);
+            float mid = ConsequenceMath.EmpowerLevelUpMultiplier(0.75f, 0.5f, 6f);
+            Check($"empower odds ramp from 1 at threshold to the dial at full ({mid:F1} / {atFull:F1})",
+                ConsequenceMath.EmpowerLevelUpMultiplier(0.49f, 0.5f, 6f) == 1f
+                && Math.Abs(mid - 3.5f) < 1e-4f
+                && Math.Abs(atFull - 6f) < 1e-4f);
+
+            Check("NaN inputs empower nothing, sicken nothing, wither nothing",
+                ConsequenceMath.EmpowerLevelUpMultiplier(float.NaN, 0.5f, 6f) == 1f
+                && !ConsequenceMath.SickensWildlife(float.NaN, 0.4f)
+                && !ConsequenceMath.Barren(float.NaN, float.NaN, 0.4f, 0.5f)
+                && !ConsequenceMath.WithersCrops(float.NaN, float.NaN, 0.6f));
+
+            var hot = new ZoneState { Plague = 0.7f, Corruption = 0.6f, Scorch = 0f };
+            ConsequenceFlags flags = ConsequenceMath.FlagsFor(hot, 0.4f, 0.5f, 0.4f, 0.5f, 0.6f);
+            Check($"a hot zone earns every applicable flag ({flags})",
+                flags == (ConsequenceFlags.Barren | ConsequenceFlags.Empowered
+                        | ConsequenceFlags.Sickening | ConsequenceFlags.Withering));
+
+            Check("a clean zone earns none",
+                ConsequenceMath.FlagsFor(default, 0.4f, 0.5f, 0.4f, 0.5f, 0.6f)
+                    == ConsequenceFlags.None);
+
+            // Instantiated objects are named "Deer(Clone)"; the match must be exact after
+            // truncation — "Boar" quietly sickening a "BoarPiggy" breeding pen is the bug
+            // this test exists to forbid.
+            Check("passive list matches clones exactly, case-insensitively, never by prefix",
+                ConsequenceMath.IsPassivePrefab("Deer(Clone)", "Deer,Boar,Hare")
+                && ConsequenceMath.IsPassivePrefab("deer", " Deer , Boar ")
+                && !ConsequenceMath.IsPassivePrefab("BoarPiggy(Clone)", "Deer,Boar,Hare")
+                && !ConsequenceMath.IsPassivePrefab("Deer(Clone)", "")
+                && !ConsequenceMath.IsPassivePrefab("", "Deer"));
         }
 
         // ---- harness ----------------------------------------------------------------

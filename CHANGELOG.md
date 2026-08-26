@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.10.0
+
+- **The land pushes back.** Four consequences of drift, all reversible by curing the land,
+  none of them ever touching player structures:
+  - Plagued or scorched ground goes **barren** — berries, mushrooms and thistle refuse the
+    hand, with a withered hover line saying why.
+  - Corrupted ground breeds **starred enemies** — better odds on vanilla's own level-up
+    roll, so the danger map follows the drift map. Wildlife is never starred.
+  - Plagued zones **sicken wildlife** — deer and boar visibly slow, and recover on their
+    own once the plague (or the animal) is gone.
+  - Badly blighted soil **kills crops** — plants turn unhealthy and die at grow time,
+    through the game's own machinery. Cure the land, replant, farm again.
+- Each affected zone announces itself once — one line, the first time you stand in it —
+  never per bush, never per deer.
+
 ## 0.9.0
 
 - **Frost breath.** On land whose frost has drifted high, your breath fogs — a soft puff

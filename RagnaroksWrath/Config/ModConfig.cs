@@ -116,6 +116,22 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> ChillStaminaRegenMultiplier;
         public static ConfigEntry<float> ChillHealthRegenMultiplier;
 
+        // ---- Consequence ----------------------------------------------------------------
+        public static ConfigEntry<float>  ConsequenceIntervalSeconds;
+        public static ConfigEntry<bool>   ConsequenceBarren;
+        public static ConfigEntry<bool>   ConsequenceEmpower;
+        public static ConfigEntry<bool>   ConsequenceSicken;
+        public static ConfigEntry<bool>   ConsequenceWither;
+        public static ConfigEntry<bool>   AnnounceConsequences;
+        public static ConfigEntry<float>  BarrenPlagueThreshold;
+        public static ConfigEntry<float>  BarrenScorchThreshold;
+        public static ConfigEntry<float>  SickenPlagueThreshold;
+        public static ConfigEntry<float>  SickenSpeedPenalty;
+        public static ConfigEntry<float>  EmpowerCorruptionThreshold;
+        public static ConfigEntry<float>  EmpowerLevelUpMultiplierAtFull;
+        public static ConfigEntry<float>  CropWitherBlightThreshold;
+        public static ConfigEntry<string> WildlifePrefabs;
+
         // ---- Per-system master switches -------------------------------------------------
 
         public static ConfigEntry<bool> EnableSeason;
@@ -565,6 +581,85 @@ namespace RavenIron.RagnaroksWrath.Config
                 new ConfigDescription(
                     "Health regen multiplier while chilled.",
                     new AcceptableValueRange<float>(0.05f, 1f)));
+
+            const string consequence = "16 - Consequence";
+
+            ConsequenceIntervalSeconds = cfg.Bind(consequence, "ConsequenceIntervalSeconds", 10f,
+                new ConfigDescription(
+                    "Seconds between the announcer's passes over online players. The physical " +
+                    "acts are client-side and continuous; this only paces the one-line-per-zone " +
+                    "voice.",
+                    new AcceptableValueRange<float>(2f, 120f)));
+
+            ConsequenceBarren = cfg.Bind(consequence, "ConsequenceBarren", true,
+                "Pickables (berries, mushrooms, thistle) refuse the hand on plagued or " +
+                "scorched ground, with a withered hover line explaining why.");
+
+            ConsequenceEmpower = cfg.Bind(consequence, "ConsequenceEmpower", true,
+                "Hostile spawns on corrupted ground get better odds on vanilla's own " +
+                "level-up roll — starred enemies where the land is worst. Passive wildlife " +
+                "is never starred.");
+
+            ConsequenceSicken = cfg.Bind(consequence, "ConsequenceSicken", true,
+                "Passive wildlife in plagued zones sickens and visibly slows. Wears off on " +
+                "its own once the animal (or the plague) is gone.");
+
+            ConsequenceWither = cfg.Bind(consequence, "ConsequenceWither", true,
+                "Crops planted in badly blighted soil turn unhealthy and die at grow time, " +
+                "through vanilla's own cant-grow path. Replanting after curing the land is " +
+                "the remedy.");
+
+            AnnounceConsequences = cfg.Bind(consequence, "AnnounceConsequences", true,
+                "One line, once per zone per session, the first time a player stands in a " +
+                "zone that has crossed into any consequence. Never per-bush, never per-deer.");
+
+            BarrenPlagueThreshold = cfg.Bind(consequence, "BarrenPlagueThreshold", 0.4f,
+                new ConfigDescription(
+                    "Plague at which pickables stop yielding.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            BarrenScorchThreshold = cfg.Bind(consequence, "BarrenScorchThreshold", 0.5f,
+                new ConfigDescription(
+                    "Scorch at which pickables stop yielding. Ash bears nothing.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            SickenPlagueThreshold = cfg.Bind(consequence, "SickenPlagueThreshold", 0.4f,
+                new ConfigDescription(
+                    "Plague at which passive wildlife sickens.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            SickenSpeedPenalty = cfg.Bind(consequence, "SickenSpeedPenalty", 0.35f,
+                new ConfigDescription(
+                    "Fraction of movement speed a sickened animal loses (0.35 = 35% slower) " +
+                    "— the visible stagger. Slow-only: the lethal edge from the design " +
+                    "conversation is deliberately unbuilt until it earns its own pass.",
+                    new AcceptableValueRange<float>(0f, 0.9f)));
+
+            EmpowerCorruptionThreshold = cfg.Bind(consequence, "EmpowerCorruptionThreshold", 0.5f,
+                new ConfigDescription(
+                    "Corruption at which spawns start coming up meaner.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            EmpowerLevelUpMultiplierAtFull = cfg.Bind(consequence, "EmpowerLevelUpMultiplierAtFull", 6f,
+                new ConfigDescription(
+                    "Multiplier on vanilla's level-up chance at corruption 1.0, ramping from " +
+                    "1.0 at the threshold. Vanilla's base roll is ~10 percent per level, so 6 " +
+                    "means roughly 60 percent of eligible spawns star on fully corrupted " +
+                    "ground. Vanilla's own per-creature caps still apply.",
+                    new AcceptableValueRange<float>(1f, 10f)));
+
+            CropWitherBlightThreshold = cfg.Bind(consequence, "CropWitherBlightThreshold", 0.6f,
+                new ConfigDescription(
+                    "Blight (the worse of plague and corruption) at which planted crops " +
+                    "wither and die. Growth-RATE effects belong to FarmingSystem; this is " +
+                    "only the kill line.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            WildlifePrefabs = cfg.Bind(consequence, "WildlifePrefabs", "Deer,Boar,Hare",
+                "Comma-separated prefab names counted as passive wildlife: sickened by " +
+                "plague, never starred by corruption. An explicit list rather than a " +
+                "faction guess - factions lump deer in with greydwarfs. Game content, so " +
+                "data rather than code.");
 
             const string systems = "4 - Systems";
 
