@@ -135,6 +135,7 @@ wrong measurement is the most common cause of a long debugging session here.
 | Persistence | **World-scoped sparse file**, keyed by world uid. ZDO custom keys rejected: they attach to an *object*, drift attaches to a *coordinate*, and an anchor prefab per zone would trigger the `ZNetScene.CreateObjectsSorted` → `DestroyZDO` landmine. |
 | FireSystem | **A bridge to FireFront, never a second fire sim.** FireFront (com.raveniron.firefront, same studio) owns ignition, spread, burning, VFX. RW reads its fires by reflection (`FireManager.CollectActiveFirePositions`, public since FireFront 0.17.2) and raises zone `Scorch`. Without FireFront, FireSystem is dormant. Decided 2026-08-25. |
 | Client visuals | **One role-aware DLL** (amended 2026-08-26; was "separate client plugin"): headless simulates, clients render, hosts do both. Visual-only, no HUD, procedural effects only — no assets, no bundles. `RagnaroksWrath.Client` retired. |
+| Spawn war wild side | **Refill pressure via vanilla's pheromone machinery, never a mod-owned spawner.** Decided 2026-08-26 after decompile: `m_pheromoneMaxInstanceOverride` widens the gate, not the group budget, so the war refills wildlife toward vanilla's cap faster (chance 100, gate 15 — shipped defaults) and can never crowd past it. Accepted deliberately. |
 | Timeline | Open-ended. Done when it's done. |
 | Console prefix | `wrath` (e.g. `wrath status`) |
 | GUID / namespace | `com.raveniron.ragnarokswrath` / `RavenIron.RagnaroksWrath` |

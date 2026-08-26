@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.15.3
+
+- **The wild side's design is settled: refill pressure.** On contested ground the war
+  keeps the wildlife topped up and keen — spawn chance 100% and a widened attempt gate
+  (now the defaults) — but it deliberately never crowds a population past vanilla's own
+  caps. The engine's pheromone override widens the gate, not the budget; we ship what
+  the engine honestly supports rather than bolting on a second spawner.
+
+## 0.15.2
+
+- War census (verbose only): every minute on contested ground, log how many of each
+  horn target are loaded and how many stand within 200m — the exact numbers vanilla's
+  spawn budget sees. Added because "no animals came" turned out to mean "six deer and
+  eight boar were already here, hidden in the fog".
+
+## 0.15.1
+
+- War-state edge logs on both sides: the server logs every change in the contested-zone
+  count, the client logs once when it first sees war underfoot. Instrument before
+  guessing — the difference between "the server never computed a war" and "the wire
+  lost it" should never cost a round-trip again.
+
 ## 0.15.0
 
 - **The spawn war.** A blighted zone that people genuinely fight for — sick past the line

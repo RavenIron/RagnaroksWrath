@@ -89,10 +89,13 @@ obeys.
   restored from `.prephased` (that predates the afternoon's real history — Ashbringer's
   harm, the tending care); post-test ledger kept, half-life 48h rebound, fresh boot
   correctly derives NO war at care 0.297.
-  **STILL OPEN on phase D:** the design decision: refill-pressure-only vs own spawn
-  budget — and whether ContestWildSpawnChance=100 / ContestWildMaxSpawned=15 become the
-  shipped defaults (the max override is gate-only; yield above vanilla's cap is
-  impossible either way). Player-side sighting of the true resolution Centre line:
+  **DESIGN DECIDED 2026-08-26 (0.15.3): REFILL PRESSURE.** Raven Iron chose vanilla's
+  machinery as-is over a mod-owned spawn budget; ContestWildSpawnChance=100 and
+  ContestWildMaxSpawned=15 are the shipped defaults. Locked-decisions row added to
+  CLAUDE.md. Phase D is CLOSED. 0.15.3 built but NOT yet deployed to the live server
+  (running 0.15.1) or client (0.15.2) — the live cfgs already carry 100/15 explicitly,
+  so only fresh installs are affected; deploy at the next natural restart.
+  Player-side sighting of the true resolution Centre line:
   owner could NOT confirm (the only confident sighting was the disproven early one).
   ACCEPTED UNOBSERVED on component evidence — the Centre pipe is live-verified since
   v0.2.2 (storm announcements seen on screen, same MessageFeed.ToPlayersNear path) and

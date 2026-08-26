@@ -835,17 +835,20 @@ namespace RavenIron.RagnaroksWrath.Config
                     "ground doubles the odds and a storm-escalated war triples them.",
                     new AcceptableValueRange<float>(0f, 5f)));
 
-            ContestWildSpawnChance = cfg.Bind(rivalry, "ContestWildSpawnChance", 50f,
+            ContestWildSpawnChance = cfg.Bind(rivalry, "ContestWildSpawnChance", 100f,
                 new ConfigDescription(
                     "Spawn chance override for the wildlife list near a player on contested " +
                     "ground (vanilla's own pheromone machinery — the wild answering the " +
                     "war horn). Vanilla base chances are typically far lower.",
                     new AcceptableValueRange<float>(0f, 100f)));
 
-            ContestWildMaxSpawned = cfg.Bind(rivalry, "ContestWildMaxSpawned", 6,
+            ContestWildMaxSpawned = cfg.Bind(rivalry, "ContestWildMaxSpawned", 15,
                 new ConfigDescription(
-                    "Max concurrent instances override for each wildlife prefab during the " +
-                    "war surge.",
+                    "Max concurrent instances gate for each wildlife prefab during the war " +
+                    "surge. Gate only: vanilla's group-size arithmetic uses the spawner's " +
+                    "raw cap, so the war REFILLS wildlife toward vanilla's own limit faster " +
+                    "— it can never crowd past it. Decided 2026-08-26: refill pressure is " +
+                    "the design; no mod-owned spawner.",
                     new AcceptableValueRange<int>(1, 20)));
 
             const string systems = "4 - Systems";
