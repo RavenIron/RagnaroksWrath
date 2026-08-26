@@ -246,9 +246,8 @@ comes from a future event system, a `wrath` console command, or an admin's edito
   need the client plugin's state sync, because a plant's lifecycle runs on its ZDO's owner (a
   client), and clients have no zone store.
 
-**Remaining:** `HealthSystem` (frost/plague effects on players — needs client-side delivery,
-likely with task 9) · `ConsequenceSystem` · `RivalrySystem` · `RelicSystem` (no spec yet —
-design before building).
+**Remaining:** `HealthSystem` (designed — see task 11) · `ConsequenceSystem` ·
+`RivalrySystem` · `RelicSystem` (no spec yet — design before building).
 
 ---
 
@@ -317,6 +316,87 @@ Root-level `manifest.json`, player-facing `README.md`, `CHANGELOG.md`, generated
 `icon.png`, and `tools\package.ps1` producing the flat Thunderstore zip in `dist\`
 (gitignored). Modeled on SkaldSaga's release SHAPE only — that project is dead and stays
 reference-only; nothing is linked or copied from it.
+
+---
+
+## 11. `HealthSystem` — DESIGN AGREED 2026-08-26, not built
+
+The world's state reaching the player's body. Spec settled in a design conversation with the
+owner (their calls, recorded here so nobody re-litigates them by accident):
+
+- **Plague is ACCUMULATING EXPOSURE**, not an instant zonal debuff and not a carried
+  infection. Standing on plagued ground builds a per-player 0..1 meter; leaving drains it.
+- **Weakens, never kills** — and non-lethal BY CONSTRUCTION, not by tuning: the plague effect
+  is multipliers only (no `m_healthOverTime` damage), and frost escalates at most to vanilla
+  **Cold**, never Freezing (Freezing is the only one of the pair that ticks damage).
+- **Counterplay is vanilla remedies.** Poison-resist mead halves exposure accumulation,
+  rested doubles decay, frost-resist blunts the cold — and that last one costs us NOTHING
+  (see the decompile note below).
+- **Effect palette: stamina first, then regen.** Sickness in the body before the wound.
+- **Visibility: a real status-effect icon in vanilla's own bar + MessageFeed tier lines.**
+  Vanilla's status bar is the game's UI, not a HUD of ours; the no-HUD rule stands.
+- **Timescale: tens of minutes.** Max exposure after ~30 min standing in plague 0.95;
+  sickness is the consequence of settling in blight, not of visiting it.
+- **Frost's role: amplify vanilla Cold.** High zone frost makes Cold bite where it normally
+  wouldn't. Frost is instant-environmental (like vanilla); only plague accumulates.
+
+**Architecture** (server decides pressure, client applies effect — the TitleSync split):
+
+- **Server:** `HealthSystem : IWorldSystem` on WorldTick. Sweeps connected players' character
+  ZDO positions (the BiomeDrift contact pattern; `GetAllCharacterZDOS`, never Player lists —
+  headless). Exposure accrues at `plague underfoot x rate` when plague >= the **shared 0.15
+  floor** (same constant as PlagueFog's emission floor — fog is the discovery mechanic, and
+  the sickness must not telegraph what the fog hides; name the constant once, use it twice).
+  Decays otherwise. Ledger keyed by `s_playerID` (never `ZDOID.UserID` — session, not
+  player), persisted as `ragnarokswrath_health_<uid>.dat` under the same fail-safe /
+  quarantine / no-BOM / InvariantCulture contract as titles — **relogging is not a cure**.
+- **Sync down:** exposure pushed to the owning peer on quantized change (0.01 steps),
+  GUID-prefixed routed RPC per TitleSync (per-world-session registration, replay on join,
+  listen host bypasses the wire).
+- **Remedy report up:** the server cannot see a player's status effects (stats/skills/SEs are
+  local-only), so the owning client reports a 2-bit remedy state (poison-resist active,
+  rested active) via routed RPC, rate-limited ~5s. Trusting a client about its own relief is
+  accepted — this is co-op drift, not anti-cheat.
+- **Client effect:** a code-built `SE_Stats` instance — `ScriptableObject.CreateInstance`,
+  fields set in code, vanilla sprite reused for the icon, no asset, no bundle, and **no
+  ObjectDB registration**: the decompiled `SEMan.AddStatusEffect(StatusEffect, ...)` instance
+  overload clones what it is handed and bypasses ObjectDB entirely. Tier changes mutate the
+  LIVE clone (fetched by `GetStatusEffect(hash)`) — the multipliers are read fresh on every
+  `ModifyStaminaRegen`/`ModifyHealthRegen` call, so no remove/re-add churn. `m_ttl` 0; we own
+  add/remove. Rule-3 wrapped, throw-once latch like PlagueFog.
+- **Frost delivery:** client-side patch around `Player.UpdateEnvStatusEffects` — **not**
+  `EnvMan` (rule 4 untouched: we drive the player's RESPONSE, not environment selection, and
+  the sky stays vanilla's). When synced zone frost >= threshold and vanilla's own gates say
+  exposed (not near fire, not sheltered, not frost-resistant, not WarmCozy — the same checks
+  at the top of the decompiled method), ensure vanilla's Cold SE. Because vanilla's gate
+  already cancels on the frost damage-modifier and WarmCozyArea, **frost-resist mead and
+  campfires counter our amplified cold with zero code of ours**.
+
+**Tiers** (config defaults, exposure 0..1): 0.25 *Touched* — stamina regen x0.85;
+0.5 *Sickened* — stamina x0.65, health regen x0.8; 0.8 *Ravaged* — stamina x0.45, health
+regen x0.55. MessageFeed line on every tier crossing, both directions. Rates as config:
+`ExposureMinutesToMax` 30 (at plague 1.0 underfoot, scaled by actual plague),
+`RecoveryMinutes` 20, rested decay x2, poison-resist accumulation x0.5, frost Cold threshold
+0.5. `EnableHealth` toggle already bound.
+
+**Known hazard, resolved at build time:** vanilla's else-branch REMOVES Cold every
+`UpdateEnvStatusEffects` pass when its own conditions say no — a naive postfix re-adding it
+each call would fire the add/remove messages every tick. The anti-spam behaviour is an
+acceptance criterion (below), and if a global `EnvMan.IsCold` postfix is considered instead,
+its full client-side caller list must be enumerated first (other systems consult it).
+
+**Acceptance:**
+
+- Harness: exposure math (accrue/decay/remedy modifiers/tier mapping/quantization), ledger
+  round-trip through the SHIPPING writer, corruption quarantine, no BOM.
+- In-game, plague: walk into the outbreak — icon appears with live multipliers in its
+  tooltip, MessageFeed fires at each tier, stamina visibly drags; walk out — it drains;
+  rested drains faster; **relog while sick — still sick**.
+- In-game, frost: a high-frost zone chills a player vanilla wouldn't chill; frost-resist mead
+  cancels it; **no message spam** from the add/remove interplay; the sky logs vanilla's own
+  environment at every transition (rule 4 held by evidence, as WeatherSystem did).
+- Headless: exposure accrual logged for a connected player; the health ledger appears beside
+  the zone store.
 
 - BepInEx pinned `denikson-BepInExPack_Valheim-5.4.2333` — confirmed current: it is the exact
   pack the live install runs.
