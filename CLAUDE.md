@@ -221,7 +221,7 @@ established world, not the `Spring` enum default — a brand-new world legitimat
 at day 0, so read that line together with `resolved EnvMan.GetCurrentDay accessor` above it).
 `Persistence` is covered by the paragraph below.
 
-**Built and unit-tested (103/103):** `ZoneKey`, `ZoneClock` (credit-on-contact drift timing),
+**Built and unit-tested (111/111):** `ZoneKey`, `ZoneClock` (credit-on-contact drift timing),
 `ZoneState`, `Persistence` (world-scoped, atomic, fail-safe), `ModConfig`, `MessageFeed`.
 
 **Verified in-game, both paths:** `Persistence`, verified 2026-08-25 at v0.1.6
@@ -240,7 +240,14 @@ nothing is wrong) and a partially-corrupt one stays on per-line isolation. One n
 the fix: the version header is now recognised by **content**, not by being line 1 — skipping line 1
 unconditionally swallowed the only line a short binary file has, which is what hid the bug.
 
-**Built and verified headless (2026-08-25, v0.5.0, dedicated server):** `WorldStateSystem`
+**Built and verified in-game (2026-08-26, v0.6.0, dedicated server):** `TitleSystem` +
+`TitleStore` + `TitleSync` + the first amended-rule-1 postfix — Plaguewalker earned live by
+walking into the outbreak, titles file created beside the zone store. `FarmingSystem` fully
+verified headless: planted crops counted from the world save with nobody online, depletion
+matching the configured rate. Nameplate RENDER still needs a second player's eyes.
+
+**Built and verified headless (2026-08-25, v0.5.0, dedicated server):**
+ `WorldStateSystem`
 (initial condition Stable, burden 2.08 vs 2.1 predicted, no announcement on boot by design)
 and `EcologySystem` (+0.00022 corruption in one tick with nobody online, matching the
 predicted rate). `FarmingSystem` is built and registered; its sweep needs crops planted to

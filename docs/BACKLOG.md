@@ -237,11 +237,14 @@ comes from a future event system, a `wrath` console command, or an admin's edito
   +0.00022 corruption in patient zero in one 60s tick with nobody online, matching the
   predicted 0.0132/h.
 - `FarmingSystem` — Fertility-depletion's first writer, and the ZDO sweep deferred since task
-  2: `GetAllZDOsWithPrefabIterative` walks one config-listed crop prefab per 45s tick
-  (staggered off AwayFromHome's 60s rescan), crop density tires soil. HONESTLY SCOPED:
-  depletion is only WRITTEN today — growth/yield effects need the client plugin's state sync,
-  because a plant's lifecycle runs on its ZDO's owner (a client), and clients have no zone
-  store. In-game verification pending: needs crops planted on the server world.
+  2. VERIFIED HEADLESS at v0.6.0: five planted turnips counted from the world save with
+  nobody online (`'sapling_turnip': 5 standing`), and depletion reached the store one
+  rotation later (`zone (-1,0): depletion=0.00208`, matching 5 crops x 0.002/crop-hour).
+  The 0.5.1 lesson is in the sweep comment: the iterative walk yields every ~400 populated
+  sectors, and it must be DRAINED per tick — resuming one chunk per tick stretched a rotation
+  across an hour. HONESTLY SCOPED: depletion is only WRITTEN today — growth/yield effects
+  need the client plugin's state sync, because a plant's lifecycle runs on its ZDO's owner (a
+  client), and clients have no zone store.
 
 **Remaining:** `HealthSystem` (frost/plague effects on players — needs client-side delivery,
 likely with task 9) · `ConsequenceSystem` · `RivalrySystem` · `RelicSystem` (no spec yet —
@@ -249,11 +252,32 @@ design before building).
 
 ---
 
-## 8. `TitleSystem` + nameplate patch
+## 8. `TitleSystem` + nameplate patch — DONE 2026-08-26 (render awaits a second player)
 
-Earned title rendered under player nameplates. Sourced from world-sim events (surviving a
-harsh season, holding a contested zone), **not** from tracked stats — this mod does no data
-mining. Requires a Harmony patch on nameplate rendering.
+Titles from world-sim events, never tracked stats. v1 set, one per running system so each is
+provable: Stormrider (inside a storm's area), Plaguewalker (plague at the spread threshold
+underfoot), Winterborn (configurable time online through Winter). Latest earned wins — a
+title is where you have been lately, not a trophy case.
+
+Verified live at v0.6.0: `Nomad (775624) earned Plaguewalker` on walking into the outbreak,
+with `ragnarokswrath_titles_<uid>.dat` appearing beside the zone store (same fail-safe /
+quarantine / no-BOM contract, keyed by `s_playerID` per the identity sheet; store behaviour
+harness-pinned).
+
+Plumbing decisions that will outlive this task:
+
+- Titles travel by GUID-prefixed routed RPC (`TitleSync`), NOT a character-ZDO key: character
+  ZDOs are client-owned and only the owner's writes replicate — a foreign key is stomped on
+  the owner's next sync. Registration is keyed on the ZRoutedRpc INSTANCE (per-world-session),
+  and a joining player gets the full table replayed.
+- `Patch_Nameplate` is the first postfix under rule 1 AS AMENDED 2026-08-25: append-only on
+  `Player.GetHoverName` at default priority, decorating whatever survives other mods. It also
+  arms the client-side RPC handler, since pure clients tick no WorldTick systems.
+- The Winterborn clock is in-memory and resets on restart: under-awarding is a shrug,
+  double-announcing is spam.
+
+Open inch: the nameplate RENDER is unverified — you cannot see your own plate, so it needs a
+second player looking at a titled one.
 
 ---
 
