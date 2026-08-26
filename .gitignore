@@ -21,3 +21,6 @@ obj/
 # OS
 Thumbs.db
 .DS_Store
+
+# Release zips
+dist/

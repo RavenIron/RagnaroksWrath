@@ -311,11 +311,20 @@ Still to come on this substrate, in whatever order earns it: storm gusts and fro
 (same sync, new emitters), farming's growth/yield consumer (client reads depletion),
 HealthSystem delivery.
 
-## 10. Packaging
+## 10. Packaging — DONE 2026-08-26
 
-`manifest.json`, README, icon, changelog. Match the shape of The Raven's Call's release.
-Version-pin BepInEx in `dependencies` (AwayFromHome and The Raven's Call both pin
-`denikson-BepInExPack_Valheim-5.4.2333` — confirm current).
+Root-level `manifest.json`, player-facing `README.md`, `CHANGELOG.md`, generated 256x256
+`icon.png`, and `tools\package.ps1` producing the flat Thunderstore zip in `dist\`
+(gitignored). Modeled on SkaldSaga's release SHAPE only — that project is dead and stays
+reference-only; nothing is linked or copied from it.
+
+- BepInEx pinned `denikson-BepInExPack_Valheim-5.4.2333` — confirmed current: it is the exact
+  pack the live install runs.
+- FireFront is deliberately NOT a manifest dependency (soft by design); the README sells the
+  synergy instead.
+- The package script refuses to build unless the THREE version homes agree (Plugin const,
+  csproj, manifest) — the one manual-zip mistake worth automating away.
+- First artifact: `RavenIron-RagnaroksWrath-0.7.1.zip` (46 KB, five files, flat).
 
 ---
 
