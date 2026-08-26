@@ -308,8 +308,12 @@ undiagnosable.
 
 Still to come on this substrate, in whatever order earns it: storm gusts (same sync, new
 emitter), farming's growth/yield consumer (client reads depletion). Scorch ash landed
-0.14.0 (third emitter — `AshMath` + `Visuals\ScorchAsh`, harness-pinned ramp, owner-
-requested after the arson test left invisible scars). Delivered since:
+0.14.0 and was VERIFIED BY EYE at 0.14.1 ("ash is falling") — third emitter, `AshMath` +
+`Visuals\ScorchAsh`, owner-requested after the arson test left invisible scars. The
+0.14.1 lesson earns its own line: 0.14.0's emitter BUILT and RAN and rendered nothing,
+because nobody budgeted visibility — rate x size x alpha / dispersal area came to one
+faint mote per 84 square meters at real-scar scorch. Run the per-square-meter arithmetic
+BEFORE shipping a particle effect, not after a player stands in it and sees nothing. Delivered since:
 HealthSystem (task 11, 0.8.x) and **frost breath (0.9.0, VERIFIED LIVE 2026-08-26)** —
 built to this template after the chill's first live test came back "no vfx", shader chain
 extracted to `ParticleKit` so the stripped-shader lesson cannot fork between emitters.

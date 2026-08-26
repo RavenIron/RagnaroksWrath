@@ -26,14 +26,20 @@ obeys.
 - **0.8.2 flush-fix verification PENDING:** needs a player to get exposed, then a server
   stop — the health ledger's mtime must land beside Dedicated.db's instead of up to 60s
   earlier. Today's stops had an empty ledger, so it has never been observed doing its job.
-- **Task 13 PHASE A COMPLETE and live-verified (RW 0.11.1 + FireFront 0.17.3):** the
-  influence ledger with ALL THREE writers proven — tending (watermarked, no re-booking
-  observed over 30min), healing presence (care appeared the tick the player did), and
-  arson (the four-zone fire billed one arsonist through FireFront's new
-  `CurrentFireIgniterPlayerId` contract; both mods deploy in lockstep now — the ignite
-  RPC was renamed in 0.17.3). The 0.8.2 shutdown flush was ALSO verified at this
-  session's last stop (ledger mtime beside Dedicated.db, 56s fresher than its cadence).
-  Phases B–E not started; B (grudges) now has real harm to bite on.
+- **Task 13 PHASES A, B COMPLETE and live-verified; PHASE C BUILT (RW 0.14.1, FireFront
+  0.17.3):** the ledger with all three writers proven (A); the grudge with three teeth
+  verified — Ashbringer, the personal pick refusal, and the drift tooth measured at
+  **0.01750/h observed vs 0.01750/h predicted, EXACT**, after the first window was
+  contaminated by the credit-on-contact backlog (the runbook's own trap; re-baseline
+  after the backlog clears, save-to-save). Phase C (dominance, mercies x1.25 zone /
+  x1.5 sickness, Warden/Despoiler, flip voice) is harness-pinned (180+) and deployed;
+  its in-game bits await play: mercy rate measurement, a 3-zone title, and the flip
+  announcement which STRUCTURALLY requires two players. Phases D–E not started (E gated).
+  Scorch ash (0.14.x) verified by eye — burn scars visibly dust now, fading with healing.
+  Deferred with cause: wildlife-flee and hostiles-seek-you (no acceptance criteria,
+  BaseAI is the riskiest surface — own pass, own gates).
+- **Version note:** client runs 0.14.1; server runs 0.14.0 until its next stop (the
+  0.14.1 delta is client-only ash tuning). FireFront 0.17.3 both sides.
 - **Task 14 specced, not built** (owner's calls recorded; Relic is the capstone, after 13).
 - **Remaining, unnumbered:** task 13 phases B–E, task 14; the storm-gust emitter
   (`Visuals\ParticleKit` is the substrate); farming's growth/yield consumer; the nameplate
