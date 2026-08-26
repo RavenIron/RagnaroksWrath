@@ -153,6 +153,13 @@ namespace RavenIron.RagnaroksWrath.Core
             // lost every single session, which would look like the mod randomly forgetting things.
             Persistence.Save(force: true);
 
+            // The health ledger has the same write-behind shape (dirty flag, 60s cadence in
+            // HealthSystem) and so the same shutdown hole: found live on 2026-08-26, when a
+            // clean server stop cost ~0.02 exposure — the last unsaved minute of it. Every
+            // store with a write-behind cadence must appear in this method; TitleStore is
+            // absent because it saves on Set.
+            HealthStore.SaveIfDirty();
+
             _systems.Clear();
             _lastRun.Clear();
             _cursor = 0;

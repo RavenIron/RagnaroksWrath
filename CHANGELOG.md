@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.2
+
+- **Shutdown no longer loses the last minute of sickness.** The exposure ledger saved on a
+  60-second cadence but was missing from the shutdown flush, so a clean server stop or world
+  exit could quietly drop up to a minute of exposure drift. Found live (it cost 0.02); the
+  ledger now flushes alongside the zone store.
+
 ## 0.8.1
 
 - **The sickness can now actually be felt.** In 0.8.0 the penalties ramped up from nothing at
