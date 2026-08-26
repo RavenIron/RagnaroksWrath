@@ -75,6 +75,11 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             float cold          = SeasonSystem.ColdMultiplier();
             float fireRisk      = SeasonSystem.FireRiskMultiplier();
 
+            // Season is multiplied in HERE, not inside BiomeDrift — one place season becomes a
+            // number, same as every other multiplier this pass hands over.
+            float plagueGrowth  = ModConfig.PlagueGrowthPerHour.Value * SeasonSystem.PlagueGrowthMultiplier();
+            float corruptionBoost = ModConfig.PlagueCorruptionBoost.Value;
+
             int budget = Math.Min(ModConfig.BiomeMaxZonesPerTick.Value, _contacted.Count);
             int drifted = 0;
 
@@ -90,7 +95,8 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 if (elapsed <= 0.0) continue;
 
                 ZoneState before = Persistence.Get(zone);
-                ZoneState after  = BiomeDrift.Apply(before, elapsed, recovery, frostPressure, cold, fireRisk);
+                ZoneState after  = BiomeDrift.Apply(before, elapsed, recovery, frostPressure, cold, fireRisk,
+                    plagueGrowth, corruptionBoost);
 
                 // Set clamps, and removes the entry outright if the zone has healed back to
                 // default. Sparseness is enforced at that boundary, not here.

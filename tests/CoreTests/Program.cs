@@ -39,6 +39,7 @@ namespace RagnaroksWrath.Tests
             StormAreaTests();
             WindStateTests();
             FireScorchTests();
+            PlagueTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -592,6 +593,93 @@ namespace RagnaroksWrath.Tests
                 && FireScorch.ScorchDelta(0.02f, -5f) == 0f
                 && FireScorch.ScorchDelta(float.NaN, 10f) == 0f
                 && FireScorch.ScorchDelta(0.02f, float.NaN) == 0f);
+        }
+
+        // ---- Plague -----------------------------------------------------------------
+
+        private static void PlagueTests()
+        {
+            Console.WriteLine("\nPlague");
+
+            const float Hour = 3600f;
+            // recovery 0.02/h; growth passed in already season-multiplied, boost as stated.
+
+            // Growth needs a seed. A pristine zone must stay pristine through any weather, or
+            // the store stops being sparse and plague appears from nowhere.
+            ZoneState pristine = BiomeDrift.Apply(default, Hour, 0.02f, 0f, 0f, 1f, 0.042f, 1f);
+            Check("an unseeded zone grows no plague", pristine.IsDefault);
+
+            // Spring at defaults: growth 0.042/h beats recovery 0.02/h.
+            var seeded = new ZoneState { Plague = 0.05f };
+            ZoneState spring = BiomeDrift.Apply(seeded, Hour, 0.02f, 0f, 0f, 1f, 0.042f, 0f);
+            Check($"a seeded zone grows in spring ({spring.Plague:F4})",
+                Math.Abs(spring.Plague - (0.05f - 0.02f + 0.042f)) < 0.0005f);
+
+            // Winter at defaults: growth 0.015/h loses to recovery 0.02/h — the seasonal cure.
+            ZoneState winter = BiomeDrift.Apply(seeded, Hour, 0.02f, 0f, 0f, 1f, 0.015f, 0f);
+            Check($"winter is a net cure ({winter.Plague:F4})",
+                winter.Plague < seeded.Plague);
+
+            // ...and driving it through zero KILLS it: the gate is the post-decay value, so a
+            // cured zone cannot be resurrected by the next warm season without re-infection.
+            ZoneState cured = BiomeDrift.Apply(new ZoneState { Plague = 0.01f }, 2 * Hour,
+                0.02f, 0f, 0f, 1f, 0.015f, 0f);
+            Check("a cure that reaches zero is permanent, not a low ebb", cured.IsDefault);
+            ZoneState afterCure = BiomeDrift.Apply(cured, Hour, 0.02f, 0f, 0f, 1f, 0.1f, 1f);
+            Check("warm weather does not resurrect a cured zone", afterCure.IsDefault);
+
+            // Corruption feeds plague: boost 1 with corruption 0.5 is x1.5 growth.
+            var corrupt = new ZoneState { Plague = 0.05f, Corruption = 0.5f };
+            var clean   = new ZoneState { Plague = 0.05f };
+            float corruptGrown = BiomeDrift.Apply(corrupt, Hour, 0f, 0f, 0f, 1f, 0.04f, 1f).Plague;
+            float cleanGrown   = BiomeDrift.Apply(clean,   Hour, 0f, 0f, 0f, 1f, 0.04f, 1f).Plague;
+            Check($"corruption accelerates plague ({corruptGrown:F4} vs {cleanGrown:F4})",
+                corruptGrown > cleanGrown
+                && Math.Abs((corruptGrown - 0.05f) - 1.5f * (cleanGrown - 0.05f)) < 0.0005f);
+
+            // Spread targeting: only zones at threshold seed, only pristine neighbours, once.
+            var hot = new List<KeyValuePair<ZoneKey, float>>
+            {
+                new KeyValuePair<ZoneKey, float>(new ZoneKey(0, 0), 0.6f),   // source
+                new KeyValuePair<ZoneKey, float>(new ZoneKey(1, 0), 0.6f),   // adjacent source
+                new KeyValuePair<ZoneKey, float>(new ZoneKey(5, 5), 0.1f),   // below threshold
+            };
+            var infected = new HashSet<ZoneKey> { new ZoneKey(0, 0), new ZoneKey(1, 0), new ZoneKey(5, 5) };
+            var targets = new List<ZoneKey>();
+            PlagueSpread.CollectSpreadTargets(hot, 0.5f, infected, targets);
+
+            // Two sources in a row: 8 orthogonal neighbours minus each other, minus the shared
+            // duplicates — (−1,0),(0,1),(0,−1),(2,0),(1,1),(1,−1) = 6. The weak zone adds none.
+            Check($"frontier is uninfected orthogonal neighbours of hot zones only (got {targets.Count})",
+                targets.Count == 6
+                && !targets.Contains(new ZoneKey(0, 0))
+                && !targets.Contains(new ZoneKey(1, 0))
+                && !targets.Contains(new ZoneKey(4, 5)));
+
+            Check("a zone between two hot sources is listed once",
+                (new Func<bool>(() => {
+                    var two = new List<KeyValuePair<ZoneKey, float>>
+                    {
+                        new KeyValuePair<ZoneKey, float>(new ZoneKey(0, 0), 0.9f),
+                        new KeyValuePair<ZoneKey, float>(new ZoneKey(2, 0), 0.9f),
+                    };
+                    var inf = new HashSet<ZoneKey> { new ZoneKey(0, 0), new ZoneKey(2, 0) };
+                    var t = new List<ZoneKey>();
+                    PlagueSpread.CollectSpreadTargets(two, 0.5f, inf, t);
+                    int middle = 0;
+                    foreach (ZoneKey z in t) if (z == new ZoneKey(1, 0)) middle++;
+                    return middle == 1;
+                }))());
+
+            Check("no hot zones means no frontier",
+                (new Func<bool>(() => {
+                    var t = new List<ZoneKey>();
+                    PlagueSpread.CollectSpreadTargets(
+                        new List<KeyValuePair<ZoneKey, float>>
+                        { new KeyValuePair<ZoneKey, float>(new ZoneKey(3, 3), 0.49f) },
+                        0.5f, new HashSet<ZoneKey> { new ZoneKey(3, 3) }, t);
+                    return t.Count == 0;
+                }))());
         }
 
         // ---- harness ----------------------------------------------------------------

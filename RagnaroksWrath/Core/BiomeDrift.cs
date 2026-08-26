@@ -52,13 +52,23 @@ namespace RavenIron.RagnaroksWrath.Core
         /// </summary>
         /// <param name="coldMultiplier">From SeasonSystem.ColdMultiplier(). Scales frost gain.</param>
         /// <param name="fireRiskMultiplier">From SeasonSystem.FireRiskMultiplier(). Divides scorch recovery.</param>
+        /// <param name="plagueGrowthPerHour">
+        /// Effective plague growth — config rate x SeasonSystem.PlagueGrowthMultiplier(),
+        /// multiplied out by the CALLER so this stays the one place season already turned into a
+        /// number. Optional (default 0) so callers that predate plague are untouched.
+        /// </param>
+        /// <param name="corruptionBoost">
+        /// How strongly zone Corruption accelerates plague growth: growth x (1 + boost x Corruption).
+        /// </param>
         public static ZoneState Apply(
             ZoneState state,
             double elapsedSeconds,
             float recoveryPerHour,
             float frostPressurePerHour,
             float coldMultiplier,
-            float fireRiskMultiplier)
+            float fireRiskMultiplier,
+            float plagueGrowthPerHour = 0f,
+            float corruptionBoost = 0f)
         {
             if (elapsedSeconds <= 0.0) return state;
 
@@ -88,6 +98,20 @@ namespace RavenIron.RagnaroksWrath.Core
             // store; accumulation stays unrounded so a zone can build its way into one.
             float frostGain = Math.Max(0f, frostPressurePerHour) * hours * Math.Max(0f, coldMultiplier);
             if (frostGain > 0f) state.Frost += frostGain;
+
+            // Plague grows only where it already exists. The gate is the POST-decay value, and
+            // that is what "curable" means mechanically: once recovery (or a cure) drives plague
+            // through zero, the epsilon snap kills it, the gate closes, and no amount of warm
+            // weather resurrects it — the zone needs re-infecting, not merely re-visiting. An
+            // unseeded zone likewise stays pristine forever, which is what keeps the store
+            // sparse. Growth is linear like frost pressure, not proportional to the current
+            // level: proportional growth can never outrun linear decay at low values, so a fresh
+            // seed would always die before it took hold and spread could never work.
+            if (state.Plague > 0f && plagueGrowthPerHour > 0f)
+            {
+                float boost = 1f + Math.Max(0f, corruptionBoost) * state.Corruption;
+                state.Plague += plagueGrowthPerHour * hours * boost;
+            }
 
             state.Clamp();   // bounds to 0..1, and converts any NaN that reached us to zero
             return state;

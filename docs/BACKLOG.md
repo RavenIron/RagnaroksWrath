@@ -191,13 +191,34 @@ this repo. Worth carrying into FireFront's own backlog if it isn't already handl
 
 ---
 
-## 6. `PlagueSystem`
+## 6. `PlagueSystem` — DONE 2026-08-25 (verified live)
 
-Zone-based spreading sickness. Growth scales with `SeasonSystem.PlagueGrowthMultiplier()` and
-zone `Corruption`. Curable — plague must be able to return to zero so the zone drops out of
-the store.
+Built to `docs/zone-clock-ownership.md`: growth and cure live in `BiomeDrift.Apply` on the
+zone clock (linear growth gated on the POST-decay value — a cure that reaches zero is
+permanent, and proportional growth was rejected because it can never outrun linear decay at
+seed levels); spread is an event system on live tick time (`Core/PlagueSpread.cs` pure and
+harness-tested, `PlagueSystem` rolling the dice and writing seeds, storm-scaled positionally).
 
-**Acceptance:** plague spreads between adjacent zones, is curable, and persists correctly.
+Containment is structural: only zones at the spread threshold (0.5) infect; seeds start at
+0.05 and climb only through player contact; infected zones are never re-seeded. The front
+advances one ring past wherever players actually go.
+
+Verified live on the dedicated server, patient zero hand-edited into the store (the format's
+hand-repairability doing real work — no debug scaffolding this time):
+
+- **Spread:** four orthogonal neighbours seeded at exactly 0.05 across two passes; diagonals
+  untouched; a zone bordered by multiple hotspots seeded once.
+- **Growth:** patient zero 0.6 -> 0.6217, matching 0.042/h x (1 + corruption 0.5) minus
+  recovery to four decimals once the credit-on-contact backlog (29 min of downtime) was
+  accounted. Seeds inside the contact ring grew; the seed outside it did not move at all.
+- **Cure:** with growth zeroed, every contacted zone drained at the predicted 0.02/h while the
+  uncontacted one stayed frozen — drift acts only where people are, in both directions.
+  Through-zero permanence (the epsilon snap kills a cured zone and warm weather cannot
+  resurrect it) is pinned by unit tests.
+- **Persists:** the outbreak survived two server restarts and a mid-test hand edit.
+
+How a plague STARTS is deliberately out of scope: nothing invents outbreaks yet. Patient zero
+comes from a future event system, a `wrath` console command, or an admin's editor.
 
 ---
 

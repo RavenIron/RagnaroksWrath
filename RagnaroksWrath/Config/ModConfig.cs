@@ -58,6 +58,15 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> FireScorchIntervalSeconds;
         public static ConfigEntry<float> FireScorchPerMinute;
 
+        // ---- Plague ---------------------------------------------------------------------
+        public static ConfigEntry<float> PlagueSpreadIntervalSeconds;
+        public static ConfigEntry<float> PlagueGrowthPerHour;
+        public static ConfigEntry<float> PlagueCorruptionBoost;
+        public static ConfigEntry<float> PlagueSpreadThreshold;
+        public static ConfigEntry<float> PlagueSeedAmount;
+        public static ConfigEntry<float> PlagueSpreadChance;
+        public static ConfigEntry<int>   PlagueMaxSpreadsPerTick;
+
         // ---- Per-system master switches -------------------------------------------------
 
         public static ConfigEntry<bool> EnableSeason;
@@ -215,7 +224,57 @@ namespace RavenIron.RagnaroksWrath.Config
                     "burning; recovery is BiomeStateSystem's job and is slower than this.",
                     new AcceptableValueRange<float>(0f, 1f)));
 
+            const string plague = "9 - Plague";
+
+            PlagueSpreadIntervalSeconds = cfg.Bind(plague, "PlagueSpreadIntervalSeconds", 60f,
+                new ConfigDescription(
+                    "Seconds between spread passes. Spread is the EVENT half of plague; growth " +
+                    "and cure run on the zone clock inside BiomeStateSystem and have their own " +
+                    "pace.",
+                    new AcceptableValueRange<float>(10f, 600f)));
+
+            PlagueGrowthPerHour = cfg.Bind(plague, "PlagueGrowthPerHour", 0.03f,
+                new ConfigDescription(
+                    "How much plague grows per hour of elapsed contact time in an already-" +
+                    "infected zone, before the season multiplier. Against the recovery rate this " +
+                    "decides curability by season: at defaults, spring (x1.4) grows at 0.042/h " +
+                    "vs 0.02/h recovery, while winter (x0.5) manages 0.015/h and the zone heals. " +
+                    "Set 0 to freeze all growth.",
+                    new AcceptableValueRange<float>(0f, 1f)));
+
+            PlagueCorruptionBoost = cfg.Bind(plague, "PlagueCorruptionBoost", 1.0f,
+                new ConfigDescription(
+                    "How strongly zone Corruption feeds plague: growth x (1 + boost x Corruption). " +
+                    "At 1.0 a fully corrupted zone doubles its plague growth.",
+                    new AcceptableValueRange<float>(0f, 4f)));
+
+            PlagueSpreadThreshold = cfg.Bind(plague, "PlagueSpreadThreshold", 0.5f,
+                new ConfigDescription(
+                    "Plague level a zone needs before it can infect its neighbours. Fresh seeds " +
+                    "start far below this and only climb through player contact - which is the " +
+                    "containment: the front advances exactly as far as people actually go.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            PlagueSeedAmount = cfg.Bind(plague, "PlagueSeedAmount", 0.05f,
+                new ConfigDescription(
+                    "Plague level a newly infected zone starts at.",
+                    new AcceptableValueRange<float>(0.01f, 0.5f)));
+
+            PlagueSpreadChance = cfg.Bind(plague, "PlagueSpreadChance", 0.25f,
+                new ConfigDescription(
+                    "Chance per spread pass that each frontier zone is seeded, before the storm " +
+                    "multiplier at that zone. Not per source: a zone bordered by three hotspots " +
+                    "rolls once.",
+                    new AcceptableValueRange<float>(0f, 1f)));
+
+            PlagueMaxSpreadsPerTick = cfg.Bind(plague, "PlagueMaxSpreadsPerTick", 16,
+                new ConfigDescription(
+                    "Upper bound on zones seeded in one pass, as a backstop against a huge " +
+                    "frontier all rolling well at once.",
+                    new AcceptableValueRange<int>(1, 256)));
+
             const string systems = "4 - Systems";
+
 
 
 

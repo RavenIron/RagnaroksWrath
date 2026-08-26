@@ -217,7 +217,7 @@ established world, not the `Spring` enum default — a brand-new world legitimat
 at day 0, so read that line together with `resolved EnvMan.GetCurrentDay accessor` above it).
 `Persistence` is covered by the paragraph below.
 
-**Built and unit-tested (78/78):** `ZoneKey`, `ZoneClock` (credit-on-contact drift timing),
+**Built and unit-tested (87/87):** `ZoneKey`, `ZoneClock` (credit-on-contact drift timing),
 `ZoneState`, `Persistence` (world-scoped, atomic, fail-safe), `ModConfig`, `MessageFeed`.
 
 **Verified in-game, both paths:** `Persistence`, verified 2026-08-25 at v0.1.6
@@ -236,7 +236,14 @@ nothing is wrong) and a partially-corrupt one stays on per-line isolation. One n
 the fix: the version header is now recognised by **content**, not by being line 1 — skipping line 1
 unconditionally swallowed the only line a short binary file has, which is what hid the bug.
 
+**Built and verified in-game (2026-08-25, v0.4.0, dedicated server):** `PlagueSystem` +
+plague growth in `BiomeDrift`. Spread, growth, cure and persistence all observed live from a
+hand-seeded patient zero; every measured rate matched prediction once credit-on-contact
+backlogs were accounted. Uncontacted zones neither grow nor heal — drift acts only where
+players are, in both directions.
+
 **Built and verified in-game (2026-08-25, v0.3.0 + FireFront 0.18.0, dedicated server):**
+
 `FireSystem`, end to end with a player-lit fire: client patch -> RPC forward -> server sim ->
 reflection bridge -> scorch in four zones (rate matched prediction to four decimals) ->
 survived a server restart -> recovered via BiomeDrift once the fires were gone. FireFront must
