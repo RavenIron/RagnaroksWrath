@@ -154,7 +154,7 @@ fire; RW owns the land's memory of it.**
 
 What was built:
 
-- FireFront 0.18.0 gained `FireManager.CollectActiveFirePositions(List<Vector3>)` — a public
+- FireFront 0.17.2 gained `FireManager.CollectActiveFirePositions(List<Vector3>)` — a public
   read API over the simulation's own cached positions, documented there as a load-bearing
   cross-mod contract.
 - RW's `FireSystem` detects FireFront via Chainloader, resolves that API by cached reflection
@@ -162,7 +162,7 @@ What was built:
   containing a fire: flat `FireScorchPerMinute` (default 0.02, ~50 min to fully char), binary
   per zone because severity already shows up as more zones burning. Live tick time only — no
   zone clock, per `docs/zone-clock-ownership.md`. Dormant without FireFront, warning-not-silent
-  when FireFront is present but older than 0.18.0 or its surface moved.
+  when FireFront is present but older than 0.17.2 or its surface moved.
 - `Core/FireScorch.cs` holds the pure zone-mapping and rate math, harness-tested (78/78).
 
 The original acceptance criteria split by owner: fire spread itself is FireFront's behaviour;

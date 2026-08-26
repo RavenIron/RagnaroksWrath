@@ -32,7 +32,7 @@ namespace RavenIron.RagnaroksWrath.Systems.World
     /// dependency: neither mod fails to load without the other, and this csproj gains no
     /// reference that fetch-libs cannot supply. The contract is
     /// `FireManager.CollectActiveFirePositions(List&lt;Vector3&gt;)`, public in FireFront since
-    /// 0.18.0 and documented there as load-bearing for this mod.
+    /// 0.17.2 and documented there as load-bearing for this mod.
     /// </summary>
     public class FireSystem : IWorldSystem
     {
@@ -61,7 +61,7 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             {
                 RagnaroksWrath.Log.LogInfo(
                     $"[{Name}] FireFront not present — dormant. Scorch will not accrue from fire; " +
-                    "install FireFront (com.raveniron.firefront) 0.18.0+ to light the world's memory.");
+                    "install FireFront (com.raveniron.firefront) 0.17.2+ to light the world's memory.");
                 return;
             }
 
@@ -133,7 +133,7 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                         _collectMethod = null;   // keep retrying; do not half-resolve
                         RagnaroksWrath.Log.LogWarning(
                             $"[{Name}] FireManager.Instance or CollectActiveFirePositions not found — " +
-                            "FireFront is present but older than 0.18.0. Scorch will not accrue.");
+                            "FireFront is present but older than 0.17.2. Scorch will not accrue.");
                         return false;
                     }
                 }

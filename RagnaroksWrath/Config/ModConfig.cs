@@ -85,6 +85,11 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float>  FarmingDepletionPerCropHour;
         public static ConfigEntry<string> FarmingCropPrefabs;
 
+        // ---- Titles ---------------------------------------------------------------------
+        public static ConfigEntry<float> TitleIntervalSeconds;
+        public static ConfigEntry<float> WinterbornSeconds;
+        public static ConfigEntry<bool>  AnnounceTitles;
+
         // ---- Per-system master switches -------------------------------------------------
 
         public static ConfigEntry<bool> EnableSeason;
@@ -229,7 +234,7 @@ namespace RavenIron.RagnaroksWrath.Config
             FireScorchIntervalSeconds = cfg.Bind(fire, "FireScorchIntervalSeconds", 10f,
                 new ConfigDescription(
                     "Seconds between scorch passes. Only matters while FireFront " +
-                    "(com.raveniron.firefront, 0.18.0+) is installed - without it FireSystem is " +
+                    "(com.raveniron.firefront, 0.17.2+) is installed - without it FireSystem is " +
                     "dormant: fire simulation belongs to FireFront, this mod only records what " +
                     "fire does to the land.",
                     new AcceptableValueRange<float>(2f, 120f)));
@@ -375,7 +380,26 @@ namespace RavenIron.RagnaroksWrath.Config
                 "code: a name the game no longer knows costs a silent zero matches - check " +
                 "with VerboseLogging if a crop stops tiring soil after a game patch.");
 
+            const string titles = "13 - Titles";
+
+            TitleIntervalSeconds = cfg.Bind(titles, "TitleIntervalSeconds", 10f,
+                new ConfigDescription(
+                    "Seconds between title-earning checks against online players.",
+                    new AcceptableValueRange<float>(2f, 120f)));
+
+            WinterbornSeconds = cfg.Bind(titles, "WinterbornSeconds", 1800f,
+                new ConfigDescription(
+                    "Online seconds through Winter to earn Winterborn. The clock is in-memory " +
+                    "and resets on server restart - under-awarding is a shrug, double-announcing " +
+                    "is spam.",
+                    new AcceptableValueRange<float>(60f, 86400f)));
+
+            AnnounceTitles = cfg.Bind(titles, "AnnounceTitles", true,
+                "Announce newly earned titles to everyone. Titles are rare by construction; " +
+                "placeholder names (Stranger) are never announced.");
+
             const string systems = "4 - Systems";
+
 
 
 

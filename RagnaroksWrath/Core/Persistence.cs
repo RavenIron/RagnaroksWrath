@@ -213,6 +213,20 @@ namespace RavenIron.RagnaroksWrath.Core
             return Path.Combine(dir, $"{FileStem}_{uid}.dat");
         }
 
+        /// <summary>
+        /// Path for a sibling world-scoped store (e.g. TitleStore), sharing this class's
+        /// directory and uid resolution so there is exactly ONE authority on "where does this
+        /// world's data live" — the cloud-save and uid traps were each found once and must not
+        /// be re-findable per store. Null when no world path resolves, same as our own.
+        /// </summary>
+        internal static string ResolveSiblingPath(string stem)
+        {
+            string ours = ResolvePath(out _);
+            if (ours == null) return null;
+
+            return Path.Combine(Path.GetDirectoryName(ours), $"{stem}_{Path.GetFileNameWithoutExtension(ours).Substring(FileStem.Length + 1)}.dat");
+        }
+
         // ---- load -----------------------------------------------------------------------
 
         /// <summary>

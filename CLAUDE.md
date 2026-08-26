@@ -76,8 +76,12 @@ through a relative `libs\` path, never a hardcoded Steam path — Skadi clones t
 
 Each rule came from a measured production failure. Do not relitigate them in code review.
 
-1. **Harmony: prefix only, `Priority.Low`, honour `__runOriginal`, "no opinion" means
-   `return true`.** The max-priority-prefix-replace + min-priority-postfix-reassert pattern is
+1. **Harmony: prefixes for behaviour (`Priority.Low`, honour `__runOriginal`, "no opinion"
+   means `return true`) — and, amended 2026-08-25, RESULT-DECORATING postfixes at default
+   priority where appending to a return value is the whole point (first use: the nameplate
+   title). A decorating postfix never replaces logic and cedes every fight: whoever rewrites
+   the value outright wins, and we decorate what survives.**
+   The max-priority-prefix-replace + min-priority-postfix-reassert pattern is
    formally retracted: it cost ~50% of a sibling mod's entire patch-layer CPU, and
    `int.MaxValue` defeats every other mod's ordering including explicit `HarmonyBefore`. Cede
    the final say. If one specific third-party mod ever forces the issue, put it behind a
@@ -128,7 +132,7 @@ wrong measurement is the most common cause of a long debugging session here.
 | `EnvMan` / textures / materials | **Never touched.** See rule 4. |
 | Devastating Storms | `RandEventSystem` event with `m_forceEnvironment` **left empty** — full vanilla event (name, duration, music, spawns, banner) without overriding weather. A `StormsForceWeather` toggle, **default false**, exists for owners not running Seasonality. |
 | Persistence | **World-scoped sparse file**, keyed by world uid. ZDO custom keys rejected: they attach to an *object*, drift attaches to a *coordinate*, and an anchor prefab per zone would trigger the `ZNetScene.CreateObjectsSorted` → `DestroyZDO` landmine. |
-| FireSystem | **A bridge to FireFront, never a second fire sim.** FireFront (com.raveniron.firefront, same studio) owns ignition, spread, burning, VFX. RW reads its fires by reflection (`FireManager.CollectActiveFirePositions`, public since FireFront 0.18.0) and raises zone `Scorch`. Without FireFront, FireSystem is dormant. Decided 2026-08-25. |
+| FireSystem | **A bridge to FireFront, never a second fire sim.** FireFront (com.raveniron.firefront, same studio) owns ignition, spread, burning, VFX. RW reads its fires by reflection (`FireManager.CollectActiveFirePositions`, public since FireFront 0.17.2) and raises zone `Scorch`. Without FireFront, FireSystem is dormant. Decided 2026-08-25. |
 | Client plugin | Required, but **visual-only** — renders fire/storm/plague effects the server cannot push. No HUD. |
 | Timeline | Open-ended. Done when it's done. |
 | Console prefix | `wrath` (e.g. `wrath status`) |
@@ -160,7 +164,7 @@ loads a site for ~180s then unloads it.
 
 **FireFront (Raven Iron)** — our own structure-fire mod; the fire simulation this mod's
 FireSystem bridges to instead of competing with. The read API
-(`FireManager.CollectActiveFirePositions(List<Vector3>)`, FireFront 0.18.0+) is documented in
+(`FireManager.CollectActiveFirePositions(List<Vector3>)`, FireFront 0.17.2+) is documented in
 FireFront's source as a load-bearing cross-mod contract: renaming it there silently disarms
 Scorch here, and FireSystem warns every tick when the surface cannot be resolved rather than
 going quietly dormant.
@@ -249,7 +253,7 @@ hand-seeded patient zero; every measured rate matched prediction once credit-on-
 backlogs were accounted. Uncontacted zones neither grow nor heal — drift acts only where
 players are, in both directions.
 
-**Built and verified in-game (2026-08-25, v0.3.0 + FireFront 0.18.0, dedicated server):**
+**Built and verified in-game (2026-08-25, v0.3.0 + FireFront 0.17.2, dedicated server):**
 
 `FireSystem`, end to end with a player-lit fire: client patch -> RPC forward -> server sim ->
 reflection bridge -> scorch in four zones (rate matched prediction to four decimals) ->

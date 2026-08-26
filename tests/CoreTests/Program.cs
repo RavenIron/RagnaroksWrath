@@ -42,6 +42,7 @@ namespace RagnaroksWrath.Tests
             PlagueTests();
             WorldStateTests();
             EcologyTests();
+            TitleTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -785,6 +786,63 @@ namespace RagnaroksWrath.Tests
             Check("NaN inputs corrupt nothing rather than poisoning the store",
                 EcologyPressure.Apply(new ZoneState { Plague = 0.9f }, float.NaN, 0.01f, 0.3f, 0.3f).Corruption == 0f
                 && !float.IsNaN(EcologyPressure.Apply(new ZoneState { Plague = 0.9f }, Hour, float.NaN, 0.3f, 0.3f).Corruption));
+        }
+
+        // ---- Titles -----------------------------------------------------------------
+
+        private static void TitleTests()
+        {
+            Console.WriteLine("\nTitles");
+
+            string dir = Path.Combine(Path.GetTempPath(), "rw_titles_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string path = Path.Combine(dir, "titles.dat");
+
+            try
+            {
+                TitleStore.OverridePath = path;
+
+                TitleStore.Load();
+                Check("a fresh world has no titles and a usable store",
+                    TitleStore.IsLoaded && TitleStore.Count == 0);
+
+                TitleStore.Set(123456789L, "Stormrider");
+                TitleStore.Set(987654321L, "Winterborn");
+                TitleStore.Set(123456789L, "Plaguewalker");   // latest earned wins
+                TitleStore.Load();
+                Check($"titles survive a save/load round-trip, latest wins (got '{TitleStore.Get(123456789L)}')",
+                    TitleStore.Count == 2 && TitleStore.Get(123456789L) == "Plaguewalker");
+
+                // The placeholder id a dedicated server's own profile would produce.
+                TitleStore.Set(0L, "Stormrider");
+                Check("player id 0 is never recorded", TitleStore.Get(0L) == null);
+
+                TitleStore.Set(987654321L, null);
+                TitleStore.Load();
+                Check("clearing a title removes the row entirely", TitleStore.Count == 1);
+
+                byte[] raw = File.ReadAllBytes(path);
+                Check("the title store is written without a BOM",
+                    raw.Length >= 3 && !(raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF));
+
+                File.WriteAllBytes(path, new byte[] { 0x00, 0xFF, 0x00, 0xFF });
+                TitleStore.Load();
+                Check("a corrupt title store degrades to empty and is quarantined",
+                    TitleStore.IsLoaded && TitleStore.Count == 0
+                    && File.Exists(path + ".corrupt") && !File.Exists(path));
+
+                Check("a titled suffix renders on its own smaller line",
+                    TitleFormat.Suffix("Stormrider").StartsWith("\n")
+                    && TitleFormat.Suffix("Stormrider").Contains("Stormrider"));
+
+                Check("no title means no suffix at all",
+                    TitleFormat.Suffix(null) == "" && TitleFormat.Suffix("  ") == "");
+            }
+            finally
+            {
+                TitleStore.OverridePath = null;
+                try { Directory.Delete(dir, true); } catch { }
+            }
         }
 
         // ---- harness ----------------------------------------------------------------
