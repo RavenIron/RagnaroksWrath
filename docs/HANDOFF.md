@@ -34,13 +34,26 @@ obeys.
   on players standing contested ground. Resolution at the contested->uncontested edge
   (wild wins if blight broke, blight wins if care faded), ONE Centre line. Wire is now
   ...zone_state3 (war intensity per zone in the ring). THE OUTBREAK (0,-1) IS STAGED AS
-  WAR GROUND: care hand-set to 0.5 (backup `.prephased`). **OPEN AT HANDOFF: the owner
-  reported "horns are sounding" but the client log showed NO horn build line — either
-  they weren't on contested ground yet or something upstream is silent; a watch was
-  running. Resolve before trusting phase D: the horn build logs `war horn(s) ready`, and
-  the resolution test is a ledger edit dropping care to 0.1 -> expect exactly one "The
-  blight has claimed this ground." Do not cure the outbreak to force a wild win — it is
-  guarded world state.**
+  WAR GROUND: care hand-set to 0.5 (backup `.prephased`). **HORN DISCREPANCY RESOLVED
+  2026-08-26 14:34, client chain VERIFIED LIVE at 0.15.1 both ends:** the silence had two
+  boring causes stacked — the owner was standing in (1,-1), one zone EAST of the war (the
+  contact-tick block in the zone store proved it), and the server run of the moment was a
+  13:36 build of 0.15.0 that PREDATED the war-state edge log, so its silence proved
+  nothing (audit the instrument). On the 0.15.1 restart the server logged `war state: 1
+  contested zone(s)` first tick, and once the owner walked into (0,-1) proper the client
+  logged `war intensity 1.0 underfoot.` then `3 war horn(s) ready for contested ground.`
+  — server war state -> ring push -> client cache -> horn build, every link observed. The
+  "horns sounding" audio was never ours; the horns are silent SEs.
+  **STILL OPEN on phase D:** (1) wildlife actually ARRIVING — owner's eyes, minutes on
+  contested ground; (2) the resolution edge. A dead-ledger edit CANNOT test resolution: a
+  restart re-derives war from the store, so care edited below 0.3 just means no war and
+  no edge (the Winterborn shrug — UpdateWar's own comment). Live route instead: set
+  `RivalryHalfLifeHours = 0.05` in the server cfg, restart, stand within 64m of (0,-64);
+  war re-derives (care 0.51), decays past 0.3 in ~2.3 min, edge fires mid-session ->
+  expect exactly ONE Centre line "The blight has claimed this ground." + server log `war
+  in (0,-1) resolved: Blight.` + `war state: 0 contested zone(s)`. Then restore half-life
+  48 and the ledger from `.prephased`. Do not cure the outbreak to force a wild win — it
+  is guarded world state.
 - **Task 13 PHASES A, B COMPLETE and live-verified; PHASE C BUILT (RW 0.14.1, FireFront
   0.17.3):** the ledger with all three writers proven (A); the grudge with three teeth
   verified — Ashbringer, the personal pick refusal, and the drift tooth measured at
