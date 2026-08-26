@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.0
+
+- **Ash over the burn scars.** Zones the fire marked now show it: gray ash motes drift
+  down over ground whose scorch runs high, thinning as the land heals — the memory of
+  fire, visible, on the same clock as the healing itself. FireFront's living flames and
+  its permanent dirt-paint are separate and untouched.
+
 ## 0.13.0
 
 - **The land takes sides.** Every shaped zone now remembers who shaped it MOST: its

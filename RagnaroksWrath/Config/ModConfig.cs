@@ -97,6 +97,8 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> PlagueFogDensity;
         public static ConfigEntry<bool>  FrostBreathEnabled;
         public static ConfigEntry<float> FrostBreathFloor;
+        public static ConfigEntry<bool>  ScorchAshEnabled;
+        public static ConfigEntry<float> ScorchAshDensity;
 
         // ---- Health ---------------------------------------------------------------------
         public static ConfigEntry<float> HealthIntervalSeconds;
@@ -495,6 +497,18 @@ namespace RavenIron.RagnaroksWrath.Config
                     "threshold (0.5 default): the land shows its cold before it bites, the " +
                     "way plague fogs before it sickens.",
                     new AcceptableValueRange<float>(0.05f, 1f)));
+
+            ScorchAshEnabled = cfg.Bind(sync, "ScorchAshEnabled", true,
+                "Drift gray ash over zones whose Scorch runs high — the land's memory of " +
+                "fire, thinning as it heals. Purely visual, procedural, local-only. " +
+                "FireFront's living flames and its permanent dirt-paint are separate and " +
+                "unaffected.");
+
+            ScorchAshDensity = cfg.Bind(sync, "ScorchAshDensity", 1f,
+                new ConfigDescription(
+                    "Ash density multiplier for this client. Zones below scorch 0.1 never " +
+                    "show ash regardless.",
+                    new AcceptableValueRange<float>(0f, 4f)));
 
             const string health = "15 - Health";
 

@@ -880,6 +880,17 @@ namespace RagnaroksWrath.Tests
                 FogMath.EmissionFor(1f, 0f) == 0f
                 && FogMath.EmissionFor(float.NaN, 1f) == 0f
                 && FogMath.EmissionFor(1f, float.NaN) == 0f);
+
+            // Ash: FogMath's shape at the burn scars, its own floor and rate.
+            Check("trace scorch dusts nothing, real burns show, NaN shows nothing",
+                AshMath.EmissionFor(0.09f, 1f) == 0f
+                && Math.Abs(AshMath.EmissionFor(1f, 1f) - AshMath.FullRate) < 0.01f
+                && AshMath.EmissionFor(float.NaN, 1f) == 0f
+                && AshMath.EmissionFor(1f, 0f) == 0f);
+
+            float halfAsh = AshMath.EmissionFor(0.55f, 1f);
+            Check($"ash ramps linearly from its floor ({halfAsh:F1})",
+                Math.Abs(halfAsh - AshMath.FullRate / 2f) < 0.5f);
         }
 
         // ---- Exposure (HealthSystem's pure half) --------------------------------------

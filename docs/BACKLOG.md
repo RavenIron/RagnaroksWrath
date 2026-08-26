@@ -307,7 +307,9 @@ shader is logged at build, because two clients disagreeing about fog is otherwis
 undiagnosable.
 
 Still to come on this substrate, in whatever order earns it: storm gusts (same sync, new
-emitter), farming's growth/yield consumer (client reads depletion). Delivered since:
+emitter), farming's growth/yield consumer (client reads depletion). Scorch ash landed
+0.14.0 (third emitter — `AshMath` + `Visuals\ScorchAsh`, harness-pinned ramp, owner-
+requested after the arson test left invisible scars). Delivered since:
 HealthSystem (task 11, 0.8.x) and **frost breath (0.9.0, VERIFIED LIVE 2026-08-26)** —
 built to this template after the chill's first live test came back "no vfx", shader chain
 extracted to `ParticleKit` so the stripped-shader lesson cannot fork between emitters.
