@@ -247,7 +247,8 @@ comes from a future event system, a `wrath` console command, or an admin's edito
   client), and clients have no zone store.
 
 **Remaining:** `HealthSystem` (designed — task 11) · `ConsequenceSystem` (designed — task
-12) · `RivalrySystem` · `RelicSystem` (no spec yet — design before building).
+12) · `RivalrySystem` (designed — task 13) · `RelicSystem` (no spec yet — design before
+building).
 
 ---
 
@@ -473,6 +474,96 @@ four framing calls and three flavor calls below are theirs:
 - Ownership: with two players in the zone, no double-applied effects (one SE per creature,
   one suppression per pickable).
 - AFH: a keeper-held zone with no real player fires nothing.
+
+---
+
+## 13. `RivalrySystem` — DESIGN AGREED 2026-08-26, not built. PHASED.
+
+The world keeps score. The owner chose the maximal reading — all four visions at once —
+which makes this the largest system in the mod, so the spec's whole job is phasing it into
+independently shippable, config-severable slices sharing ONE spine. Build order A -> E; each
+phase lands with its own tests and in-game run before the next begins.
+
+**The spine — Phase A, the influence ledger.** Per-zone, per-player attributed acts, two
+columns: harm and care, both decaying over real time (grudges fade; the file stays sparse —
+prune at write). Persisted `ragnarokswrath_rivalry_<uid>.dat`, same fail-safe / quarantine /
+no-BOM / InvariantCulture contract, keyed by `s_playerID`. Attribution uses hooks that
+ALREADY exist:
+
+- **Arson** — FireSystem's client->server ignition forward knows its sender; scorch that
+  ignition produces books harm to the igniter.
+- **Tending** — planted crops carry vanilla's creator id (verify the exact ZDO var at build
+  via decompile); planting books care to the planter.
+- **Healing presence** — drift only cures contacted zones, and contact is already
+  per-player: recovery ticks split care credit among the players whose contact enabled them.
+- Plague carries NO player attribution — task 11 deliberately chose exposure over carried
+  infection, so nobody "brings" plague anywhere.
+
+**Phase B — the grudge (world vs you).** Per zone, grudge = normalized(your harm - your
+care). All four teeth, owner's call:
+
+1. **Harsher drift underfoot** — while YOU are the contact, decay credit x(1+g), recovery
+   x(1-g/2). Server-side, plugs into the existing BiomeDrift credit path. Invisible but
+   measurable — the verification pattern already proves rates to four decimals.
+2. **The wild shuns you** — in grudged zones, pickables fail for you specifically (task 12's
+   pickable surface, per-player gate) and wildlife flees you sooner (alert-range bump for
+   the grudged player; BaseAI surface behind the decompile gate).
+3. **Hostiles seek you** — spawns prefer targeting the grudged player, decorating target
+   selection at `Priority.Low` (decompile gate; AI-mod-collision caution noted — cede fights
+   per rule 1).
+4. **Grudge titles** — "Foe of the Forest", "Ashbringer" at grudge thresholds, riding
+   TitleSystem/TitleSync unchanged. Latest-earned-wins applies; a grudge title competes with
+   Plaguewalker like any other.
+
+Clients learn their own grudges through ZoneSync's per-peer ring push — it is ALREADY
+per-peer, so each player's ring gains their own grudge per zone. Small payload bump; the
+512 KiB ceiling is not remotely in play.
+
+**Phase C — the contest (player vs player).** Compare ledger columns. All three faces:
+
+- **Titles and standing** — regional dominant-shaper titles (Warden of / Despoiler of),
+  computed from column dominance over a floor (nobody wins a zone neither really touched).
+- **The land takes sides** — the dominant carer gets small mercies in that zone (recovery
+  gentler while they contact; task 11's remedies bite slightly better); the dominant harmer
+  simply IS the grudge case Phase B built. No new machinery, only wiring.
+- **Announcements** — MessageFeed narrates dominance flips, rate-limited and floor-gated so
+  it speaks only about ground both rivals genuinely shaped.
+
+**Phase D — the spawn war (world vs world).** A zone where opposing pressures are BOTH
+strong (corruption/plague vs recovery/care) enters CONTESTED state; storms escalate it —
+this is the "contest escalation" breadcrumb in rule 4's consumer list, finally honored.
+While contested and a player is present (task 12's reach rule, reused): both alignments
+intensify — blight-side spawns starred via task 12's surface, wild-side spawn rates up.
+Resolution when one side's drift wins the ground; one MessageFeed landmark line per
+resolution. Dangerous ground that resolves itself.
+
+**Phase E — the nemesis. GATED on a feasibility decompile, not promised.** The open
+question that decides go/no-go: do world-spawned creatures persist across zone unload and
+server restart at all? (Two known traps sit here: spawn despawn behaviour, and the
+frozen-ZDO-on-owner-disconnect trap.) The REDUCED form that is probably achievable: the
+creature that kills a player is marked at that moment — starred up, nameplate decorated via
+the existing GetHoverName postfix pattern ("the troll that slew Nomad"), mark keyed by
+creature ZDOID + prefab and revalidated on encounter; escalates on re-encounter; a despawn
+means the nemesis got away, which is acceptable flavor rather than a bug. Full cross-session
+creature tracking is NOT promised. If the decompile says even the reduced form fights the
+engine, Phase E dies and the table records why.
+
+**Config:** `EnableRivalry` master (already bound) plus one toggle per phase; every rate,
+threshold, floor, and decay half-life in config.
+
+**Acceptance (per phase, cumulative):**
+
+- A: harness round-trips the ledger through the shipping writer; attribution books arson,
+  planting, and healing presence to the right ids in-game; decay measured against config.
+- B: a grudged player's zone measurably drifts harsher than a clean player's control zone
+  (the four-decimal verification pattern); pickables refuse the grudged player while a clean
+  player picks the same bush; a grudge title appears at threshold and replicates.
+- C: dominance computes from the ledger, mercies measurable, one flip announcement per
+  actual flip, silence below the floor.
+- D: a hand-constructed contested zone (store edit — the supported path) escalates in a
+  storm, war visible with a player present, exactly one resolution line.
+- E: decided by its gate; if built, mark survives what it claims to survive, and no patch
+  ever touches the frozen-ZDO trap.
 
 - BepInEx pinned `denikson-BepInExPack_Valheim-5.4.2333` — confirmed current: it is the exact
   pack the live install runs.
