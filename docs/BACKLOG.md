@@ -599,6 +599,19 @@ quarantine, no BOM) + `RivalrySystem` phase-A writers. Decisions the build made:
 - The ledger is the third write-behind store, so it appears in `WorldTick.OnDestroy` per
   the 0.8.2 rule.
 
+**PHASE A VERIFIED LIVE 2026-08-26 (0.11.0, dedicated server):** ledger born 181s after
+boot; tending booked 0.05/plant to 775624 for the two crop saplings actually standing (the
+predicted five was stale field knowledge — three had grown since 0.6.0; per-plant rate is
+harness-pinned, the count is the world's); watermark advanced to real in-game plantTime
+only after the full rotation and persisted. HEALING PRESENCE proved its trigger exactly:
+care rows in the player's ring appeared in the same tick Nomad joined, booked from the
+credit-on-contact backlog heal their arrival enabled — care requires presence, observed.
+A design fact this surfaced, accepted: the player whose contact pays a zone's healing
+backlog books that healing — their arrival IS what enabled it, consistent with the
+credit-on-contact philosophy, but a long-absent zone's first visitor books its whole
+recovery. Zero errors. Remaining phase-A inch: a NEWLY planted crop booking +0.05 exactly
+once across sweeps (the watermark's live proof).
+
 The world keeps score. The owner chose the maximal reading — all four visions at once —
 which makes this the largest system in the mod, so the spec's whole job is phasing it into
 independently shippable, config-severable slices sharing ONE spine. Build order A -> E; each
