@@ -134,7 +134,7 @@ wrong measurement is the most common cause of a long debugging session here.
 | Devastating Storms | `RandEventSystem` event with `m_forceEnvironment` **left empty** — full vanilla event (name, duration, music, spawns, banner) without overriding weather. A `StormsForceWeather` toggle, **default false**, exists for owners not running Seasonality. |
 | Persistence | **World-scoped sparse file**, keyed by world uid. ZDO custom keys rejected: they attach to an *object*, drift attaches to a *coordinate*, and an anchor prefab per zone would trigger the `ZNetScene.CreateObjectsSorted` → `DestroyZDO` landmine. |
 | FireSystem | **A bridge to FireFront, never a second fire sim.** FireFront (com.raveniron.firefront, same studio) owns ignition, spread, burning, VFX. RW reads its fires by reflection (`FireManager.CollectActiveFirePositions`, public since FireFront 0.17.2) and raises zone `Scorch`. Without FireFront, FireSystem is dormant. Decided 2026-08-25. |
-| Client plugin | **One role-aware DLL** (amended 2026-08-26): headless simulates, clients render, hosts do both. Visual-only, no HUD, procedural effects only — no assets, no bundles. `RagnaroksWrath.Client` retired. | Client plugin (old) | ~~Required, but **visual-only**~~ — renders fire/storm/plague effects the server cannot push. No HUD. |
+| Client visuals | **One role-aware DLL** (amended 2026-08-26; was "separate client plugin"): headless simulates, clients render, hosts do both. Visual-only, no HUD, procedural effects only — no assets, no bundles. `RagnaroksWrath.Client` retired. |
 | Timeline | Open-ended. Done when it's done. |
 | Console prefix | `wrath` (e.g. `wrath status`) |
 | GUID / namespace | `com.raveniron.ragnarokswrath` / `RavenIron.RagnaroksWrath` |
