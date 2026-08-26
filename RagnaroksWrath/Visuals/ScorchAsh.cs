@@ -76,18 +76,22 @@ namespace RavenIron.RagnaroksWrath.Visuals
                 go.transform.SetParent(transform, worldPositionStays: false);
                 _system = go.AddComponent<ParticleSystem>();
 
+                // The 0.14.0 numbers made ash invisible (tiny, half-transparent, zone-
+                // dispersed). These are budgeted for visibility at scar-level scorch:
+                // ~20 particles/s x 7s alive over a 28m box = one clear dark fleck per
+                // ~6 square meters, drifting down — ash, not snow, but unmistakably there.
                 ParticleSystem.MainModule main = _system.main;
                 main.simulationSpace = ParticleSystemSimulationSpace.World;
                 main.startLifetime = new ParticleSystem.MinMaxCurve(5f, 9f);
                 main.startSpeed = new ParticleSystem.MinMaxCurve(0.02f, 0.1f);
-                main.startSize = new ParticleSystem.MinMaxCurve(0.06f, 0.18f);   // motes, not fog
-                main.startColor = new Color(0.24f, 0.22f, 0.21f, 0.5f);
+                main.startSize = new ParticleSystem.MinMaxCurve(0.12f, 0.3f);   // motes, not fog
+                main.startColor = new Color(0.16f, 0.15f, 0.14f, 0.75f);
                 main.gravityModifier = 0.015f;   // a slow, believable fall
-                main.maxParticles = 400;
+                main.maxParticles = 800;
 
                 ParticleSystem.ShapeModule shape = _system.shape;
                 shape.shapeType = ParticleSystemShapeType.Box;
-                shape.scale = new Vector3(42f, 1.5f, 42f);   // a zone's heart, above head height
+                shape.scale = new Vector3(28f, 1.5f, 28f);   // tight around the walker, above head height
 
                 ParticleSystem.EmissionModule emission = _system.emission;
                 emission.rateOverTime = 0f;

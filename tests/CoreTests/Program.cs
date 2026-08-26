@@ -881,16 +881,18 @@ namespace RagnaroksWrath.Tests
                 && FogMath.EmissionFor(float.NaN, 1f) == 0f
                 && FogMath.EmissionFor(1f, float.NaN) == 0f);
 
-            // Ash: FogMath's shape at the burn scars, its own floor and rate.
-            Check("trace scorch dusts nothing, real burns show, NaN shows nothing",
+            // Ash: FogMath's shape at the burn scars — but with a non-zero BASE at the
+            // floor, because a ramp-from-zero rendered real scars invisible (0.14.0).
+            Check("trace scorch dusts nothing, real burns visibly show, NaN shows nothing",
                 AshMath.EmissionFor(0.09f, 1f) == 0f
+                && Math.Abs(AshMath.EmissionFor(0.1f, 1f) - AshMath.BaseRate) < 0.01f
                 && Math.Abs(AshMath.EmissionFor(1f, 1f) - AshMath.FullRate) < 0.01f
                 && AshMath.EmissionFor(float.NaN, 1f) == 0f
                 && AshMath.EmissionFor(1f, 0f) == 0f);
 
             float halfAsh = AshMath.EmissionFor(0.55f, 1f);
-            Check($"ash ramps linearly from its floor ({halfAsh:F1})",
-                Math.Abs(halfAsh - AshMath.FullRate / 2f) < 0.5f);
+            Check($"ash ramps linearly from base to full ({halfAsh:F1})",
+                Math.Abs(halfAsh - (AshMath.BaseRate + (AshMath.FullRate - AshMath.BaseRate) * 0.5f)) < 0.5f);
         }
 
         // ---- Exposure (HealthSystem's pure half) --------------------------------------
