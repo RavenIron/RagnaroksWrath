@@ -776,16 +776,31 @@ intensify — blight-side spawns starred via task 12's surface, wild-side spawn 
 Resolution when one side's drift wins the ground; one MessageFeed landmark line per
 resolution. Dangerous ground that resolves itself.
 
-**Phase E — the nemesis. GATED on a feasibility decompile, not promised.** The open
-question that decides go/no-go: do world-spawned creatures persist across zone unload and
-server restart at all? (Two known traps sit here: spawn despawn behaviour, and the
-frozen-ZDO-on-owner-disconnect trap.) The REDUCED form that is probably achievable: the
-creature that kills a player is marked at that moment — starred up, nameplate decorated via
-the existing GetHoverName postfix pattern ("the troll that slew Nomad"), mark keyed by
-creature ZDOID + prefab and revalidated on encounter; escalates on re-encounter; a despawn
-means the nemesis got away, which is acceptable flavor rather than a bug. Full cross-session
-creature tracking is NOT promised. If the decompile says even the reduced form fights the
-engine, Phase E dies and the table records why.
+**Phase E — the nemesis. GATE DECIDED 2026-08-26: GO for the reduced form**, with one
+design correction the decompile forced. Facts in
+`docs/reference/CREATURE-PERSISTENCE-AND-NEMESIS-FACTS.md` (read on this machine against
+the live install):
+
+- **ZDOID keying is DEAD across sessions** — `ZDO.Load` reassigns every id
+  (`m_uid.SetID(++ZDOID.m_loadID)`). The spec's "mark keyed by creature ZDOID + prefab"
+  survives only within one server session.
+- **The mark rides the creature instead:** ZDO extra data round-trips the world save, so
+  a custom key (`rw_nemesis` = victim playerID) written onto the creature's ZDO IS the
+  cross-session identity — the world save is the ledger. Owner-side writes only (the
+  task 12 delegation pattern); at kill time the victim's client usually owns the
+  attacker's ZDO, and when it doesn't, the write defers to the next encounter.
+- **Kill attribution is vanilla's own:** `Character.m_lastHit.GetAttacker()` at
+  `OnDeath`, processed on the victim's client — the mark's birthplace.
+- **Star-up is safe on living creatures:** `SetMaxHealth` clamps only downward, so
+  raising the level lifts the ceiling without healing. Never lower a living level.
+- **GetHoverName is virtual** — the decorating-postfix nameplate pattern applies
+  ("the troll that slew Nomad").
+- **Despawns stay legitimate escapes:** night spawns (`s_despawnInDay`) and event mobs
+  (`s_eventCreature`) evaporate by vanilla's rules; a despawned nemesis got away. The
+  frozen-ZDO trap is tolerated, not touched: a frozen nemesis is simply not encountered.
+
+Full cross-session tracking via our own creature store remains NOT planned — the ZDO-key
+approach is strictly better and needs no new persistence.
 
 **Config:** `EnableRivalry` master (already bound) plus one toggle per phase; every rate,
 threshold, floor, and decay half-life in config.
