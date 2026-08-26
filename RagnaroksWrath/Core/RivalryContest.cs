@@ -121,5 +121,51 @@ namespace RavenIron.RagnaroksWrath.Core
                 if (kv.Value.Player == playerId) n++;
             return n;
         }
+
+        // ---- phase D: the spawn war ----------------------------------------------------
+
+        public enum WarWinner { None, Wild, Blight }
+
+        /// <summary>
+        /// A zone is CONTESTED when opposing pressures are BOTH strong: the blight holds it
+        /// (plague or corruption past the line) while people genuinely fight for it (total
+        /// care past its own line). Sick, untended ground is just sick; tended, healthy
+        /// ground is just loved. The war needs both.
+        /// </summary>
+        public static bool IsContested(float blight, float totalCare,
+                                       float blightThreshold, float careThreshold)
+        {
+            if (float.IsNaN(blight) || float.IsNaN(totalCare)) return false;
+            return blight >= blightThreshold && totalCare >= careThreshold;
+        }
+
+        /// <summary>The worse of plague and corruption — the blight side's strength.</summary>
+        public static float BlightOf(ZoneState state)
+        {
+            float p = float.IsNaN(state.Plague) ? 0f : state.Plague;
+            float c = float.IsNaN(state.Corruption) ? 0f : state.Corruption;
+            return Math.Max(p, c);
+        }
+
+        /// <summary>War intensity: 1 while contested, escalated by a storm overhead — the
+        /// "contest escalation" consumer rule 4 promised the weather. 0 when not contested.</summary>
+        public static float Intensity(bool contested, bool inStorm, float stormMultiplier)
+        {
+            if (!contested) return 0f;
+            if (!inStorm) return 1f;
+            return Math.Max(1f, float.IsNaN(stormMultiplier) ? 1f : stormMultiplier);
+        }
+
+        /// <summary>
+        /// Who won a war that just ended. Called at the contested -> uncontested edge:
+        /// the WILD won if the blight itself broke (the land healed past its line — even
+        /// if the tenders also faded, the ground IS clean, and clean ground is the wild's
+        /// victory); otherwise the tending failed while the blight stood — the BLIGHT won.
+        /// </summary>
+        public static WarWinner Winner(float blight, float blightThreshold)
+        {
+            if (float.IsNaN(blight) || blight < blightThreshold) return WarWinner.Wild;
+            return WarWinner.Blight;
+        }
     }
 }

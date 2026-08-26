@@ -151,6 +151,12 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float> MercySicknessBonus;
         public static ConfigEntry<int>   WardenZonesHeld;
         public static ConfigEntry<int>   DespoilerZonesHeld;
+        public static ConfigEntry<float> ContestBlightThreshold;
+        public static ConfigEntry<float> ContestCareThreshold;
+        public static ConfigEntry<float> StormContestMultiplier;
+        public static ConfigEntry<float> ContestStarBonus;
+        public static ConfigEntry<float> ContestWildSpawnChance;
+        public static ConfigEntry<int>   ContestWildMaxSpawned;
 
         // ---- Per-system master switches -------------------------------------------------
 
@@ -801,6 +807,46 @@ namespace RavenIron.RagnaroksWrath.Config
                 new ConfigDescription(
                     "Zones held as dominant harmer to earn the Despoiler title.",
                     new AcceptableValueRange<int>(1, 64)));
+
+            ContestBlightThreshold = cfg.Bind(rivalry, "ContestBlightThreshold", 0.5f,
+                new ConfigDescription(
+                    "Blight (the worse of plague and corruption) a zone needs to be WAR " +
+                    "ground. Contested = this AND real human care both present: sick " +
+                    "untended ground is just sick, tended healthy ground is just loved.",
+                    new AcceptableValueRange<float>(0.1f, 1f)));
+
+            ContestCareThreshold = cfg.Bind(rivalry, "ContestCareThreshold", 0.3f,
+                new ConfigDescription(
+                    "Total care (all players summed) a blighted zone needs to be contested " +
+                    "rather than merely lost.",
+                    new AcceptableValueRange<float>(0.05f, 5f)));
+
+            StormContestMultiplier = cfg.Bind(rivalry, "StormContestMultiplier", 2f,
+                new ConfigDescription(
+                    "War intensity while a Devastating Storm covers a contested zone — the " +
+                    "'contest escalation' rule 4 always promised the weather. 1 disables " +
+                    "escalation.",
+                    new AcceptableValueRange<float>(1f, 5f)));
+
+            ContestStarBonus = cfg.Bind(rivalry, "ContestStarBonus", 1f,
+                new ConfigDescription(
+                    "Extra multiplier on the blight's star odds per point of war intensity " +
+                    "(stacks on the task 12 corruption empowerment). At 1.0, contested " +
+                    "ground doubles the odds and a storm-escalated war triples them.",
+                    new AcceptableValueRange<float>(0f, 5f)));
+
+            ContestWildSpawnChance = cfg.Bind(rivalry, "ContestWildSpawnChance", 50f,
+                new ConfigDescription(
+                    "Spawn chance override for the wildlife list near a player on contested " +
+                    "ground (vanilla's own pheromone machinery — the wild answering the " +
+                    "war horn). Vanilla base chances are typically far lower.",
+                    new AcceptableValueRange<float>(0f, 100f)));
+
+            ContestWildMaxSpawned = cfg.Bind(rivalry, "ContestWildMaxSpawned", 6,
+                new ConfigDescription(
+                    "Max concurrent instances override for each wildlife prefab during the " +
+                    "war surge.",
+                    new AcceptableValueRange<int>(1, 20)));
 
             const string systems = "4 - Systems";
 

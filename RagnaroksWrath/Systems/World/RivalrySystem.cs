@@ -86,6 +86,16 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         public static int CareZonesHeld(long playerId) => RivalryContest.ZonesHeld(_careHolders, playerId);
         public static int HarmZonesHeld(long playerId) => RivalryContest.ZonesHeld(_harmHolders, playerId);
 
+        // ---- phase D: the spawn war ----------------------------------------------------
+        // Contested zones and their intensities, rebuilt each tick. Static for ZoneSync
+        // (the ring push carries intensity to clients) and any authority-side reader.
+        private static readonly Dictionary<ZoneKey, float> _warIntensity = new Dictionary<ZoneKey, float>(8);
+
+        /// <summary>War intensity at a zone: 0 = at peace, 1 = contested, higher = a storm
+        /// is escalating it. Authority-side truth; clients read their synced copy.</summary>
+        public static float WarIntensityAt(ZoneKey zone)
+            => _warIntensity.TryGetValue(zone, out float i) ? i : 0f;
+
         public void Initialise()
         {
             _cropPrefabs = (ModConfig.FarmingCropPrefabs.Value ?? "")
@@ -118,6 +128,7 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             ObserveHealing();
             SweepTending();
             UpdateContest();
+            UpdateWar();
 
             _sinceSave += deltaSeconds;
             if (_sinceSave >= SaveCadenceSeconds)
@@ -315,6 +326,67 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             if (dead != null)
                 for (int i = 0; i < dead.Count; i++) values.Remove(dead[i]);
         }
+
+        /// <summary>
+        /// Phase D: find the contested zones, escalate them under storms, and — at the
+        /// contested -> uncontested edge — declare the winner, once, to whoever is near.
+        /// The war set re-derives from the store and ledger every pass; a restart mid-war
+        /// re-derives the same war, losing at most a resolution that happened during
+        /// downtime (the Winterborn shrug).
+        /// </summary>
+        private void UpdateWar()
+        {
+            float blightThr = ModConfig.ContestBlightThreshold.Value;
+            float careThr = ModConfig.ContestCareThreshold.Value;
+            float stormMult = ModConfig.StormContestMultiplier.Value;
+
+            // Total care per zone — the wild side's human backing. _careValues was just
+            // rebuilt by UpdateContest, so sum it rather than rescanning the ledger.
+            _warScratch.Clear();
+            foreach (KeyValuePair<ZoneKey, Dictionary<long, float>> kv in _careValues)
+            {
+                float total = 0f;
+                foreach (float v in kv.Value.Values) total += v;
+
+                ZoneState state = Persistence.Get(kv.Key);
+                float blight = RivalryContest.BlightOf(state);
+                if (!RivalryContest.IsContested(blight, total, blightThr, careThr)) continue;
+
+                bool inStorm = WeatherSystem.IsStormAt(kv.Key.ToWorldPos());
+                _warScratch[kv.Key] = RivalryContest.Intensity(true, inStorm, stormMult);
+            }
+
+            // Resolution: zones that WERE at war and no longer are. Winner judged by
+            // whether the blight itself broke.
+            _warEnded.Clear();
+            foreach (KeyValuePair<ZoneKey, float> kv in _warIntensity)
+                if (!_warScratch.ContainsKey(kv.Key))
+                    _warEnded.Add(kv.Key);
+
+            for (int i = 0; i < _warEnded.Count; i++)
+            {
+                ZoneKey zone = _warEnded[i];
+                RivalryContest.WarWinner winner = RivalryContest.Winner(
+                    RivalryContest.BlightOf(Persistence.Get(zone)), blightThr);
+
+                if (ModConfig.AnnounceContests.Value)
+                    Feedback.MessageFeed.ToPlayersNear(zone.ToWorldPos(), 64f,
+                        winner == RivalryContest.WarWinner.Wild
+                            ? "The wild has taken this ground back."
+                            : "The blight has claimed this ground.",
+                        Feedback.MessageFeed.Placement.Centre);
+
+                RagnaroksWrath.Log.LogInfo(
+                    $"[{Name}] war in {zone} resolved: {winner}.");
+            }
+
+            _warIntensity.Clear();
+            foreach (KeyValuePair<ZoneKey, float> kv in _warScratch)
+                _warIntensity[kv.Key] = kv.Value;
+        }
+
+        private readonly Dictionary<ZoneKey, float> _warScratch = new Dictionary<ZoneKey, float>(8);
+        private readonly List<ZoneKey> _warEnded = new List<ZoneKey>(4);
 
         private void Announce(List<RivalryContest.Flip> flips, string format)
         {

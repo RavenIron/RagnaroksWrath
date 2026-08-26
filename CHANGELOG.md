@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.15.0
+
+- **The spawn war.** A blighted zone that people genuinely fight for — sick past the line
+  AND tended past its own — becomes CONTESTED ground, and both sides answer: the blight's
+  spawns come up starred at doubled odds, while the wild surges to its defenders through
+  the game's own spawn-attraction machinery (more deer, boar and hare answering the war
+  horn near anyone standing their ground). A Devastating Storm overhead escalates the
+  whole thing.
+- Wars end when one side's drift wins: the land healing past the line is the wild's
+  victory, the tending fading while blight stands is the blight's — announced once, to
+  whoever is there to hear it. Dangerous ground that resolves itself.
+
+## 0.14.1
+
+- Ash made properly visible (bigger, darker, denser, tighter) — 0.14.0's motes were
+  arithmetic-invisible at real scar scorch.
+
 ## 0.14.0
 
 - **Ash over the burn scars.** Zones the fire marked now show it: gray ash motes drift

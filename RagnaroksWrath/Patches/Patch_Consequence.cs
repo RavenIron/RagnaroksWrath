@@ -50,10 +50,19 @@ namespace RavenIron.RagnaroksWrath.Patches
         public static float EmpowerMultiplierAt(Vector3 pos)
         {
             if (!ModConfig.EnableConsequence.Value || !ModConfig.ConsequenceEmpower.Value) return 1f;
-            ZoneState s = ZoneSync.StateAt(ZoneKey.FromWorldPos(pos));
-            return ConsequenceMath.EmpowerLevelUpMultiplier(s.Corruption,
+            ZoneKey zone = ZoneKey.FromWorldPos(pos);
+            ZoneState s = ZoneSync.StateAt(zone);
+            float mult = ConsequenceMath.EmpowerLevelUpMultiplier(s.Corruption,
                 ModConfig.EmpowerCorruptionThreshold.Value,
                 ModConfig.EmpowerLevelUpMultiplierAtFull.Value);
+
+            // Task 13 phase D: the blight fights harder on contested ground, harder still
+            // under a storm (intensity > 1). At peace this is exactly the task 12 number.
+            float war = ZoneSync.WarAt(zone);
+            if (war > 0f && ModConfig.EnableRivalry.Value)
+                mult *= 1f + ModConfig.ContestStarBonus.Value * war;
+
+            return mult;
         }
     }
 

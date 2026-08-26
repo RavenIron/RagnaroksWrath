@@ -679,6 +679,29 @@ bush, and the grudge title rendering on a nameplate.
 - **Standing titles:** Warden / Despoiler at >= 3 zones held per column, edge-triggered
   via the shared EdgeTitle helper. Holder maps are static on RivalrySystem (the
   SeasonSystem.Current pattern) for BiomeState/Health/Title to read.
+
+**PHASE D BUILT 2026-08-26 at 0.15.0 (in-game verification pending) — the spawn war:**
+
+- **Contested** = blight (worse of plague/corruption) >= 0.5 AND total zone care >= 0.3 —
+  sick, untended ground is just sick; tended, healthy ground is just loved; the war needs
+  both. Intensity 1, x2 under a Devastating Storm — rule 4's "contest escalation"
+  breadcrumb finally cashed. War state re-derives from store+ledger every pass (a restart
+  mid-war re-derives the same war; a resolution during downtime is a Winterborn shrug).
+- **Blight side:** the task 12 star surface gains x(1 + ContestStarBonus x intensity) —
+  contested ground doubles star odds, storm war triples.
+- **Wild side, THE FIND:** vanilla's own pheromone machinery (`SE_Stats.m_pheromoneTarget`
+  and friends — the Bog Witch meads' fields, decompile-verified public, read by
+  `UpdateSpawnList` on exactly the machine the reach rule lives on). ConsequenceEffects
+  carries invisible TTL'd "war horn" SEs targeting the wildlife list while its player
+  stands on contested ground — more deer answering, through the game's own rules, NO
+  spawn patch at all. Horns silence by expiry when the war ends or the player leaves.
+- **Resolution:** at the contested->uncontested edge, the wild won if the blight itself
+  broke (clean ground is the wild's victory even if the tenders also faded); otherwise
+  the blight won. One Centre-screen line to players near. Wire: ring push carries war
+  intensity per zone (RPC now ...zone_state3).
+- Acceptance protocol (solo-viable): stage care 0.5 in the outbreak (blight 1.0 there) ->
+  contested; verify war horns log + starred odds; then hand-cure or fade -> exactly one
+  resolution line, wild or blight by which side actually broke.
 - The ledger is the third write-behind store, so it appears in `WorldTick.OnDestroy` per
   the 0.8.2 rule.
 

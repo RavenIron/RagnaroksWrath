@@ -1302,6 +1302,28 @@ namespace RagnaroksWrath.Tests
                 && RivalryContest.ZonesHeld(holders, 999L) == 0
                 && RivalryContest.ZonesHeld(holders, 0L) == 0);
 
+            // Phase D: the spawn war's gates and its verdict.
+            Check("contested needs BOTH sides strong — sick alone or loved alone is peace",
+                RivalryContest.IsContested(0.6f, 0.4f, 0.5f, 0.3f)
+                && !RivalryContest.IsContested(0.6f, 0.2f, 0.5f, 0.3f)
+                && !RivalryContest.IsContested(0.3f, 0.9f, 0.5f, 0.3f)
+                && !RivalryContest.IsContested(float.NaN, 0.9f, 0.5f, 0.3f));
+
+            Check("blight is the worse of plague and corruption",
+                Math.Abs(RivalryContest.BlightOf(new ZoneState { Plague = 0.3f, Corruption = 0.7f }) - 0.7f) < 1e-5f
+                && RivalryContest.BlightOf(new ZoneState { Plague = float.NaN, Corruption = 0.4f }) == 0.4f);
+
+            Check("storms escalate the war and peace has no intensity",
+                RivalryContest.Intensity(contested: true, inStorm: false, 2f) == 1f
+                && RivalryContest.Intensity(contested: true, inStorm: true, 2f) == 2f
+                && RivalryContest.Intensity(contested: false, inStorm: true, 2f) == 0f
+                && RivalryContest.Intensity(contested: true, inStorm: true, float.NaN) == 1f);
+
+            Check("the wild wins when the blight itself broke; the blight wins otherwise",
+                RivalryContest.Winner(0.3f, 0.5f) == RivalryContest.WarWinner.Wild
+                && RivalryContest.Winner(0.8f, 0.5f) == RivalryContest.WarWinner.Blight
+                && RivalryContest.Winner(float.NaN, 0.5f) == RivalryContest.WarWinner.Wild);
+
             // Mercy is decay-only and never a penalty.
             float plain = ExposureMath.Decay(1f, 20f, false, 2f, 60f);
             float merciful = ExposureMath.Decay(1f, 20f, false, 2f, 60f, 1.5f);
