@@ -132,6 +132,12 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float>  CropWitherBlightThreshold;
         public static ConfigEntry<string> WildlifePrefabs;
 
+        // ---- Rivalry --------------------------------------------------------------------
+        public static ConfigEntry<float> RivalryIntervalSeconds;
+        public static ConfigEntry<float> RivalryHalfLifeHours;
+        public static ConfigEntry<float> CarePerHealedPoint;
+        public static ConfigEntry<float> TendingCarePerPlant;
+
         // ---- Per-system master switches -------------------------------------------------
 
         public static ConfigEntry<bool> EnableSeason;
@@ -660,6 +666,37 @@ namespace RavenIron.RagnaroksWrath.Config
                 "plague, never starred by corruption. An explicit list rather than a " +
                 "faction guess - factions lump deer in with greydwarfs. Game content, so " +
                 "data rather than code.");
+
+            const string rivalry = "17 - Rivalry";
+
+            RivalryIntervalSeconds = cfg.Bind(rivalry, "RivalryIntervalSeconds", 30f,
+                new ConfigDescription(
+                    "Seconds between ledger passes (decay, healing observation, one tending " +
+                    "sweep step). Deliberately offset from Farming's 45 and AwayFromHome's " +
+                    "60 so the ZDO walks do not land on the same frame.",
+                    new AcceptableValueRange<float>(5f, 300f)));
+
+            RivalryHalfLifeHours = cfg.Bind(rivalry, "RivalryHalfLifeHours", 48f,
+                new ConfigDescription(
+                    "Real hours for recorded harm and care to fade by half. Grudges and " +
+                    "gratitude both decay — the world forgives on a long enough timeline, " +
+                    "and the ledger stays sparse because of it. 0 would disable decay, so " +
+                    "the floor is 1.",
+                    new AcceptableValueRange<float>(1f, 720f)));
+
+            CarePerHealedPoint = cfg.Bind(rivalry, "CarePerHealedPoint", 1f,
+                new ConfigDescription(
+                    "Care booked per point of zone damage healed while present, split among " +
+                    "everyone whose contact ring covered the zone. A full plague cure earns " +
+                    "its attendants one point between them at the default.",
+                    new AcceptableValueRange<float>(0f, 10f)));
+
+            TendingCarePerPlant = cfg.Bind(rivalry, "TendingCarePerPlant", 0.05f,
+                new ConfigDescription(
+                    "Care booked to a crop's planter, once per plant ever (watermarked " +
+                    "against replant-farming and restarts). Uses the same crop prefab list " +
+                    "as Farming.",
+                    new AcceptableValueRange<float>(0f, 1f)));
 
             const string systems = "4 - Systems";
 

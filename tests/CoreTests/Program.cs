@@ -47,6 +47,7 @@ namespace RagnaroksWrath.Tests
             ExposureTests();
             HealthStoreTests();
             ConsequenceTests();
+            RivalryTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -1083,6 +1084,114 @@ namespace RagnaroksWrath.Tests
                 && !ConsequenceMath.IsPassivePrefab("BoarPiggy(Clone)", "Deer,Boar,Hare")
                 && !ConsequenceMath.IsPassivePrefab("Deer(Clone)", "")
                 && !ConsequenceMath.IsPassivePrefab("", "Deer"));
+        }
+
+        // ---- Rivalry (phase A: the influence ledger) -----------------------------------
+
+        private static void RivalryTests()
+        {
+            Console.WriteLine("\nRivalry");
+
+            // Decay: exactly half after one half-life, compounding correctly, disabled at 0.
+            float half = RivalryMath.DecayFactor(48f, 48f * 3600f);
+            Check($"one half-life fades a row to exactly half ({half:F4})",
+                Math.Abs(half - 0.5f) < 1e-4f);
+
+            float quarter = RivalryMath.DecayFactor(48f, 96f * 3600f);
+            Check($"two half-lives fade to a quarter ({quarter:F4})",
+                Math.Abs(quarter - 0.25f) < 1e-4f);
+
+            Check("zero elapsed, zero half-life and NaN all mean no decay",
+                RivalryMath.DecayFactor(48f, 0f) == 1f
+                && RivalryMath.DecayFactor(0f, 3600f) == 1f
+                && RivalryMath.DecayFactor(float.NaN, 3600f) == 1f);
+
+            // Healing care: only decreases book, and the split is even.
+            Check("healing books care, worsening books nothing",
+                RivalryMath.CareFromHealing(1.0f, 0.7f, 1f) > 0f
+                && RivalryMath.CareFromHealing(0.7f, 1.0f, 1f) == 0f
+                && Math.Abs(RivalryMath.CareFromHealing(1.0f, 0.7f, 2f) - 0.6f) < 1e-4f);
+
+            Check("care splits evenly and nobody splits with zero people",
+                Math.Abs(RivalryMath.SplitAmong(0.6f, 3) - 0.2f) < 1e-5f
+                && RivalryMath.SplitAmong(0.6f, 0) == 0f
+                && RivalryMath.SplitAmong(float.NaN, 2) == 0f);
+
+            Check("zone damage sums every field and neutralises NaN",
+                Math.Abs(RivalryMath.ZoneDamage(new ZoneState
+                    { Fertility = 0.1f, Corruption = 0.2f, Scorch = 0.3f, Frost = 0.1f, Plague = 0.3f }) - 1.0f) < 1e-5f
+                && RivalryMath.ZoneDamage(new ZoneState { Plague = float.NaN, Frost = 0.5f }) == 0.5f);
+
+            Check("the watermark admits only genuinely newer plants",
+                RivalryMath.IsNewPlant(100, 50)
+                && !RivalryMath.IsNewPlant(50, 50)
+                && !RivalryMath.IsNewPlant(0, 0));
+
+            // The ledger itself, through the shipping writer.
+            string dir = Path.Combine(Path.GetTempPath(), "rw_rivalry_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string path = Path.Combine(dir, "rivalry.dat");
+
+            try
+            {
+                RivalryLedger.OverridePath = path;
+
+                RivalryLedger.Load();
+                Check("a fresh world has an empty, usable ledger with watermark 0",
+                    RivalryLedger.IsLoaded && RivalryLedger.Count == 0
+                    && RivalryLedger.PlantWatermark == 0);
+
+                var zoneA = new ZoneKey(0, -1);
+                RivalryLedger.AddHarm(zoneA, 111L, 0.5f);
+                RivalryLedger.AddCare(zoneA, 111L, 0.25f);
+                RivalryLedger.AddCare(zoneA, 222L, 1.0f);
+                RivalryLedger.AddCare(new ZoneKey(3, 3), 111L, 0.1f);
+                RivalryLedger.PlantWatermark = 987654321L;
+                RivalryLedger.SaveIfDirty();
+                RivalryLedger.Load();
+                var row = RivalryLedger.Get(zoneA, 111L);
+                Check($"rows and watermark survive the shipping writer (harm={row.Harm:F2} care={row.Care:F2})",
+                    RivalryLedger.Count == 3
+                    && Math.Abs(row.Harm - 0.5f) < 1e-4f && Math.Abs(row.Care - 0.25f) < 1e-4f
+                    && RivalryLedger.PlantWatermark == 987654321L);
+
+                RivalryLedger.PlantWatermark = 5L;   // an attempt to LOWER it
+                Check("the watermark only rises", RivalryLedger.PlantWatermark == 987654321L);
+
+                RivalryLedger.AddHarm(zoneA, 0L, 9f);
+                Check("player id 0 is never recorded", RivalryLedger.Get(zoneA, 0L).Harm == 0f);
+
+                RivalryLedger.DecayAll(0.5f);
+                Check($"decay halves every column ({RivalryLedger.Get(zoneA, 111L).Harm:F3})",
+                    Math.Abs(RivalryLedger.Get(zoneA, 111L).Harm - 0.25f) < 1e-4f
+                    && Math.Abs(RivalryLedger.Get(zoneA, 222L).Care - 0.5f) < 1e-4f);
+
+                RivalryLedger.DecayAll(1e-6f);
+                RivalryLedger.SaveIfDirty();
+                RivalryLedger.Load();
+                Check("rows that fade to nothing are pruned, the file stays sparse",
+                    RivalryLedger.Count == 0);
+
+                byte[] raw = File.ReadAllBytes(path);
+                Check("the ledger is written without a BOM",
+                    raw.Length >= 3 && !(raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF));
+
+                File.WriteAllLines(path, new[] { "version\t1", "0\t0\t555\t-3\t-9" });
+                RivalryLedger.Load();
+                Check("hand-edited negatives are floored on read, not trusted",
+                    RivalryLedger.Get(new ZoneKey(0, 0), 555L).Harm == 0f);
+
+                File.WriteAllBytes(path, new byte[] { 0x00, 0xFF, 0x00, 0xFF });
+                RivalryLedger.Load();
+                Check("a corrupt ledger degrades to empty and is quarantined",
+                    RivalryLedger.IsLoaded && RivalryLedger.Count == 0
+                    && File.Exists(path + ".corrupt") && !File.Exists(path));
+            }
+            finally
+            {
+                RivalryLedger.OverridePath = null;
+                try { Directory.Delete(dir, true); } catch { }
+            }
         }
 
         // ---- harness ----------------------------------------------------------------

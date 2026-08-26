@@ -15,7 +15,7 @@ namespace RavenIron.RagnaroksWrath
     {
         public const string PluginId      = "com.raveniron.ragnarokswrath";
         public const string PluginName    = "Ragnarok's Wrath";
-        public const string PluginVersion = "0.10.0";
+        public const string PluginVersion = "0.11.0";
 
         public static RagnaroksWrath Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
@@ -91,6 +91,7 @@ namespace RavenIron.RagnaroksWrath
             WorldTick.Register(new Systems.World.WorldStateSystem());
             WorldTick.Register(new Systems.World.HealthSystem());
             WorldTick.Register(new Systems.World.ConsequenceSystem());
+            WorldTick.Register(new Systems.World.RivalrySystem());
             WorldTick.Register(new Systems.TitleSystem());
             WorldTick.Register(new Systems.ZoneSyncSystem());
         }

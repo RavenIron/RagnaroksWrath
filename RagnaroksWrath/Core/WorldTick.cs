@@ -159,6 +159,7 @@ namespace RavenIron.RagnaroksWrath.Core
             // store with a write-behind cadence must appear in this method; TitleStore is
             // absent because it saves on Set.
             HealthStore.SaveIfDirty();
+            RivalryLedger.SaveIfDirty();
 
             _systems.Clear();
             _lastRun.Clear();

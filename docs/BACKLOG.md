@@ -574,7 +574,30 @@ four framing calls and three flavor calls below are theirs:
 
 ---
 
-## 13. `RivalrySystem` — DESIGN AGREED 2026-08-26, not built. PHASED.
+## 13. `RivalrySystem` — PHASE A BUILT 2026-08-26 at 0.11.0 (in-game verification pending);
+## phases B–E not started. PHASED.
+
+Phase A landed: `RivalryMath` + `RivalryLedger` (167/167 off-game, 16 new — decay
+half-life exact, watermark monotonic, negatives floored on read, prune-to-sparse,
+quarantine, no BOM) + `RivalrySystem` phase-A writers. Decisions the build made:
+
+- **Tending verified at the source:** `Piece.SetCreator` writes `GetPlayerID()` into
+  `ZDOVars.s_creator` (Player.cs decompile) — the creator IS the ledger's identity long.
+  The sweep copies FarmingSystem's one-whole-prefab-per-tick walk; the persisted plantTime
+  WATERMARK makes each plant book exactly once across restarts (rebooting must not be a
+  farming strategy). Known accepted gap: a plant sown mid-rotation after its prefab's turn
+  can slip under the advancing watermark — rare, under-credit, Winterborn shrug.
+- **Healing presence is observation, not coupling:** rivalry watches zone damage decrease
+  between its own looks and splits care among the ring-present (BiomeDrift's own reach);
+  baselines are forgotten for uncovered zones so a returning player cannot inherit the gap.
+  No hooks into BiomeStateSystem — the store itself is the signal.
+- **ARSON IS DORMANT, deliberately:** the igniter-aware hook the spec assumed lives in
+  FireFront, whose cross-mod surface carries positions only. Booking harm by presence
+  would frame bystanders. The harm column exists, unwritten, gated on a FireFront 0.17.3
+  igniter surface (its own cross-repo mini-design). Phase B's grudge teeth need harm to
+  bite on — sequence that FireFront work before or with phase B.
+- The ledger is the third write-behind store, so it appears in `WorldTick.OnDestroy` per
+  the 0.8.2 rule.
 
 The world keeps score. The owner chose the maximal reading — all four visions at once —
 which makes this the largest system in the mod, so the spec's whole job is phasing it into

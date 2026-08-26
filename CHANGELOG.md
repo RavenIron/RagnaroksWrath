@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.0
+
+- **The world keeps score (first ledger).** Every zone now remembers who tended it: planting
+  crops books care to the planter (once per plant, ever), and standing by while damaged land
+  heals books care to those present. Both fade over days — the world forgives on a long
+  enough timeline. Nothing reads the ledger yet; grudges, contests and the spawn war build
+  on it in coming releases. Stored beside the other world files, plain text, admin-editable.
+
 ## 0.10.0
 
 - **The land pushes back.** Four consequences of drift, all reversible by curing the land,
