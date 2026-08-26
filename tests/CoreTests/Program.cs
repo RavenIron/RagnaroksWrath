@@ -44,6 +44,8 @@ namespace RagnaroksWrath.Tests
             EcologyTests();
             TitleTests();
             FogTests();
+            ExposureTests();
+            HealthStoreTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -875,6 +877,136 @@ namespace RagnaroksWrath.Tests
                 FogMath.EmissionFor(1f, 0f) == 0f
                 && FogMath.EmissionFor(float.NaN, 1f) == 0f
                 && FogMath.EmissionFor(1f, float.NaN) == 0f);
+        }
+
+        // ---- Exposure (HealthSystem's pure half) --------------------------------------
+
+        private static void ExposureTests()
+        {
+            Console.WriteLine("\nExposure");
+
+            // Predict before reading: 60s on plague 0.95 at 30min-to-max is
+            // 0.95 / (30*60) * 60 = 0.031667 exposure.
+            float oneMinute = ExposureMath.Accrue(0f, 0.95f, 30f, false, 0.5f, 60f);
+            Check($"a minute in the outbreak matches prediction ({oneMinute:F5})",
+                Math.Abs(oneMinute - 0.95f / 30f) < 1e-5f);
+
+            Check("below the fog floor nothing accrues — the sickness keeps the fog's secret",
+                ExposureMath.Accrue(0.2f, 0.1499f, 30f, false, 0.5f, 600f) == 0.2f);
+
+            float resisted = ExposureMath.Accrue(0f, 0.95f, 30f, true, 0.5f, 60f);
+            Check($"poison resistance halves the taking hold ({resisted:F5})",
+                Math.Abs(resisted - 0.95f / 60f) < 1e-5f);
+
+            float e = 0f;
+            for (int i = 0; i < 30 * 12; i++)   // 30 minutes of 5s ticks at full plague
+                e = ExposureMath.Accrue(e, 1f, 30f, false, 0.5f, 5f);
+            Check($"full plague maxes out in the configured minutes ({e:F3})",
+                Math.Abs(e - 1f) < 1e-3f);
+
+            Check("exposure is capped at 1",
+                ExposureMath.Accrue(0.999f, 1f, 5f, false, 0.5f, 3600f) == 1f);
+
+            float drained = ExposureMath.Decay(1f, 20f, false, 2f, 60f);
+            Check($"a minute of recovery matches prediction ({drained:F3})",
+                Math.Abs(drained - 0.95f) < 1e-5f);
+
+            float rested = ExposureMath.Decay(1f, 20f, true, 2f, 60f);
+            Check($"rested doubles the drain ({rested:F3})",
+                Math.Abs(rested - 0.90f) < 1e-5f);
+
+            Check("recovery terminates at exactly zero, not almost-zero",
+                ExposureMath.Decay(0.001f, 20f, false, 2f, 60f) == 0f);
+
+            Check("NaN inputs are neutralised, not propagated",
+                !float.IsNaN(ExposureMath.Accrue(float.NaN, float.NaN, 30f, false, float.NaN, 60f))
+                && ExposureMath.Decay(float.NaN, 20f, false, 2f, 60f) == 0f
+                && ExposureMath.TierFor(float.NaN, 0.25f, 0.5f, 0.8f) == 0);
+
+            Check("tiers begin at their thresholds, inclusive",
+                ExposureMath.TierFor(0.2f, 0.25f, 0.5f, 0.8f) == 0
+                && ExposureMath.TierFor(0.25f, 0.25f, 0.5f, 0.8f) == 1
+                && ExposureMath.TierFor(0.5f, 0.25f, 0.5f, 0.8f) == 2
+                && ExposureMath.TierFor(0.8f, 0.25f, 0.5f, 0.8f) == 3);
+
+            // The owner's palette call: stamina fails FIRST. At exposure 0.4 (past tier 1,
+            // short of tier 2) stamina already sags while health regen is untouched.
+            Check("stamina fails before health regen",
+                ExposureMath.StaminaRegenMultiplier(0.4f, 0.25f, 0.4f) < 1f
+                && ExposureMath.HealthRegenMultiplier(0.4f, 0.5f, 0.5f) == 1f);
+
+            float midStamina = ExposureMath.StaminaRegenMultiplier(0.625f, 0.25f, 0.4f);
+            Check($"stamina ramps linearly to its floor ({midStamina:F2})",
+                Math.Abs(midStamina - 0.7f) < 1e-4f
+                && Math.Abs(ExposureMath.StaminaRegenMultiplier(1f, 0.25f, 0.4f) - 0.4f) < 1e-4f);
+
+            Check("below its start tier every multiplier is exactly 1",
+                ExposureMath.StaminaRegenMultiplier(0.2f, 0.25f, 0.4f) == 1f
+                && ExposureMath.HealthRegenMultiplier(0.45f, 0.5f, 0.5f) == 1f);
+
+            Check("quantized sync fires on a full step or a zero transition, not on dust",
+                !ExposureMath.QuantizedDiffer(0.5f, 0.505f)
+                && ExposureMath.QuantizedDiffer(0.5f, 0.511f)
+                && ExposureMath.QuantizedDiffer(0.005f, 0f)
+                && !ExposureMath.QuantizedDiffer(0f, 0f));
+        }
+
+        // ---- HealthStore ---------------------------------------------------------------
+
+        private static void HealthStoreTests()
+        {
+            Console.WriteLine("\nHealthStore");
+
+            string dir = Path.Combine(Path.GetTempPath(), "rw_health_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string path = Path.Combine(dir, "health.dat");
+
+            try
+            {
+                HealthStore.OverridePath = path;
+
+                HealthStore.Load();
+                Check("a fresh world has no exposure and a usable store",
+                    HealthStore.IsLoaded && HealthStore.Count == 0);
+
+                HealthStore.SaveIfDirty();
+                Check("a clean store writes nothing", !File.Exists(path));
+
+                HealthStore.Set(123456789L, 0.4321f);
+                HealthStore.Set(987654321L, 0.05f);
+                HealthStore.SaveIfDirty();
+                HealthStore.Load();
+                Check($"exposure survives a round-trip through the shipping writer (got {HealthStore.Get(123456789L):F4})",
+                    HealthStore.Count == 2 && Math.Abs(HealthStore.Get(123456789L) - 0.4321f) < 1e-4f);
+
+                HealthStore.Set(0L, 0.9f);
+                Check("player id 0 is never recorded", HealthStore.Get(0L) == 0f);
+
+                HealthStore.Set(987654321L, 0f);
+                HealthStore.SaveIfDirty();
+                HealthStore.Load();
+                Check("a recovered player's row is removed entirely", HealthStore.Count == 1);
+
+                byte[] raw = File.ReadAllBytes(path);
+                Check("the health store is written without a BOM",
+                    raw.Length >= 3 && !(raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF));
+
+                File.WriteAllLines(path, new[] { "version\t1", "555\t1.7" });
+                HealthStore.Load();
+                Check($"an out-of-range value in the file is clamped on read ({HealthStore.Get(555L):F1})",
+                    HealthStore.Get(555L) == 1f);
+
+                File.WriteAllBytes(path, new byte[] { 0x00, 0xFF, 0x00, 0xFF });
+                HealthStore.Load();
+                Check("a corrupt health store degrades to empty and is quarantined",
+                    HealthStore.IsLoaded && HealthStore.Count == 0
+                    && File.Exists(path + ".corrupt") && !File.Exists(path));
+            }
+            finally
+            {
+                HealthStore.OverridePath = null;
+                try { Directory.Delete(dir, true); } catch { }
+            }
         }
 
         // ---- harness ----------------------------------------------------------------

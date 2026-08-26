@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.0
+
+- **Plague sickness.** Standing on plagued ground now builds exposure on YOU — slowly, over
+  tens of minutes. Stamina fails first, then healing; the sickness weakens but can never
+  kill. It shows as a status icon (vanilla's own bar) and fades away from blighted land —
+  faster rested, slower to take hold with poison resistance. Leaving and rejoining is not a
+  cure: exposure is persisted per player, world-scoped, in the same admin-editable format as
+  everything else.
+- **The chill.** Land deep in frost now bites players the weather alone would not — unless
+  they carry frost resistance, stand by a fire, or shelter. Never lethal, never Freezing.
+
 ## 0.7.1
 
 First packaged build. Everything below verified live on a dedicated server.

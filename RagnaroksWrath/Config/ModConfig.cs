@@ -96,6 +96,22 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<bool>  PlagueFogEnabled;
         public static ConfigEntry<float> PlagueFogDensity;
 
+        // ---- Health ---------------------------------------------------------------------
+        public static ConfigEntry<float> HealthIntervalSeconds;
+        public static ConfigEntry<float> ExposureMinutesToMax;
+        public static ConfigEntry<float> ExposureRecoveryMinutes;
+        public static ConfigEntry<float> ExposureRestedRecoveryMultiplier;
+        public static ConfigEntry<float> ExposurePoisonResistMultiplier;
+        public static ConfigEntry<float> ExposureTier1;
+        public static ConfigEntry<float> ExposureTier2;
+        public static ConfigEntry<float> ExposureTier3;
+        public static ConfigEntry<float> SicknessStaminaRegenAtMax;
+        public static ConfigEntry<float> SicknessHealthRegenAtMax;
+        public static ConfigEntry<bool>  FrostChillEnabled;
+        public static ConfigEntry<float> FrostChillThreshold;
+        public static ConfigEntry<float> ChillStaminaRegenMultiplier;
+        public static ConfigEntry<float> ChillHealthRegenMultiplier;
+
         // ---- Per-system master switches -------------------------------------------------
 
         public static ConfigEntry<bool> EnableSeason;
@@ -430,6 +446,94 @@ namespace RavenIron.RagnaroksWrath.Config
                     "fog regardless - the frontier's fresh seeds should not telegraph " +
                     "themselves the tick they spread.",
                     new AcceptableValueRange<float>(0f, 4f)));
+
+            const string health = "15 - Health";
+
+            HealthIntervalSeconds = cfg.Bind(health, "HealthIntervalSeconds", 5f,
+                new ConfigDescription(
+                    "Seconds between exposure passes over online players. Small enough that " +
+                    "walking through the edge of an outbreak registers; the per-pass work is " +
+                    "one zone read per player.",
+                    new AcceptableValueRange<float>(1f, 60f)));
+
+            ExposureMinutesToMax = cfg.Bind(health, "ExposureMinutesToMax", 30f,
+                new ConfigDescription(
+                    "Minutes of standing on FULL plague (1.0) to reach maximum exposure; the " +
+                    "rate scales linearly with the plague actually underfoot, and nothing " +
+                    "accrues below the fog floor (0.15) — the sickness must not telegraph " +
+                    "what the fog hides. Sickness is the consequence of settling in blight, " +
+                    "not of visiting it.",
+                    new AcceptableValueRange<float>(5f, 240f)));
+
+            ExposureRecoveryMinutes = cfg.Bind(health, "ExposureRecoveryMinutes", 20f,
+                new ConfigDescription(
+                    "Minutes from maximum exposure back to clean, off plagued ground.",
+                    new AcceptableValueRange<float>(2f, 240f)));
+
+            ExposureRestedRecoveryMultiplier = cfg.Bind(health, "ExposureRestedRecoveryMultiplier", 2f,
+                new ConfigDescription(
+                    "Recovery speed multiplier while Rested. Vanilla remedies are the whole " +
+                    "counterplay language: rest heals, no new items to learn.",
+                    new AcceptableValueRange<float>(1f, 10f)));
+
+            ExposurePoisonResistMultiplier = cfg.Bind(health, "ExposurePoisonResistMultiplier", 0.5f,
+                new ConfigDescription(
+                    "Accrual multiplier while poison-resistant (mead, gear or food — read " +
+                    "from damage modifiers, the same aggregation vanilla's cold gate uses). " +
+                    "0.5 means protection halves how fast the sickness takes hold.",
+                    new AcceptableValueRange<float>(0f, 1f)));
+
+            ExposureTier1 = cfg.Bind(health, "ExposureTier1", 0.25f,
+                new ConfigDescription(
+                    "Exposure at which the sickness BEGINS: the icon appears and stamina " +
+                    "regen starts to sag (stamina first — sickness in the body before the " +
+                    "wound).",
+                    new AcceptableValueRange<float>(0.01f, 1f)));
+
+            ExposureTier2 = cfg.Bind(health, "ExposureTier2", 0.5f,
+                new ConfigDescription(
+                    "Exposure at which health regen starts failing too.",
+                    new AcceptableValueRange<float>(0.01f, 1f)));
+
+            ExposureTier3 = cfg.Bind(health, "ExposureTier3", 0.8f,
+                new ConfigDescription(
+                    "Exposure announced as the sickness at its worst. Announcement tier only " +
+                    "— the multipliers ramp smoothly, this is where the centre-screen line " +
+                    "fires.",
+                    new AcceptableValueRange<float>(0.01f, 1f)));
+
+            SicknessStaminaRegenAtMax = cfg.Bind(health, "SicknessStaminaRegenAtMax", 0.4f,
+                new ConfigDescription(
+                    "Stamina regen multiplier at exposure 1.0 (ramps linearly from 1.0 at " +
+                    "Tier1). NEVER a damage number: the sickness weakens, the world kills.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            SicknessHealthRegenAtMax = cfg.Bind(health, "SicknessHealthRegenAtMax", 0.5f,
+                new ConfigDescription(
+                    "Health regen multiplier at exposure 1.0 (ramps linearly from 1.0 at " +
+                    "Tier2).",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            FrostChillEnabled = cfg.Bind(health, "FrostChillEnabled", true,
+                "High zone frost chills players vanilla's weather would not — through our " +
+                "own Cold-like effect, never vanilla's (fighting its env pass is message " +
+                "spam by construction). Campfires, shelter and frost resistance all cancel " +
+                "it, exactly like the real thing.");
+
+            FrostChillThreshold = cfg.Bind(health, "FrostChillThreshold", 0.5f,
+                new ConfigDescription(
+                    "Zone frost at which the chill takes hold of exposed players.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            ChillStaminaRegenMultiplier = cfg.Bind(health, "ChillStaminaRegenMultiplier", 0.8f,
+                new ConfigDescription(
+                    "Stamina regen multiplier while chilled.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            ChillHealthRegenMultiplier = cfg.Bind(health, "ChillHealthRegenMultiplier", 0.7f,
+                new ConfigDescription(
+                    "Health regen multiplier while chilled.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
 
             const string systems = "4 - Systems";
 

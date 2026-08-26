@@ -38,6 +38,8 @@
     <Compile Include="..\..\RagnaroksWrath\Core\TitleStore.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\TitleFormat.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\FogMath.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\ExposureMath.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\HealthStore.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\Persistence.cs" />
     <Compile Include="..\..\RagnaroksWrath\Config\ModConfig.cs" />
   </ItemGroup>

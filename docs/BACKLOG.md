@@ -319,7 +319,16 @@ reference-only; nothing is linked or copied from it.
 
 ---
 
-## 11. `HealthSystem` — DESIGN AGREED 2026-08-26, not built
+## 11. `HealthSystem` — BUILT 2026-08-26 at 0.8.0 (in-game verification pending)
+
+Off-game: 139/139 including 22 new Exposure/HealthStore tests, every rate matching its
+hand prediction. Build clean; every runtime member access decompile-verified first.
+**The flagged cold-flicker hazard was resolved by not fighting at all:** the chill is OUR
+OWN code-built SE (Cold's icon, config regen penalties), applied by the client's 1s loop
+with vanilla's own gates re-checked (campfire SE, shelter, frost damage-modifier,
+warm-cozy area, and never while vanilla Cold/Freezing runs) — **no Harmony patch anywhere
+in task 11**, so there is no remove/re-add fight to spam messages from. Frost-resist mead
+still cancels it because we test the same damage-modifier aggregation vanilla does.
 
 The world's state reaching the player's body. Spec settled in a design conversation with the
 owner (their calls, recorded here so nobody re-litigates them by accident):
