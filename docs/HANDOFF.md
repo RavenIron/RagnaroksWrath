@@ -72,10 +72,28 @@ obeys.
   behavior that stops wild boar near pens). Full loop: war computed -> synced -> horns
   -> pheromone -> vanilla spawner -> budget open -> creatures spawned. Census stays in
   the shipping code behind VerboseLogging.
-  **STILL OPEN on phase D:** (1) the resolution edge (config half-life route above);
-  (2) the design decision: refill-pressure-only vs own spawn budget — and whether
-  ContestWildSpawnChance=100 / ContestWildMaxSpawned=15 become the shipped defaults
-  (the max override is gate-only; yield above vanilla's cap is impossible either way). A dead-ledger edit CANNOT test resolution: a
+  **RESOLUTION EDGE VERIFIED server-side 2026-08-26 15:59:** `war in (0,-1) resolved:
+  Blight.` + `war state: 0 contested zone(s)`, exactly once. THE HALF-LIFE ROUTE ABOVE
+  IS WRONG — `RivalryHalfLifeHours` has an AcceptableValueRange floor of 1h (deliberate:
+  "0 would disable decay"), BepInEx silently clamps AND persists the clamped value back
+  into the cfg. Working route, used live: stop server, edit the war zone's ledger care
+  to just ABOVE threshold (0.31 vs 0.30), restart — war re-derives, decay crosses in
+  minutes, edge fires mid-session. TWO LESSONS BAKED IN: (1) the owner reported seeing
+  the Centre line ~6 min BEFORE the edge fired; the ledger disproved it (care 0.3033,
+  still above threshold, decay monotonic) — an expected announcement will be "seen"
+  early; trust the store over the eyewitness. A title (Ashbringer) landed at the false
+  sighting's timestamp. (2) decay ran ~3x slower than pure math predicts and it is NOT
+  a bug: the owner standing in the fog kept the zone contacted, drift healed plague/
+  scorch on contact, healing booked care to them — the defender holds ground by standing
+  on it. Expect slow care fades wherever a player camps damaged ground. Ledger NOT
+  restored from `.prephased` (that predates the afternoon's real history — Ashbringer's
+  harm, the tending care); post-test ledger kept, half-life 48h rebound, fresh boot
+  correctly derives NO war at care 0.297.
+  **STILL OPEN on phase D:** the design decision: refill-pressure-only vs own spawn
+  budget — and whether ContestWildSpawnChance=100 / ContestWildMaxSpawned=15 become the
+  shipped defaults (the max override is gate-only; yield above vanilla's cap is
+  impossible either way). Player-side confirmation of the true resolution Centre line
+  was pending at write time. A dead-ledger edit CANNOT test resolution: a
   restart re-derives war from the store, so care edited below 0.3 just means no war and
   no edge (the Winterborn shrug — UpdateWar's own comment). Live route instead: set
   `RivalryHalfLifeHours = 0.05` in the server cfg, restart, stand within 64m of (0,-64);
