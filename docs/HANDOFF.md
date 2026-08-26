@@ -8,30 +8,44 @@ obeys.
 
 ## Where things stand
 
-- **Backlog tasks 0–10: done.** RW at **0.7.1** (117/117 off-game tests), FireFront at
-  **0.17.2** (its 0.18.0 never shipped — the `CollectActiveFirePositions` cross-mod contract
-  landed in 0.17.2). Both repos on GitHub under **RavenIron**, clean and pushed.
-- **First release artifact exists:** `tools\package.ps1` → `dist\RavenIron-RagnaroksWrath-<v>.zip`.
-  Not yet uploaded to Thunderstore — that step is the user's, in a browser.
-- **Design conversations DONE 2026-08-26:** HealthSystem / Consequence / Rivalry / Relic
-  are all specced as backlog tasks 11–14 (owner's calls recorded per task — do not
-  re-litigate them; build order 11 -> 12 -> 13 -> 14, Relic is the capstone). Each spec
-  names its decompile gates; honour them before writing code.
-- **Remaining, unnumbered:** build tasks 11–14; storm-gust and frost-breath emitters on the
-  existing ZoneSync; farming's growth/yield consumer (client-side, reads synced depletion);
-  the nameplate RENDER check (needs a second player looking at a titled one — everything up
-  to the pixels is verified).
+- **Backlog tasks 0–11: done.** RW at **0.9.0** (143/143 off-game tests), deployed AND
+  verified by strings on both sides (Gale client profile + dedicated server — Program Files
+  IS copyable from PowerShell when the server is stopped; the old "cannot write there"
+  memory was circumstantial). FireFront at **0.17.2**. Both repos pushed under **RavenIron**.
+- **Task 11 (HealthSystem) VERIFIED LIVE end to end** — accrual to four decimals, tiers
+  felt (after the 0.8.1 step fix — read that backlog entry for the lesson: assert what the
+  player was PROMISED, not what the function computes), relog/restart persistence, decay to
+  through-zero row removal, the chill with its campfire gate, frost breath with its roof
+  gate. Unobserved, accepted: tier-3 line, live mead/rested rate change.
+- **0.8.2 flush-fix verification PENDING:** needs a player to get exposed, then a server
+  stop — the health ledger's mtime must land beside Dedicated.db's instead of up to 60s
+  earlier. Today's stops had an empty ledger, so it has never been observed doing its job.
+- **Design conversations DONE 2026-08-26:** tasks 12–14 specced (owner's calls recorded per
+  task — do not re-litigate; build order 12 -> 13 -> 14, Relic capstone). Honour each
+  spec's decompile gates.
+- **Remaining, unnumbered:** build tasks 12–14; the storm-gust emitter (frost-breath
+  shipped in 0.9.0; both share `Visuals\ParticleKit`); farming's growth/yield consumer;
+  the nameplate RENDER check (needs a second player); package + Thunderstore upload of
+  0.9.0 (`tools\package.ps1`, upload is the user's browser step).
 
 ## The live world (Dedicated, uid 4690126)
 
 Genuine state, not test residue — do not wipe:
 
-- An outbreak centred on zone (0,-1) at plague ~0.95, corruption-fed, four seeded neighbours.
-  It regrows fast (corruption boost); winter or a config cure drains it.
+- An outbreak centred on zone (0,-1) at plague **~1.0** (regrown, corruption-fed, corruption
+  ~0.29); seeded neighbours below the 0.15 floor. Winter or a config cure drains it.
+- **A cold scar at zone (1,0), frost ~0.74** — staged for the chill/breath test and KEPT
+  deliberately (owner's call): breath fogs there, the chill bites, and it only drains while
+  someone stands in it. A `.prefrost` backup of the zone store sits beside it if it ever
+  needs restoring.
 - Titles ledger: `ragnarokswrath_titles_4690126.dat` — Nomad (775624) = Plaguewalker.
+- Health ledger `ragnarokswrath_health_4690126.dat`: header-only right now (Nomad recovered
+  fully; the row through-zero-deleted itself, which is correct).
 - Five turnips in zone (-1,0) tiring the soil; scorch from the fire test healing slowly.
 - Stores live in `%USERPROFILE%\AppData\LocalLow\IronGate\Valheim\worlds_local\`, plain TSV,
-  hand-editable (that's a supported write path — the plague was seeded that way).
+  hand-editable (a supported write path — plague AND frost were both seeded that way; stamp
+  the contact column with fresh `DateTime.UtcNow.Ticks` when editing, or the backlog credits
+  the elapsed gap and drains your edit on first contact).
 
 ## Runbook (the part that cost round-trips to learn)
 
