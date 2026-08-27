@@ -55,6 +55,12 @@ namespace RavenIron.RagnaroksWrath.Client
 
             try
             {
+                // Arm the relic wire HERE, not (only) on the nameplate path: a solo
+                // client renders no other player's plate, so that postfix never runs
+                // alone — which is exactly how the first monument's placement was lost
+                // TWICE. This Update runs on every rendering client, solo included.
+                Net.RelicSync.EnsureRegistered();
+
                 Player player = Player.m_localPlayer;
                 if (player == null) return;
 
