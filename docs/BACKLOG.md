@@ -866,12 +866,18 @@ blessed / red cursed, code-drawn strokes on the ParticleKit template (BuildRuneM
 2x2 sheet, one random tile per particle). The "nordic design on the rock" the owner
 asked for, delivered inside the no-assets rule.
 
-**Accepted unobserved / awaiting organic moments:** the story approach line and the two
-Centre lines on a real screen (owner was present for all three; explicit confirmation
-not recorded); the Placed flag's live persistence (the first stone died younger than
-the save cadence — harness-covered, next relic proves it); a STANDING stone surviving
-a restart (the ledger row is the same contract everything else proved); and the plague
-/ contest / era triggers firing organically (the plague peak at the outbreak is armed
+**SECOND STONE, 2026-08-26 evening (0.18.0): the full lifecycle in one pass** — staged
+peak with scorch already zero -> first tick QUEUED it (nobody present; the Q row was
+caught on disk mid-flight, exactly as designed) -> owner arrived -> committed, day 10
+-> stone raised on terrain -> runes column raised (blessed gold, owner's eyes) -> and
+the row finished `R 1 -1 0 0 10 1`: **Placed CONFIRMED and PERSISTED live**, the
+0.17.1 retry-until-confirmed machinery observed end to end. This stone stands.
+
+**Accepted unobserved / awaiting organic moments:** the story approach line and the
+Centre lines on a real screen (owner present for all; explicit confirmation not
+recorded); a STANDING stone surviving a restart (ledger row + persistent world ZDO,
+both contracts proven elsewhere; placed=1 means no re-request on reboot); the plague /
+contest / era triggers firing organically (the plague peak at the outbreak is armed
 and guarded; a contest stone needs the NEXT war, resolutions are never backfilled).
 
 Original design (owner's calls):
