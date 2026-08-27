@@ -15,7 +15,7 @@ namespace RavenIron.RagnaroksWrath
     {
         public const string PluginId      = "com.raveniron.ragnarokswrath";
         public const string PluginName    = "Ragnarok's Wrath";
-        public const string PluginVersion = "0.17.2";
+        public const string PluginVersion = "0.18.0";
 
         public static RagnaroksWrath Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
@@ -66,6 +66,7 @@ namespace RavenIron.RagnaroksWrath
                 gameObject.AddComponent<Visuals.PlagueFog>();
                 gameObject.AddComponent<Visuals.FrostBreath>();
                 gameObject.AddComponent<Visuals.ScorchAsh>();
+                gameObject.AddComponent<Visuals.RelicRunes>();
                 gameObject.AddComponent<Client.HealthEffects>();
                 gameObject.AddComponent<Client.ConsequenceEffects>();
             }

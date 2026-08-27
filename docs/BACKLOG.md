@@ -839,7 +839,42 @@ threshold, floor, and decay half-life in config.
 
 ---
 
-## 14. `RelicSystem` — BUILT 2026-08-26 at 0.17.0 (in-game verification pending). THE CAPSTONE.
+## 14. `RelicSystem` — BUILT 0.17.0, VERIFIED LIVE 2026-08-26 (0.17.2 client / 0.17.1
+## server). THE CAPSTONE — and the LAST SYSTEM: the roadmap is fully built.
+
+**VERIFIED LIVE, the full staged cycle at the arson scar (1,-1):** peaks watermarked
+from live world state on the first pass (plague 1.0 at the outbreak, scorch 0.79 at the
+scar — both exactly as the store predicted); hand-cure to 0.005 + real drift through
+zero -> `consecrated (1,-1): type 0, blessed, day 9`; stone `highstone` raised at
+(64.00, 76.81, -64.00) — the zone centre snapped to REAL terrain on a dedicated server,
+destructible=yes logged; pickaxed by the owner -> `desecrated by 775624 (harm booked)`
+-> rivalry harm 1.0002 -> **1.5002 exactly** (+RelicVandalHarm 0.5), relic row removed,
+zone re-armed. Peaks also survived a server restart before the stone rose.
+
+**TWO REGRESSIONS THE CYCLE CAUGHT, both the same lesson twice:** (0.17.1) the client
+never ARMED RelicSync — registration lived only in the server tick; armed on the
+nameplate path, which (0.17.2) NEVER RUNS SOLO because it fires rendering someone
+else's plate. Final home: ConsequenceEffects' update loop, the ZoneSync pattern. Wrote
+into both changelogs: the render path a pure client actually runs is a shorter list
+than it looks. 0.17.1 also made placement CONFIRMED-not-assumed: server retries until
+a client reports the stone standing; Placed persists as the R row's 7th column; a
+6-column row loads unplaced and self-heals (which is exactly how the lost first
+placement was recovered).
+
+**0.18.0: relic runes** — fehu/algiz/gebo/thurisaz rising around standing stones, gold
+blessed / red cursed, code-drawn strokes on the ParticleKit template (BuildRuneMaterial,
+2x2 sheet, one random tile per particle). The "nordic design on the rock" the owner
+asked for, delivered inside the no-assets rule.
+
+**Accepted unobserved / awaiting organic moments:** the story approach line and the two
+Centre lines on a real screen (owner was present for all three; explicit confirmation
+not recorded); the Placed flag's live persistence (the first stone died younger than
+the save cadence — harness-covered, next relic proves it); a STANDING stone surviving
+a restart (the ledger row is the same contract everything else proved); and the plague
+/ contest / era triggers firing organically (the plague peak at the outbreak is armed
+and guarded; a contest stone needs the NEXT war, resolutions are never backfilled).
+
+Original design (owner's calls):
 
 What landed (off-game 225/225, 27 new Relic checks):
 

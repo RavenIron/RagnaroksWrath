@@ -172,6 +172,7 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float>  RelicCursedStarBonus;
         public static ConfigEntry<float>  RelicVandalHarm;
         public static ConfigEntry<string> RelicPrefabCandidates;
+        public static ConfigEntry<bool>   RelicRunesEnabled;
 
         // ---- Per-system master switches -------------------------------------------------
 
@@ -931,6 +932,10 @@ namespace RavenIron.RagnaroksWrath.Config
                 "first that resolves with a ZNetView is raised; the choice and its " +
                 "components are logged (the PlagueFog shader-chain pattern). Existing " +
                 "prefabs only — this mod ships none, deliberately.");
+
+            RelicRunesEnabled = cfg.Bind(relic, "RelicRunesEnabled", true,
+                "Rune glyphs rising around standing relic stones — gold on blessed " +
+                "ground, red on cursed. Procedural, client-side, purely visual.");
 
             const string systems = "4 - Systems";
 

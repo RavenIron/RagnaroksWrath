@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.18.0
+
+- **Runes on the stones.** Standing relics now wear their nordic design: fehu, algiz,
+  gebo and thurisaz rise slowly around every consecrated stone — gold where the ground
+  is blessed, a dull red where it is cursed. Drawn in code, stroke by stroke, like
+  everything else this mod renders: no assets, no textures touched, the fourth emitter
+  on the same template as the fog, the frost and the ash.
+
+## 0.17.2
+
+- Arm the relic wire where a SOLO client actually runs (ConsequenceEffects' loop, the
+  ZoneSync pattern) — the nameplate path only fires rendering someone else's plate.
+
 ## 0.17.1
 
 - The stone that never rose: 0.17.0's first consecration was recorded perfectly and its
