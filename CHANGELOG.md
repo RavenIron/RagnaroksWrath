@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.20.0
+
+- **Tired fields grow slow.** Fertility depletion — written by the farming sweep since
+  0.6.0 — is finally felt: crops in depleted soil take longer to grow, up to double on
+  fully exhausted ground (linear, configurable, off at 1). Resting a field now
+  genuinely pays, closing the loop the depletion writer opened thirteen versions ago.
+  Wild trees and bushes owe farmland's memory nothing — only the crop list pays.
+
 ## 0.19.0
 
 - **The `wrath` console.** `wrath status`, `wrath zone [x y]`, `wrath zone set`,

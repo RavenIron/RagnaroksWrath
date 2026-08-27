@@ -242,9 +242,15 @@ comes from a future event system, a `wrath` console command, or an admin's edito
   rotation later (`zone (-1,0): depletion=0.00208`, matching 5 crops x 0.002/crop-hour).
   The 0.5.1 lesson is in the sweep comment: the iterative walk yields every ~400 populated
   sectors, and it must be DRAINED per tick — resuming one chunk per tick stretched a rotation
-  across an hour. HONESTLY SCOPED: depletion is only WRITTEN today — growth/yield effects
-  need the client plugin's state sync, because a plant's lifecycle runs on its ZDO's owner (a
-  client), and clients have no zone store.
+  across an hour. **THE CONSUMER LANDED 2026-08-26 (0.20.0, in-game verification
+  pending):** `Plant.GetGrowTime` scaling postfix (decompile-verified surface: per-
+  instance seeded lerp, growth fired owner-side — a client, which holds the synced
+  ring), scoped to FarmingCropPrefabs, x(1 + depletion x (slowdown-1)), default double
+  at full depletion, FarmingGrowth harness-pinned. YIELD reduction remains deferred
+  honestly: grown crops are separate Pickable prefabs with no clean rate surface —
+  task 12's barren gate is the only pick-time hook and it belongs to consequence.
+  Verification protocol: `wrath zone set` a test zone's fert to 1, plant a crop there
+  and one on pristine ground, compare grow times (~2x at defaults).
 
 **Remaining:** all four designed 2026-08-26 — `HealthSystem` (task 11), `ConsequenceSystem`
 (task 12), `RivalrySystem` (task 13), `RelicSystem` (task 14, capstone — build last).

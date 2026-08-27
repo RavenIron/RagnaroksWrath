@@ -52,6 +52,7 @@ namespace RagnaroksWrath.Tests
             NemesisTests();
             RelicTests();
             WrathAdminTests();
+            FarmingGrowthTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -1497,6 +1498,26 @@ namespace RagnaroksWrath.Tests
                 WrathAdmin.TryParseValue("0.5086", out float v) && Math.Abs(v - 0.5086f) < 1e-6f);
             Check("garbage is not a value", !WrathAdmin.TryParseValue("blight", out _));
             Check("NaN text is not a value", !WrathAdmin.TryParseValue("NaN", out _));
+        }
+
+        private static void FarmingGrowthTests()
+        {
+            Console.WriteLine("\nFarmingGrowth");
+
+            Check("pristine soil grows at vanilla speed",
+                FarmingGrowth.GrowTimeMultiplier(0f, 2f) == 1f);
+            Check("fully depleted soil hits the configured slowdown",
+                FarmingGrowth.GrowTimeMultiplier(1f, 2f) == 2f);
+            Check("half depletion lands halfway (linear, like the writer)",
+                Math.Abs(FarmingGrowth.GrowTimeMultiplier(0.5f, 2f) - 1.5f) < 1e-6f);
+            Check("depletion past the scale clamps rather than compounds",
+                FarmingGrowth.GrowTimeMultiplier(1.7f, 2f) == 2f);
+            Check("slowdown 1 disables the effect entirely",
+                FarmingGrowth.GrowTimeMultiplier(0.8f, 1f) == 1f);
+            Check("NaN depletion is pristine, never punitive",
+                FarmingGrowth.GrowTimeMultiplier(float.NaN, 2f) == 1f);
+            Check("NaN slowdown is vanilla, never punitive",
+                FarmingGrowth.GrowTimeMultiplier(0.8f, float.NaN) == 1f);
         }
 
         // ---- harness ----------------------------------------------------------------

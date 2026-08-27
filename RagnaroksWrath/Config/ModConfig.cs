@@ -84,6 +84,7 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float>  FarmingIntervalSeconds;
         public static ConfigEntry<float>  FarmingDepletionPerCropHour;
         public static ConfigEntry<string> FarmingCropPrefabs;
+        public static ConfigEntry<float>  FarmingGrowthSlowdownAtFull;
 
         // ---- Titles ---------------------------------------------------------------------
         public static ConfigEntry<float> TitleIntervalSeconds;
@@ -455,9 +456,15 @@ namespace RavenIron.RagnaroksWrath.Config
                 new ConfigDescription(
                     "Fertility depletion per standing crop per hour. At the default, a 25-crop " +
                     "field tires its zone fully in about 20 hours of real uptime; rest heals " +
-                    "it through the biome recovery rate. Depletion is only WRITTEN server-side " +
-                    "today - growth and yield effects arrive with the client plugin.",
+                    "it through the biome recovery rate.",
                     new AcceptableValueRange<float>(0f, 0.5f)));
+
+            FarmingGrowthSlowdownAtFull = cfg.Bind(farming, "FarmingGrowthSlowdownAtFull", 2f,
+                new ConfigDescription(
+                    "Grow-time multiplier for crops on FULLY depleted soil (linear from 1.0 " +
+                    "on pristine ground). The consumer side of depletion — tired fields grow " +
+                    "slow, and resting a field genuinely pays. 1 disables.",
+                    new AcceptableValueRange<float>(1f, 5f)));
 
             FarmingCropPrefabs = cfg.Bind(farming, "FarmingCropPrefabs",
                 "sapling_carrot,sapling_turnip,sapling_onion,sapling_barley,sapling_flax,sapling_seedcarrot,sapling_seedturnip,sapling_seedonion,sapling_jotunpuffs,sapling_magecap",
