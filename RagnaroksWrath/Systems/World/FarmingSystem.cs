@@ -56,7 +56,8 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             RagnaroksWrath.Log.LogInfo(
                 $"[{Name}] sweeping {_cropPrefabs.Length} crop prefab(s) every {IntervalSeconds:F0}s; " +
                 $"depletion {ModConfig.FarmingDepletionPerCropHour.Value:F4}/crop-hour. " +
-                "Depletion is WRITTEN here; growth/yield effects arrive with the client plugin.");
+                $"Depletion is WRITTEN here; the growth consumer bites client-side " +
+                $"(x{ModConfig.FarmingGrowthSlowdownAtFull.Value:0.##} grow time at full depletion).");
         }
 
         public void Tick(float deltaSeconds)
