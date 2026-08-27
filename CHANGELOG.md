@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.17.1
+
+- The stone that never rose: 0.17.0's first consecration was recorded perfectly and its
+  placement request vanished into a client that had never armed its handler — pure
+  clients tick no world systems, the nameplate-patch lesson, relearned. Clients now arm
+  the relic wire on the render path, and placement is fire-and-forget no longer: the
+  server retries until a client confirms the stone stands, the confirmation is
+  persisted, and asking twice never builds twice. A 0.17.0 ledger row loads unconfirmed,
+  so the lost first monument raises itself on the next visit.
+
 ## 0.17.0
 
 - **Consecrated places.** The world now writes its own monuments: where a story

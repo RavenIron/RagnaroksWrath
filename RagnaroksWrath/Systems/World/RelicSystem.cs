@@ -111,6 +111,7 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             DrainWarResults();
             WatchEra();
             RetryPending();
+            RetryPlacement();
             TellStories();
 
             _sinceBroadcast += deltaSeconds;
@@ -305,6 +306,20 @@ namespace RavenIron.RagnaroksWrath.Systems.World
 
                 RelicLedger.RemovePending(_scratch[i]);
                 Commit(_scratch[i], relic);
+            }
+        }
+
+        /// <summary>A standing relic whose stone was never CONFIRMED keeps asking whenever
+        /// a client is present to build it. Placement is fire-and-forget no longer — the
+        /// 0.17.0 first consecration was lost to an unarmed client handler, and a retry
+        /// gated on the persisted Placed flag is what makes that unrepeatable.</summary>
+        private void RetryPlacement()
+        {
+            foreach (KeyValuePair<ZoneKey, RelicLedger.Relic> kv in RelicLedger.AllRelics())
+            {
+                if (kv.Value.Placed) continue;
+                if (_presentPeer.TryGetValue(kv.Key, out long peer))
+                    RelicSync.RequestPlacement(peer, kv.Key, kv.Value);
             }
         }
 

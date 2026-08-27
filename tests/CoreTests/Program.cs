@@ -1427,6 +1427,14 @@ namespace RagnaroksWrath.Tests
                 RelicLedger.Relic r = RelicLedger.RelicAt(new ZoneKey(0, -1));
                 Check("a standing relic round-trips with type, verdict and day",
                     r.Standing && r.Type == RelicMath.Contest && r.Cursed && r.Day == 214);
+                Check("an unconfirmed stone stays unplaced through the round-trip", !r.Placed);
+
+                RelicLedger.MarkPlaced(new ZoneKey(0, -1));
+                RelicLedger.SaveIfDirty();
+                RelicLedger.Load();
+                Check("a confirmed stone round-trips placed",
+                    RelicLedger.RelicAt(new ZoneKey(0, -1)).Placed);
+
                 Check("peaks round-trip", RelicLedger.PeaksFor(zone).Scorch == 0.61f);
                 Check("pending rows round-trip", RelicLedger.PendingCount == 1);
                 Check("the era snapshot round-trips armed", RelicLedger.EraArmed);
@@ -1437,6 +1445,16 @@ namespace RagnaroksWrath.Tests
                 RelicLedger.RemoveRelic(new ZoneKey(0, -1));
                 Check("desecration removes the stone",
                     !RelicLedger.RelicAt(new ZoneKey(0, -1)).Standing);
+
+                // A 0.17.0-format row (no placed column) must load unplaced — that is what
+                // re-arms the retry for a stone that never rose.
+                File.WriteAllText(path,
+                    "version\t1\nR\t9\t9\t0\t0\t5\n",
+                    new System.Text.UTF8Encoding(false));
+                RelicLedger.Load();
+                RelicLedger.Relic old = RelicLedger.RelicAt(new ZoneKey(9, 9));
+                Check("a six-column 0.17.0 row loads standing but unplaced",
+                    old.Standing && !old.Placed);
 
                 File.WriteAllBytes(path, new byte[] { 0x00, 0xFF, 0x13, 0x37, 0x00, 0xFF });
                 RelicLedger.Load();

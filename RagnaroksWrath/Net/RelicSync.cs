@@ -22,7 +22,13 @@ namespace RavenIron.RagnaroksWrath.Net
     {
         public const string SetRpc    = "com.raveniron.ragnarokswrath.relic_set";
         public const string PlaceRpc  = "com.raveniron.ragnarokswrath.relic_place";
+        public const string PlacedRpc = "com.raveniron.ragnarokswrath.relic_placed";
         public const string BrokenRpc = "com.raveniron.ragnarokswrath.relic_broken";
+
+        // Zones this client already raised a stone in this session: the retry loop asks
+        // again until the server hears the confirmation, and asking twice must not build
+        // twice. Cross-session duplicates are prevented by the persisted Placed flag.
+        private static readonly HashSet<ZoneKey> _placedThisSession = new HashSet<ZoneKey>();
 
         internal static readonly int RelicFlagHash = "rw_relic".GetStableHashCode();
         internal static readonly int RelicZxHash   = "rw_relic_zx".GetStableHashCode();
@@ -58,11 +64,13 @@ namespace RavenIron.RagnaroksWrath.Net
 
             try
             {
-                rpc.Register<int, int, int, bool, int>(SetRpc, RPC_RelicSet);
                 rpc.Register<int, int, int, bool>(PlaceRpc, RPC_RelicPlace);
+                rpc.Register<int, int, int, bool, int>(SetRpc, RPC_RelicSet);
+                rpc.Register<int, int>(PlacedRpc, RPC_RelicPlaced);
                 rpc.Register<int, int, long>(BrokenRpc, RPC_RelicBroken);
                 _registeredOn = rpc;
                 _cache.Clear();   // new world session, new truth; the server re-broadcasts
+                _placedThisSession.Clear();
             }
             catch (Exception ex)
             {
@@ -145,6 +153,15 @@ namespace RavenIron.RagnaroksWrath.Net
         {
             try
             {
+                // The server retries until confirmed; a repeat for ground this client
+                // already built on is answered with the confirmation alone.
+                var requested = new ZoneKey(zx, zy);
+                if (_placedThisSession.Contains(requested))
+                {
+                    ReportPlaced(zx, zy);
+                    return;
+                }
+
                 ZNetScene scene = ZNetScene.instance;
                 if (scene == null) return;
 
@@ -196,6 +213,9 @@ namespace RavenIron.RagnaroksWrath.Net
                     zdo.Set(RelicZyHash, zy);
                 }
 
+                _placedThisSession.Add(requested);
+                ReportPlaced(zx, zy);
+
                 RagnaroksWrath.Log.LogInfo(
                     $"RelicSync: stone '{chosen}' raised at {pos} for zone ({zx},{zy}) " +
                     $"(destructible={(stone.GetComponent<Destructible>() != null ? "yes" : "no")}, " +
@@ -212,6 +232,24 @@ namespace RavenIron.RagnaroksWrath.Net
             // Only the authority acts; a client receiving a stray report ignores it.
             if (!RelicLedger.IsLoaded) return;
             Systems.World.RelicSystem.OnRelicBroken(new ZoneKey(zx, zy), vandalPlayerId);
+        }
+
+        /// <summary>Client confirmation: the stone stands. No-target routed RPC to the server.</summary>
+        private static void ReportPlaced(int zx, int zy)
+        {
+            ZRoutedRpc rpc = ZRoutedRpc.instance;
+            if (rpc == null) return;
+            try { rpc.InvokeRoutedRPC(PlacedRpc, zx, zy); }
+            catch (Exception ex)
+            {
+                RagnaroksWrath.Log.LogWarning($"RelicSync: placed report failed: {ex.Message}");
+            }
+        }
+
+        private static void RPC_RelicPlaced(long sender, int zx, int zy)
+        {
+            if (!RelicLedger.IsLoaded) return;   // authority only
+            RelicLedger.MarkPlaced(new ZoneKey(zx, zy));
         }
     }
 }

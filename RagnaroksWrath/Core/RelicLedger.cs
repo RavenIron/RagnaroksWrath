@@ -31,7 +31,17 @@ namespace RavenIron.RagnaroksWrath.Core
             public int Type;      // RelicMath.None when no stone stands
             public bool Cursed;
             public int Day;       // world day at consecration; 0 when unknown
+            public bool Placed;   // a client CONFIRMED the stone stands; until then, retry
             public bool Standing => Type != RelicMath.None;
+        }
+
+        /// <summary>A client confirmed the physical stone. Placement requests stop.</summary>
+        public static void MarkPlaced(ZoneKey zone)
+        {
+            if (!_relics.TryGetValue(zone, out Relic r) || !r.Standing || r.Placed) return;
+            r.Placed = true;
+            _relics[zone] = r;
+            _dirty = true;
         }
 
         private const int FormatVersion = 1;
@@ -173,11 +183,18 @@ namespace RavenIron.RagnaroksWrath.Core
                                     && int.TryParse(p[5], NumberStyles.Integer, c, out int day)
                                     && type >= RelicMath.Fire && type <= RelicMath.Era)
                                 {
+                                    // 7th column (placed) arrived in 0.17.1; a 6-column row
+                                    // from 0.17.0 loads unplaced, which re-arms the retry —
+                                    // exactly right for a stone that never rose.
+                                    bool placed = p.Length >= 7
+                                        && int.TryParse(p[6], NumberStyles.Integer, c, out int pl)
+                                        && pl != 0;
                                     var relic = new Relic
                                     {
                                         Type = type,
                                         Cursed = cursed != 0,
                                         Day = day < 0 ? 0 : day,
+                                        Placed = placed,
                                     };
                                     if (p[0][0] == 'R') _relics[zone] = relic;
                                     else _pending[zone] = relic;
@@ -279,7 +296,8 @@ namespace RavenIron.RagnaroksWrath.Core
             sb.Append(tag).Append('\t').Append(zone.X.ToString(c)).Append('\t').Append(zone.Y.ToString(c))
               .Append('\t').Append(r.Type.ToString(c))
               .Append('\t').Append(r.Cursed ? '1' : '0')
-              .Append('\t').Append(r.Day.ToString(c)).Append('\n');
+              .Append('\t').Append(r.Day.ToString(c))
+              .Append('\t').Append(r.Placed ? '1' : '0').Append('\n');
         }
 
         private static string ResolvePath()

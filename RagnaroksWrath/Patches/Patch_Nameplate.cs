@@ -26,6 +26,7 @@ namespace RavenIron.RagnaroksWrath.Patches
             try
             {
                 TitleSync.EnsureRegistered();
+                RelicSync.EnsureRegistered();   // same lesson: clients arm on the render path
 
                 long playerId = __instance.GetPlayerID();
                 if (playerId == 0) return;
