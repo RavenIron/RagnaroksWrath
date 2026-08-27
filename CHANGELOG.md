@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.21.0
+
+- **`wrath` from the comfort of F5.** Mutations typed in-game now forward to the server
+  through vanilla's own remote-command pipe: the server checks you against
+  adminlist.txt, refuses everyone else with "You are not admin", logs the admin and the
+  exact line, and runs the command where the stores live. Reads still answer locally;
+  confirm a forwarded edit with `wrath zone <x> <y>` a sync later.
+
+## 0.20.1
+
+- The farming boot line stopped promising what 0.20.0 already delivered.
+
 ## 0.20.0
 
 - **Tired fields grow slow.** Fertility depletion — written by the farming sweep since

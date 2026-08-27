@@ -40,6 +40,27 @@ namespace RavenIron.RagnaroksWrath.Patches
 
         private static bool Authority => Persistence.IsLoaded;
 
+        /// <summary>
+        /// Mutations typed on a pure client forward to the server through VANILLA's own
+        /// remote-command pipe (`ZNet.RemoteCommand` — decompile-verified 2026-08-26):
+        /// the server checks the sender against adminlist.txt, refuses non-admins with
+        /// "You are not admin", logs the admin and the exact line, and replays the
+        /// command through its own console where Authority holds. Output lands on the
+        /// SERVER console — the client confirms through its own reads a ring-push later.
+        /// </summary>
+        private static bool TryForward(Terminal.ConsoleEventArgs args)
+        {
+            ZNet znet = ZNet.instance;
+            if (znet == null || znet.IsServer()) return false;
+
+            znet.RemoteCommand(string.Join(" ", args.Args));
+            args.Context.AddString(
+                "wrath: forwarded to the server — vanilla's admin gate applies " +
+                "(non-admins are refused). Confirm with `wrath zone <x> <y>` after the " +
+                "next sync (~10s); the server console carries the receipt.");
+            return true;
+        }
+
         private static void Run(Terminal.ConsoleEventArgs args)
         {
             try
@@ -62,7 +83,8 @@ namespace RavenIron.RagnaroksWrath.Patches
                             "wrath harm set <x> <y> <playerId> <value>\n" +
                             "wrath relics — peaks, stones, pending, era\n" +
                             "wrath save — flush every store now\n" +
-                            "Mutations run on the authority only (server console or listen host).");
+                            "Mutations run on the authority; typed in-game they forward to the " +
+                            "server through vanilla's admin gate (adminlist.txt).");
                         return;
                 }
             }
@@ -106,7 +128,8 @@ namespace RavenIron.RagnaroksWrath.Patches
             {
                 if (!Authority)
                 {
-                    args.Context.AddString("wrath: mutations run on the authority only (server console or listen host).");
+                    if (!TryForward(args))
+                        args.Context.AddString("wrath: mutations run on the authority only (server console or listen host).");
                     return;
                 }
                 if (args.Args.Length < 7
@@ -184,7 +207,8 @@ namespace RavenIron.RagnaroksWrath.Patches
         {
             if (!Authority || !RivalryLedger.IsLoaded)
             {
-                args.Context.AddString("wrath: mutations run on the authority only (server console or listen host).");
+                if (!TryForward(args))
+                    args.Context.AddString("wrath: mutations run on the authority only (server console or listen host).");
                 return;
             }
             if (args.Args.Length < 7
@@ -229,7 +253,8 @@ namespace RavenIron.RagnaroksWrath.Patches
         {
             if (!Authority)
             {
-                args.Context.AddString("wrath: nothing to save on a pure client.");
+                if (!TryForward(args))
+                    args.Context.AddString("wrath: nothing to save on a pure client.");
                 return;
             }
             Persistence.Save(force: true);
