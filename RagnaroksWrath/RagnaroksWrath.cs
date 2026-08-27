@@ -15,7 +15,7 @@ namespace RavenIron.RagnaroksWrath
     {
         public const string PluginId      = "com.raveniron.ragnarokswrath";
         public const string PluginName    = "Ragnarok's Wrath";
-        public const string PluginVersion = "0.21.0";
+        public const string PluginVersion = "0.21.1";
 
         public static RagnaroksWrath Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }

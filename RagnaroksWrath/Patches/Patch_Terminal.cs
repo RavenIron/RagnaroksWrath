@@ -53,7 +53,13 @@ namespace RavenIron.RagnaroksWrath.Patches
             ZNet znet = ZNet.instance;
             if (znet == null || znet.IsServer()) return false;
 
-            znet.RemoteCommand(string.Join(" ", args.Args));
+            string line = string.Join(" ", args.Args);
+            znet.RemoteCommand(line);
+            // Diagnostic breadcrumb (2026-08-26): the first live forward produced a
+            // phantom usage line client-side and no audit line server-side — this names
+            // the terminal and the exact line so the next repro is a fact, not a theory.
+            RagnaroksWrath.Log.LogInfo(
+                $"wrath: forwarded '{line}' via {args.Context?.GetType().Name ?? "?"}.");
             args.Context.AddString(
                 "wrath: forwarded to the server — vanilla's admin gate applies " +
                 "(non-admins are refused). Confirm with `wrath zone <x> <y>` after the " +
@@ -138,6 +144,9 @@ namespace RavenIron.RagnaroksWrath.Patches
                     || !WrathAdmin.TryParseValue(args.Args[6], out float value))
                 {
                     args.Context.AddString($"usage: wrath zone set <x> <y> <field> <value>  (fields: {WrathAdmin.ZoneFields})");
+                    RagnaroksWrath.Log.LogInfo(
+                        $"wrath: zone-set usage rejection (authority={Authority}, " +
+                        $"terminal={args.Context?.GetType().Name ?? "?"}, args='{string.Join(" ", args.Args)}').");
                     return;
                 }
 
