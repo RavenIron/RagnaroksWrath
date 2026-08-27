@@ -839,7 +839,53 @@ threshold, floor, and decay half-life in config.
 
 ---
 
-## 14. `RelicSystem` — DESIGN AGREED 2026-08-26, not built. THE CAPSTONE — build last.
+## 14. `RelicSystem` — BUILT 2026-08-26 at 0.17.0 (in-game verification pending). THE CAPSTONE.
+
+What landed (off-game 225/225, 27 new Relic checks):
+
+- `Core/RelicMath.cs` — the pure state machine (peak watermark, through-zero
+  consecration, aura multipliers, the stones' voices) and `Core/RelicLedger.cs` — the
+  FOURTH write-behind store (`ragnarokswrath_relics_<uid>.dat`), tagged TSV: P peaks /
+  R standing relics / Q pending consecrations / E era snapshot. Full house contract,
+  round-tripped through the shipping writer, quarantine and no-BOM pinned.
+- `Systems/World/RelicSystem.cs` — peaks tracked from the sparse store, completions
+  read from the PEAK rows (healed zones leave the store; a peak row without a store row
+  IS the through-zero candidate). War resolutions arrive by direct hand-off from
+  RivalrySystem's edge. The era stone: entering Stricken snapshots every stored zone's
+  damage; recovering to Stable+ consecrates the max-healed-delta zone, once. Nobody
+  present -> the moment QUEUES (nothing spawns blind on headless).
+- `Net/RelicSync.cs` — TitleSync-shaped wire: set/removal broadcast + slow full-table
+  rebroadcast (60s; relics are few, joiners converge inside a minute), placement
+  DELEGATED to the one present client (real terrain, GetGroundData snap — the server
+  never touches ground height), vandal report upstream. Stone prefab resolved from a
+  candidate chain (`highstone,widestone` default) with the chosen name AND its
+  destructibility logged — the PlagueFog shader-chain pattern.
+- Auras multiplied into the three verified rate paths: zone recovery (BiomeStateSystem,
+  beside grudge and mercy), exposure drain/accrual (HealthSystem, beside the phase C
+  mercy), star odds (ConsequenceGate, beside the war bonus, gentler dial 0.25).
+- Desecration: observing prefix on `Destructible.Destroy` (owner-side, HitData in hand)
+  -> report -> aura lifted, vandal booked `RelicVandalHarm` (0.5) into the rivalry
+  ledger, one Centre line, zone re-armed for a fresh cycle.
+- DEVIATION, honestly recorded: the stone has NO HOVER STORY yet — no vanilla prefab is
+  known to be both destructible and hoverable, so the story is a once-per-session
+  MessageFeed line to whoever stands in the stone's zone. If the owner prefers hover
+  over destructibility, point RelicPrefabCandidates at a runestone prefab and a
+  decorating GetHoverText pass earns its own gate.
+
+**In-game verification protocol:** deploy both ends; stage a scorch peak by store edit
+(>= 0.5, fresh contact stamp) then let contact heal it through zero -> expect ONE
+"The gods bless this ground." Centre line, the stone standing ON the ground at the
+zone centre, the story line on next arrival, and the aura measurable in recovery rate
+(four-decimal pattern). Break the stone -> "The stone lies broken.", harm row in the
+rivalry ledger, aura gone. Restart -> the standing relic reloads from the ledger.
+NOTE: (1,-1) already carries scorch 0.744 from the arson test — once 0.17.0 deploys,
+its natural healing is a live fire-relic cycle already in flight; and the outbreak's
+war resolution predates 0.17.0, so no contest stone rises retroactively (correct:
+completions are observed, never backfilled). DO NOT cure the outbreak for a quick
+plague stone — it is guarded world state.
+
+Original design (owner's calls, all honoured above):
+
 
 Consecrated places: sites where the world's story peaked become lasting landmarks with real
 properties, marked by a physical stone. The world writes its own monuments. Owner's calls:

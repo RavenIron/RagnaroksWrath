@@ -160,6 +160,19 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<bool>  EnableNemesis;
         public static ConfigEntry<int>   NemesisMaxLevel;
 
+        // ---- Task 14: relics -------------------------------------------------------------
+
+        public static ConfigEntry<float>  RelicIntervalSeconds;
+        public static ConfigEntry<float>  FireRelicPeakThreshold;
+        public static ConfigEntry<float>  PlagueRelicPeakThreshold;
+        public static ConfigEntry<float>  RelicBlessedRecoveryMult;
+        public static ConfigEntry<float>  RelicCursedRecoveryMult;
+        public static ConfigEntry<float>  RelicBlessedExposureDrainMult;
+        public static ConfigEntry<float>  RelicCursedExposureAccrualMult;
+        public static ConfigEntry<float>  RelicCursedStarBonus;
+        public static ConfigEntry<float>  RelicVandalHarm;
+        public static ConfigEntry<string> RelicPrefabCandidates;
+
         // ---- Per-system master switches -------------------------------------------------
 
         public static ConfigEntry<bool> EnableSeason;
@@ -863,6 +876,61 @@ namespace RavenIron.RagnaroksWrath.Config
                     "Highest level a nemesis climbs to through player kills (vanilla level " +
                     "3 = two stars). A cap below a creature's current level never demotes it.",
                     new AcceptableValueRange<int>(1, 5)));
+
+            const string relic = "18 - Relic";
+
+            RelicIntervalSeconds = cfg.Bind(relic, "RelicIntervalSeconds", 30f,
+                new ConfigDescription("Seconds between relic passes.",
+                    new AcceptableValueRange<float>(5f, 600f)));
+
+            FireRelicPeakThreshold = cfg.Bind(relic, "FireRelicPeakThreshold", 0.5f,
+                new ConfigDescription(
+                    "Scorch a zone must reach for its healing to count as a story: fully " +
+                    "recovering from a peak past this line consecrates a blessed stone.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            PlagueRelicPeakThreshold = cfg.Bind(relic, "PlagueRelicPeakThreshold", 0.5f,
+                new ConfigDescription(
+                    "Plague a zone must reach for its cure to count as a story — the spread " +
+                    "threshold by default, so only a real outbreak's cure raises a stone.",
+                    new AcceptableValueRange<float>(0.05f, 1f)));
+
+            RelicBlessedRecoveryMult = cfg.Bind(relic, "RelicBlessedRecoveryMult", 1.25f,
+                new ConfigDescription("Zone recovery drift multiplier on blessed ground.",
+                    new AcceptableValueRange<float>(1f, 3f)));
+
+            RelicCursedRecoveryMult = cfg.Bind(relic, "RelicCursedRecoveryMult", 0.8f,
+                new ConfigDescription("Zone recovery drift multiplier on cursed ground.",
+                    new AcceptableValueRange<float>(0.25f, 1f)));
+
+            RelicBlessedExposureDrainMult = cfg.Bind(relic, "RelicBlessedExposureDrainMult", 1.5f,
+                new ConfigDescription(
+                    "Plague exposure decays this much faster while standing on blessed " +
+                    "ground. Decay only — the land's favour heals, it does not shield.",
+                    new AcceptableValueRange<float>(1f, 3f)));
+
+            RelicCursedExposureAccrualMult = cfg.Bind(relic, "RelicCursedExposureAccrualMult", 1.25f,
+                new ConfigDescription(
+                    "Plague exposure accrues this much faster while standing on cursed ground.",
+                    new AcceptableValueRange<float>(1f, 3f)));
+
+            RelicCursedStarBonus = cfg.Bind(relic, "RelicCursedStarBonus", 0.25f,
+                new ConfigDescription(
+                    "Star-odds bonus on cursed ground — the task 12 surface at a gentler " +
+                    "dial than the war's (0.25 = x1.25 odds).",
+                    new AcceptableValueRange<float>(0f, 2f)));
+
+            RelicVandalHarm = cfg.Bind(relic, "RelicVandalHarm", 0.5f,
+                new ConfigDescription(
+                    "Harm booked into the rivalry ledger against a player who breaks a " +
+                    "relic stone. The world's memory CAN be vandalized; it is not free.",
+                    new AcceptableValueRange<float>(0f, 5f)));
+
+            RelicPrefabCandidates = cfg.Bind(relic, "RelicPrefabCandidates", "highstone,widestone",
+                "Comma-separated vanilla prefab names tried in order for the stone. The " +
+                "first that resolves with a ZNetView is raised; the choice and its " +
+                "components are logged (the PlagueFog shader-chain pattern). Existing " +
+                "prefabs only — this mod ships none, deliberately.");
 
             const string systems = "4 - Systems";
 

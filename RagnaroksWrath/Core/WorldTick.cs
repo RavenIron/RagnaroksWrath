@@ -160,6 +160,7 @@ namespace RavenIron.RagnaroksWrath.Core
             // absent because it saves on Set.
             HealthStore.SaveIfDirty();
             RivalryLedger.SaveIfDirty();
+            RelicLedger.SaveIfDirty();
 
             _systems.Clear();
             _lastRun.Clear();

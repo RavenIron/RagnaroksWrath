@@ -378,6 +378,10 @@ namespace RavenIron.RagnaroksWrath.Systems.World
 
                 RagnaroksWrath.Log.LogInfo(
                     $"[{Name}] war in {zone} resolved: {winner}.");
+
+                // Task 14: a war resolved is a story completed — the relic system decides
+                // whether this ground earns a stone (wild -> blessed, blight -> cursed).
+                RelicSystem.NotifyWarResolved(zone, winner == RivalryContest.WarWinner.Wild);
             }
 
             // Edge log, always on: wars are rare and this line is the difference between

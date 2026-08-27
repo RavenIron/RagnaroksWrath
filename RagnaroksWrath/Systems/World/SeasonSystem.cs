@@ -177,6 +177,16 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             }
         }
 
+        /// <summary>The world day, or 0 when the game cannot say — the relic ledger's
+        /// timestamp. Zero is honest ("day unknown"), never a guess.</summary>
+        public static int CurrentDayOrZero()
+        {
+            EnvMan env = EnvMan.instance;
+            if (env == null) return 0;
+            try { return TryGetCurrentDay(env, out int day) ? day : 0; }
+            catch { return 0; }
+        }
+
         /// <summary>
         /// Resolve EnvMan's private day accessor once, then reuse it.
         ///

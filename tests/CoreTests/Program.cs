@@ -50,6 +50,7 @@ namespace RagnaroksWrath.Tests
             RivalryTests();
             ContestTests();
             NemesisTests();
+            RelicTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -1355,6 +1356,99 @@ namespace RagnaroksWrath.Tests
             Check("whitespace is not a name", NemesisMark.Suffix("   ", 2) == "");
             Check("no kills, no story", NemesisMark.Suffix("Nomad", 0) == "");
             Check("negative kills are no story either", NemesisMark.Suffix("Nomad", -1) == "");
+        }
+
+        private static void RelicTests()
+        {
+            Console.WriteLine("\nRelic");
+
+            // The peak watermark.
+            Check("below threshold records nothing", RelicMath.TrackPeak(0.4f, 0.5f, 0f) == 0f);
+            Check("at threshold records the value", RelicMath.TrackPeak(0.5f, 0.5f, 0f) == 0.5f);
+            Check("peaks only rise", RelicMath.TrackPeak(0.6f, 0.5f, 0.9f) == 0.9f);
+            Check("NaN never writes", RelicMath.TrackPeak(float.NaN, 0.5f, 0.3f) == 0.3f);
+
+            // Through-zero, not merely reduced.
+            Check("a peak driven to zero consecrates", RelicMath.ShouldConsecrate(0.7f, 0f));
+            Check("reduced-but-alive does not", !RelicMath.ShouldConsecrate(0.7f, 0.01f));
+            Check("no recorded peak, no story", !RelicMath.ShouldConsecrate(0f, 0f));
+
+            // Aura arithmetic.
+            Check("blessed ground heals quicker",
+                RelicMath.RecoveryMultiplier(RelicMath.Plague, false, 1.25f, 0.8f) == 1.25f);
+            Check("cursed ground sulks",
+                RelicMath.RecoveryMultiplier(RelicMath.Contest, true, 1.25f, 0.8f) == 0.8f);
+            Check("no stone, no aura",
+                RelicMath.RecoveryMultiplier(RelicMath.None, false, 1.25f, 0.8f) == 1f);
+            Check("blessed drains exposure faster",
+                RelicMath.ExposureDecayMultiplier(RelicMath.Fire, false, 1.5f) == 1.5f);
+            Check("cursed does not slow healing",
+                RelicMath.ExposureDecayMultiplier(RelicMath.Contest, true, 1.5f) == 1f);
+            Check("cursed shrinks minutes-to-max",
+                Math.Abs(RelicMath.ExposureMinutesMultiplier(RelicMath.Contest, true, 1.25f) - 0.8f) < 1e-6f);
+            Check("blessed never shields from accrual",
+                RelicMath.ExposureMinutesMultiplier(RelicMath.Fire, false, 1.25f) == 1f);
+            Check("cursed ground breeds meaner things",
+                RelicMath.StarMultiplier(RelicMath.Contest, true, 0.25f) == 1.25f);
+            Check("blessed ground adds no stars",
+                RelicMath.StarMultiplier(RelicMath.Fire, false, 0.25f) == 1f);
+
+            // Every standing type tells a story; a missing stone says nothing.
+            Check("the contest stone knows who won",
+                RelicMath.Story(RelicMath.Contest, true).Contains("blight")
+                && RelicMath.Story(RelicMath.Contest, false).Contains("wild"));
+            Check("no stone, no words", RelicMath.Story(RelicMath.None, false) == "");
+
+            // The ledger round-trips all four row kinds through the SHIPPING writer.
+            string path = Path.Combine(Path.GetTempPath(), "rw_relic_test.dat");
+            try
+            {
+                RelicLedger.OverridePath = path;
+                if (File.Exists(path)) File.Delete(path);
+
+                RelicLedger.Load();
+                Check("a fresh ledger loads empty and usable",
+                    RelicLedger.IsLoaded && RelicLedger.RelicCount == 0 && !RelicLedger.EraArmed);
+
+                var zone = new ZoneKey(3, -7);
+                RelicLedger.SetPeaks(zone, new RelicLedger.Peaks { Scorch = 0.61f, Plague = 0f });
+                RelicLedger.SetRelic(new ZoneKey(0, -1),
+                    new RelicLedger.Relic { Type = RelicMath.Contest, Cursed = true, Day = 214 });
+                RelicLedger.AddPending(new ZoneKey(5, 5),
+                    new RelicLedger.Relic { Type = RelicMath.Fire, Cursed = false, Day = 100 });
+                RelicLedger.SetEraSnapshot(new ZoneKey(-2, 2), 1.75f);
+                RelicLedger.SaveIfDirty();
+
+                byte[] bytes = File.ReadAllBytes(path);
+                Check("the relic ledger is written without a byte-order mark",
+                    bytes.Length > 0 && bytes[0] != 0xEF);
+
+                RelicLedger.Load();
+                RelicLedger.Relic r = RelicLedger.RelicAt(new ZoneKey(0, -1));
+                Check("a standing relic round-trips with type, verdict and day",
+                    r.Standing && r.Type == RelicMath.Contest && r.Cursed && r.Day == 214);
+                Check("peaks round-trip", RelicLedger.PeaksFor(zone).Scorch == 0.61f);
+                Check("pending rows round-trip", RelicLedger.PendingCount == 1);
+                Check("the era snapshot round-trips armed", RelicLedger.EraArmed);
+
+                Check("a standing stone ends peak tracking for its zone",
+                    RelicLedger.PeaksFor(new ZoneKey(0, -1)).Empty);
+
+                RelicLedger.RemoveRelic(new ZoneKey(0, -1));
+                Check("desecration removes the stone",
+                    !RelicLedger.RelicAt(new ZoneKey(0, -1)).Standing);
+
+                File.WriteAllBytes(path, new byte[] { 0x00, 0xFF, 0x13, 0x37, 0x00, 0xFF });
+                RelicLedger.Load();
+                Check("a garbage file is quarantined, world stays playable",
+                    RelicLedger.IsLoaded && RelicLedger.RelicCount == 0 && File.Exists(path + ".corrupt"));
+            }
+            finally
+            {
+                RelicLedger.OverridePath = null;
+                try { if (File.Exists(path)) File.Delete(path); } catch { }
+                try { if (File.Exists(path + ".corrupt")) File.Delete(path + ".corrupt"); } catch { }
+            }
         }
 
         // ---- harness ----------------------------------------------------------------

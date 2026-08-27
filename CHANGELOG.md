@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.17.0
+
+- **Consecrated places.** The world now writes its own monuments: where a story
+  completes, a stone rises. A great fire fully healed, a plague driven through zero —
+  blessed. A spawn war resolved — blessed if the wild took the ground back, cursed if
+  the blight claimed it. And rarest of all, the land recovering from Stricken raises
+  one stone on the ground whose healing defined the era.
+- Blessed ground heals quicker and sheds sickness faster while you stand on it; cursed
+  ground sulks, sickens you faster, and breeds slightly meaner things. The stone speaks
+  once to whoever arrives — and it can be broken, which lifts the aura, but the land
+  books the vandal into its ledger. A desecrated site can earn a new stone the next
+  time its story peaks and completes.
+
 ## 0.16.0
 
 - **The nemesis.** The creature that kills you is marked in that moment: it climbs a

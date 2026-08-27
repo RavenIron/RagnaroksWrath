@@ -101,8 +101,14 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 float mercy = RivalrySystem.IsDominantCarer(underfoot, playerId)
                     ? 1f + ModConfig.MercySicknessBonus.Value : 1f;
 
+                // Task 14: consecrated ground. Blessed joins the mercy chain (decay only —
+                // favour heals, it does not shield); cursed shrinks minutes-to-max so
+                // exposure accrues faster on ground the gods marked against you.
+                mercy *= RelicSystem.ExposureDecayMultAt(underfoot);
+                float relicMinutes = minutesToMax * RelicSystem.ExposureMinutesMultAt(underfoot);
+
                 float next = plague >= FogMath.VisibleFloor
-                    ? ExposureMath.Accrue(current, plague, minutesToMax,
+                    ? ExposureMath.Accrue(current, plague, relicMinutes,
                         (remedies & HealthSync.RemedyPoisonResist) != 0, poisonMult, deltaSeconds)
                     : ExposureMath.Decay(current, recoveryMinutes,
                         (remedies & HealthSync.RemedyRested) != 0, restedMult, deltaSeconds, mercy);

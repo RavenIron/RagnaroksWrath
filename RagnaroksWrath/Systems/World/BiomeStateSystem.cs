@@ -118,6 +118,9 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 if (_mercyZones.Contains(zone))
                     zoneRecovery *= 1f + ModConfig.MercyRecoveryBonus.Value;
 
+                // Task 14: consecrated ground — blessed heals quicker, cursed sulks.
+                zoneRecovery *= RelicSystem.RecoveryMultiplierAt(zone);
+
                 ZoneState before = Persistence.Get(zone);
                 ZoneState after  = BiomeDrift.Apply(before, elapsed,
                     zoneRecovery,

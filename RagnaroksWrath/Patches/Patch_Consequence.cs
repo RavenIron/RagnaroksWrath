@@ -62,6 +62,10 @@ namespace RavenIron.RagnaroksWrath.Patches
             if (war > 0f && ModConfig.EnableRivalry.Value)
                 mult *= 1f + ModConfig.ContestStarBonus.Value * war;
 
+            // Task 14: cursed ground breeds meaner things — the same surface at a
+            // gentler dial than the war's. Blessed ground adds nothing here.
+            mult *= RelicSync.StarMultiplierAt(zone);
+
             return mult;
         }
     }
