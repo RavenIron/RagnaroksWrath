@@ -96,6 +96,9 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         public static float WarIntensityAt(ZoneKey zone)
             => _warIntensity.TryGetValue(zone, out float i) ? i : 0f;
 
+        /// <summary>How many zones are at war right now — the console's question.</summary>
+        public static int ContestedZoneCount => _warIntensity.Count;
+
         public void Initialise()
         {
             _cropPrefabs = (ModConfig.FarmingCropPrefabs.Value ?? "")

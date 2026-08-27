@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.19.0
+
+- **The `wrath` console.** `wrath status`, `wrath zone [x y]`, `wrath zone set`,
+  `wrath care/harm set`, `wrath relics`, `wrath save`. Reads answer everywhere (a pure
+  client sees the synced view); mutations run only where the stores live — the server's
+  own console or a listen host. Zone edits stamp fresh contact automatically, so the
+  credit-on-contact backlog can never again eat a staged value before it is measured.
+  Retires the stop-edit-copy-restart dance that one verification day performed five times.
+
 ## 0.18.0
 
 - **Runes on the stones.** Standing relics now wear their nordic design: fehu, algiz,

@@ -47,6 +47,7 @@
     <Compile Include="..\..\RagnaroksWrath\Core\NemesisMark.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\RelicMath.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\RelicLedger.cs" />
+    <Compile Include="..\..\RagnaroksWrath\Core\WrathAdmin.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\AshMath.cs" />
     <Compile Include="..\..\RagnaroksWrath\Core\Persistence.cs" />
     <Compile Include="..\..\RagnaroksWrath\Config\ModConfig.cs" />

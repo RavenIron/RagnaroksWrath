@@ -1010,8 +1010,14 @@ trigger gets its own config line.
 - **Verify the Seasonality GUID.** `RustyMods.Seasonality` is inferred, not confirmed. If
   wrong, detection silently fails and we run a competing season clock — the exact conflict
   rule 4 exists to prevent.
-- **Console commands.** Prefix `wrath` is decided; the command set is not designed yet.
-  Likely `wrath status`, `wrath zone`, `wrath reload`.
+- **Console commands. DONE 2026-08-26 (0.19.0).** `wrath status | zone [x y] | zone set
+  | care set | harm set | relics | save`, registered from an InitTerminal postfix.
+  Authority-self-gated: reads answer everywhere (synced view on pure clients), mutations
+  refuse anywhere the stores do not live — no admin-list plumbing needed because the
+  only consoles with store access are the server's own and a listen host's. `zone set`
+  stamps fresh contact automatically (the staging trap, tooled away). WrathAdmin parsing
+  harness-pinned (239 total). In-game verification pending: one `wrath status` +
+  one `wrath zone set` on the dedicated console.
 - **Shelter and storms.** Do Devastating Storm effects respect vanilla's `InShelter()`
   suppression?
 - **Per-system config surface.** Master toggles exist; per-system tuning knobs are not

@@ -97,6 +97,24 @@ namespace RavenIron.RagnaroksWrath.Core
         public static void AddCare(ZoneKey zone, long playerId, float amount)
             => Add(zone, playerId, 0f, amount);
 
+        /// <summary>Admin surface for the `wrath` console: SET a column outright — the
+        /// live equivalent of the hand-edit-while-stopped dance. Zero-zero rows prune.</summary>
+        public static void SetColumns(ZoneKey zone, long playerId, float? harm, float? care)
+        {
+            if (playerId == 0) return;
+
+            var key = new Key(zone, playerId);
+            _rows.TryGetValue(key, out Row row);
+            if (harm.HasValue && !float.IsNaN(harm.Value)) row.Harm = Math.Max(0f, harm.Value);
+            if (care.HasValue && !float.IsNaN(care.Value)) row.Care = Math.Max(0f, care.Value);
+
+            if (row.Harm < RivalryMath.PruneEpsilon && row.Care < RivalryMath.PruneEpsilon)
+                _rows.Remove(key);
+            else
+                _rows[key] = row;
+            _dirty = true;
+        }
+
         private static void Add(ZoneKey zone, long playerId, float harm, float care)
         {
             if (playerId == 0) return;   // the placeholder id — never record it

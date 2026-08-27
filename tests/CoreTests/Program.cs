@@ -51,6 +51,7 @@ namespace RagnaroksWrath.Tests
             ContestTests();
             NemesisTests();
             RelicTests();
+            WrathAdminTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -1467,6 +1468,35 @@ namespace RagnaroksWrath.Tests
                 try { if (File.Exists(path)) File.Delete(path); } catch { }
                 try { if (File.Exists(path + ".corrupt")) File.Delete(path + ".corrupt"); } catch { }
             }
+        }
+
+        private static void WrathAdminTests()
+        {
+            Console.WriteLine("\nWrathAdmin");
+
+            var s = default(ZoneState);
+            Check("plague lands on the plague field",
+                WrathAdmin.TrySetZoneField(s, "plague", 0.6f, out var r1) && r1.Plague == 0.6f && r1.Scorch == 0f);
+            Check("scorch lands on the scorch field",
+                WrathAdmin.TrySetZoneField(s, "scorch", 0.3f, out var r2) && r2.Scorch == 0.3f && r2.Plague == 0f);
+            Check("corr and corruption are the same field",
+                WrathAdmin.TrySetZoneField(s, "corr", 0.2f, out var r3) && r3.Corruption == 0.2f
+                && WrathAdmin.TrySetZoneField(s, "corruption", 0.2f, out var r4) && r4.Corruption == 0.2f);
+            Check("fert lands on fertility",
+                WrathAdmin.TrySetZoneField(s, "fert", 0.4f, out var r5) && r5.Fertility == 0.4f);
+            Check("frost lands on frost",
+                WrathAdmin.TrySetZoneField(s, "frost", 0.9f, out var r6) && r6.Frost == 0.9f);
+            Check("values clamp to the store's own bounds",
+                WrathAdmin.TrySetZoneField(s, "plague", 3f, out var r7) && r7.Plague == 1f
+                && WrathAdmin.TrySetZoneField(s, "plague", -1f, out var r8) && r8.Plague == 0f);
+            Check("an unknown field refuses rather than guessing",
+                !WrathAdmin.TrySetZoneField(s, "spice", 0.5f, out _));
+            Check("NaN refuses", !WrathAdmin.TrySetZoneField(s, "plague", float.NaN, out _));
+
+            Check("invariant parse reads what the store writes",
+                WrathAdmin.TryParseValue("0.5086", out float v) && Math.Abs(v - 0.5086f) < 1e-6f);
+            Check("garbage is not a value", !WrathAdmin.TryParseValue("blight", out _));
+            Check("NaN text is not a value", !WrathAdmin.TryParseValue("NaN", out _));
         }
 
         // ---- harness ----------------------------------------------------------------
