@@ -1,4 +1,74 @@
-# Session handoff — 2026-08-26 (updated through phase D, ~13:50)
+# Session handoff — 2026-08-27 (THE ROADMAP IS COMPLETE; the EA rehearsal begins)
+
+For the next session picking this up cold. Read `CLAUDE.md` first, then this; `docs/BACKLOG.md`
+carries per-task verification detail, `docs/reference/README.md` gates the engine sheets. The
+2026-08-26 handoff below this section is SUPERSEDED but kept — it is the log of how phase D's
+horn mystery became two days that finished the mod.
+
+## Where things stand (v0.22.3 everywhere, 256/256 off-game, all pushed)
+
+- **Every roadmap task (0–14) is built and verified.** Since the last handoff: phase D
+  verified at every link (two decompiled engine facts: the pheromone max override widens the
+  GATE not the BUDGET, and GetNrOfInstances counts the whole loaded area — so the war ships as
+  REFILL PRESSURE, locked decision); the resolution edge observed exactly once (the half-life
+  config floors at 1h — stage care just above threshold instead); phase E nemesis built and
+  proven on its strong claim (ZDO-key mark survives ZDOID regeneration — a starred boar
+  remembers Nomad through restarts); RelicSystem verified through TWO full stone lifecycles
+  (consecration, retry-until-confirmed placement, desecration billed to the vandal, rune
+  columns 0.18.0); the wrath console (0.19.0) with REMOTE admin mutations riding vanilla's
+  own pipe (0.21.x — output relays back to the invoking admin's screen); the farming consumer
+  (0.20.0) verified by a two-turnip race; genesis, VersionSync and config parity (0.22.0).
+- **THE ANNOUNCEMENT LAYER WAS NEVER CONNECTED and now is (0.22.1–0.22.3).** Two lifelong
+  bugs stacked: a dedicated server holds ZERO Player instances even with players online
+  (measured; the Jotunn sheet's §6 is WRONG — noted in the reference README), and zone
+  centres sit at y=0 so 3D distance checks lost every hillside player. ToPlayersNear now
+  routes remote players by character ZDO + ShowMessage RPC, distances XZ-planar. The flip
+  announcement was SEEN on screen — the first zone-local line this mod ever delivered from
+  headless. Every pre-0.22.3 "accepted unobserved" Centre line was in fact undeliverable;
+  the next organic war/stone re-verifies them free.
+- **EA prep done:** README rewritten for the full mod; fresh-world smoke test passed (15
+  systems from zero, no noise); Seasonality GUID verified from their source; a 0.19.0-era
+  Thunderstore zip exists in dist\ (STALE — repack at the shipping version).
+
+## The two worlds (one shared BepInEx config — remember that)
+
+- **`Dedicated` (uid 4690126) is the STAGING world.** Scarred, instrumented, fast to stage
+  via `wrath zone set` / `care set` / `harm set` (fresh contact stamps automatic). Cleaned
+  2026-08-27: phantom rival 999 zeroed, owner's care at (2,1) restored to 0.35. STANDING
+  GUARDS: do NOT cure the outbreak at (0,-1) — its plague peak is armed for a future organic
+  stone and the ground is guarded world state.
+- **`Saga` (uid 18446744073473864156) is the HONEST PLAYTHROUGH** — the EA rehearsal. Booted
+  fresh 2026-08-27 08:47, zero errors, genesis at 3h mean (per-install config, so Dedicated
+  inherits 3h at its next boot — fine for a staging world). `start_saga_world.bat` in the
+  server root launches it; the old `start_headless_server.bat` launches Dedicated; same
+  port, one at a time. NO STAGING on Saga, ever — its whole value is that nobody helped it.
+
+## What remains before the Thunderstore button
+
+1. **The Skadi evening, on Saga**: multi-peer ring fan-out (the one genuinely untested
+   surface — same code per peer, but never run with two), player-nameplate render (nemesis
+   plate already argues equivalence), nemesis owned-elsewhere skip line. Skadi's Gale
+   profile needs RW 0.22.3 + FireFront 0.17.3; VersionSync will tattle inside a minute if
+   the versions differ.
+2. **Repack** at the shipping version: `tools\package.ps1` (refuses on version disagreement).
+
+## Ops facts the next session will want (also in auto-memory)
+
+- Graceful server stop: injected CTRL_BREAK works, CTRL_C is ignored (helper script pattern
+  in the session scratchpad; the user's console window Ctrl+Break also works). Start:
+  direct exe with `$env:SteamAppId = "892970"` — `cmd /c` bat launches fail from the tool.
+- The server's BepInEx LogOutput.log captures ZERO Unity/ZLog lines — vanilla audit output
+  (e.g. `Remote admin ... executed command`) exists only in the console window. Absence in
+  the file proves nothing.
+- The permission classifier blocks writing into worlds_local — prepare edits in the
+  scratchpad and hand the user one copy command. Reading is fine. (Mostly obsolete now:
+  the wrath console does live edits without file dances.)
+- BepInEx clamps AND persists out-of-range config values at boot — after a clamp the file
+  no longer holds what you wrote.
+
+---
+
+# (SUPERSEDED) Session handoff — 2026-08-26 (updated through phase D, ~13:50)
 
 For the next session picking this up cold. Read `CLAUDE.md` first (house rules, locked
 decisions, verified-state ledger), then this for the operational state the docs don't carry.
