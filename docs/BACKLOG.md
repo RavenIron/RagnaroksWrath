@@ -1008,7 +1008,8 @@ trigger gets its own config line.
   pack the live install runs.
 - FireFront was deliberately NOT a manifest dependency through 0.22.x (soft by design; the
   README sold the synergy). REVERSED 2026-08-27 (owner's call, 0.23.0): FireFront is now a
-  listed dependency (`RavenIron-FireFront-<version>`) so mod managers install the pair
+  listed dependency (`RavenIronStudios-FireFront-<version>` — the STORE TEAM name, which
+  differs from the GitHub org; published on both stores 2026-08-27) so mod managers install the pair
   together, plus a boot-time version tattle in FireSystem naming the two API floors (0.17.2
   positions, 0.17.3 igniter). The CODE stays soft-dependent — reflection, load-order-free,
   dormant without it — only the packaging hardened. CONSEQUENCE: FireFront must be published

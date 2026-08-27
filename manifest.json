@@ -1,10 +1,10 @@
 {
   "name": "RagnaroksWrath",
-  "version_number": "0.23.1",
+  "version_number": "0.24.0",
   "website_url": "https://github.com/RavenIron/RagnaroksWrath",
   "description": "The world reacts and remembers. Seasons, devastating storms, spreading plague with visible miasma, fire scars, tiring soil, earned titles. Server-authoritative world simulation. One DLL, server and clients.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2333",
-    "RavenIron-FireFront-0.17.3"
+    "RavenIronStudios-FireFront-0.17.3"
   ]
 }

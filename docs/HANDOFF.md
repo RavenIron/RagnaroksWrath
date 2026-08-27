@@ -56,14 +56,18 @@ horn mystery became two days that finished the mod.
    `StormForcedEnvironment = Eikthyr` are KEEPERS — the owner's chosen look, verified
    compatible with lightning).
 2. **Repack** at the shipping version: `tools\package.ps1` (refuses on version disagreement).
-3. **Publish FireFront FIRST** (new prerequisite, 2026-08-27): RW 0.23.0's manifest lists
-   `RavenIron-FireFront-0.17.3` as a dependency, and stores validate dependency strings at
-   upload. **PACKAGING BUILT same day:** FireFront now has manifest/icon (owner-supplied
-   art, resized to the required 256x256)/player README (dev log preserved at
-   `docs/DEVLOG.md`)/CHANGELOG/`tools\package.ps1` (RW's three-version-homes guard — which
-   caught csproj still saying 0.17.2 on its first run), and
-   `dist\RavenIron-FireFront-0.17.3.zip` is built and content-audited. What remains is the
-   UPLOAD itself (both stores, FireFront before RW), which is the owner's browser session.
+3. **FireFront IS PUBLISHED (2026-08-27)** — the dependency prerequisite is CLEARED. Team
+   name on BOTH stores is **`RavenIronStudios`** (not RavenIron — the repo org and the
+   store team differ), so RW's manifest dependency reads
+   `RavenIronStudios-FireFront-0.17.3` and ONE zip serves both stores. Upload day taught
+   three packaging facts, now baked into BOTH repos' `tools\package.ps1`: Hexium rejects
+   PS 5.1 `Compress-Archive` zips outright ("No manifest.json found"), requires the DLL
+   under `plugins/` (BepInEx layout) not at the zip root, and .NET Framework's
+   `CreateFromDirectory` writes spec-invalid backslash entry names — entries are now
+   written by hand with forward slashes. FireFront also gained its full store packaging
+   that day: player README (dev log preserved at `docs/DEVLOG.md`), CHANGELOG, icon
+   (owner's art at the required 256x256), manifest, and the three-version-homes guard,
+   which caught csproj still saying 0.17.2 on its very first run.
 4. **Hexium (hexium.gg) is a second distribution target** (owner's call, 2026-08-27).
    Confirmed against hexium.gg/packaging: it takes Thunderstore-compatible zips with the
    exact root files `package.ps1` already stages (manifest.json, icon.png 256x256,
