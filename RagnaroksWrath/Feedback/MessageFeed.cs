@@ -74,11 +74,37 @@ namespace RavenIron.RagnaroksWrath.Feedback
                                          Placement where = Placement.TopLeft)
         {
             if (string.IsNullOrEmpty(text)) return;
-            if (!PassesRateLimit()) return;
+            if (!PassesRateLimit())
+            {
+                // Zone-local lines are rare by policy; one eaten by the limiter deserves
+                // a trace, or a missing announcement is indistinguishable from a broken pipe.
+                RagnaroksWrath.Log.LogInfo($"MessageFeed: rate-limited '{text}'.");
+                return;
+            }
 
             try
             {
-                Player.MessageAllInRange(pos, radius, (MessageHud.MessageType)where, text, null);
+                // Deliver by hand instead of Player.MessageAllInRange, for the COUNT:
+                // vanilla's static walks this machine's instantiated Player list, and on
+                // a headless server that list's contents depend on which zones the server
+                // happens to instantiate. Zero recipients for a line someone should have
+                // seen is the exact fact worth a log line (2026-08-27: the flip
+                // announcement vanished without one).
+                int recipients = 0;
+                var players = Player.GetAllPlayers();
+                for (int i = 0; i < players.Count; i++)
+                {
+                    Player p = players[i];
+                    if (p == null) continue;
+                    if (Vector3.Distance(p.transform.position, pos) >= radius) continue;
+                    p.Message((MessageHud.MessageType)where, text);
+                    recipients++;
+                }
+
+                if (recipients == 0)
+                    RagnaroksWrath.Log.LogInfo(
+                        $"MessageFeed: ZERO recipients for '{text}' at {pos} " +
+                        $"({players.Count} player instance(s) exist on this machine).");
             }
             catch (Exception ex)
             {

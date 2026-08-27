@@ -414,9 +414,10 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 Feedback.MessageFeed.ToPlayersNear(flip.Zone.ToWorldPos(), 64f,
                     string.Format(format, to, from));
 
-                if (ModConfig.VerboseLogging.Value)
-                    RagnaroksWrath.Log.LogInfo(
-                        $"[{Name}] contest flip in {flip.Zone}: {flip.From} -> {flip.To}.");
+                // Always-on, like the war edge log: flips are rare, and this line is the
+                // difference between "the contest never flipped" and "the voice was lost".
+                RagnaroksWrath.Log.LogInfo(
+                    $"[{Name}] contest flip in {flip.Zone}: {flip.From} -> {flip.To}.");
             }
         }
     }
