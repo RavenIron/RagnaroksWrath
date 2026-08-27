@@ -146,9 +146,9 @@ wrong measurement is the most common cause of a long debugging session here.
 
 **Seasonality (RustyMods)** — see rule 4. Detect via
 `Chainloader.PluginInfos.ContainsKey("RustyMods.Seasonality")`.
-⚠️ **That GUID string is inferred, not verified.** If it is wrong, detection silently fails
-and we run a second season clock alongside theirs — the exact conflict rule 4 exists to
-prevent. Verify against their DLL's `BepInPlugin` attribute when convenient.
+✅ **GUID VERIFIED 2026-08-26** against their published source (`Seasonality/Plugin.cs`,
+v3.7.8: `ModGUID = Author + "." + ModName` = `"RustyMods.Seasonality"`). Detection is
+sound.
 
 **AwayFromHome (Wubarrk)** — runs farms where no player stands, by rotating a "keeper" that
 loads a site for ~180s then unloads it.

@@ -1007,9 +1007,9 @@ trigger gets its own config line.
 
 ## Open questions
 
-- **Verify the Seasonality GUID.** `RustyMods.Seasonality` is inferred, not confirmed. If
-  wrong, detection silently fails and we run a competing season clock — the exact conflict
-  rule 4 exists to prevent.
+- **Verify the Seasonality GUID. DONE 2026-08-26.** Confirmed against RustyMods' own
+  published `Plugin.cs` (v3.7.8): `ModGUID = "RustyMods" + "." + "Seasonality"` — our
+  constant matches exactly. Detection is sound; rule 4's silent-conflict risk is closed.
 - **Console commands. DONE 2026-08-26 (0.19.0).** `wrath status | zone [x y] | zone set
   | care set | harm set | relics | save`, registered from an InitTerminal postfix.
   Authority-self-gated: reads answer everywhere (synced view on pure clients), mutations
