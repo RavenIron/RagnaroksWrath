@@ -94,12 +94,18 @@ namespace RavenIron.RagnaroksWrath.Feedback
                 // RPC at its owning peer — the same handler ToEveryone already targets.
                 int recipients = 0;
 
+                // Distances are XZ-PLANAR, deliberately: callers pass zone centres, and
+                // ZoneKey.ToWorldPos() sits at y=0 — "not ground level", its own comment
+                // warns. A 3D check made every player on terrain above ~55m unreachable
+                // from a 64m radius (measured 2026-08-27: a player standing dead centre
+                // of the zone was "77m away"). Vertical distance is meaningless for
+                // "who is near this ground".
                 var players = Player.GetAllPlayers();
                 for (int i = 0; i < players.Count; i++)
                 {
                     Player p = players[i];
                     if (p == null) continue;
-                    if (Vector3.Distance(p.transform.position, pos) >= radius) continue;
+                    if (Utils.DistanceXZ(p.transform.position, pos) >= radius) continue;
                     p.Message((MessageHud.MessageType)where, text);
                     recipients++;
                 }
@@ -120,7 +126,7 @@ namespace RavenIron.RagnaroksWrath.Feedback
 
                             long owner = zdo.GetOwner();
                             if (owner == 0 || owner == selfUid) continue;   // locals already served
-                            if (Vector3.Distance(zdo.GetPosition(), pos) >= radius) continue;
+                            if (Utils.DistanceXZ(zdo.GetPosition(), pos) >= radius) continue;
 
                             rpc.InvokeRoutedRPC(owner, "ShowMessage", (int)where, text);
                             recipients++;
