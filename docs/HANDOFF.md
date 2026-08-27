@@ -58,9 +58,12 @@ horn mystery became two days that finished the mod.
 2. **Repack** at the shipping version: `tools\package.ps1` (refuses on version disagreement).
 3. **Publish FireFront FIRST** (new prerequisite, 2026-08-27): RW 0.23.0's manifest lists
    `RavenIron-FireFront-0.17.3` as a dependency, and stores validate dependency strings at
-   upload. FireFront has NO store packaging of its own yet (no manifest/icon/README/zip
-   script in that repo) — it needs the full Thunderstore treatment before RW's zip is
-   accepted anywhere.
+   upload. **PACKAGING BUILT same day:** FireFront now has manifest/icon (owner-supplied
+   art, resized to the required 256x256)/player README (dev log preserved at
+   `docs/DEVLOG.md`)/CHANGELOG/`tools\package.ps1` (RW's three-version-homes guard — which
+   caught csproj still saying 0.17.2 on its first run), and
+   `dist\RavenIron-FireFront-0.17.3.zip` is built and content-audited. What remains is the
+   UPLOAD itself (both stores, FireFront before RW), which is the owner's browser session.
 4. **Hexium (hexium.gg) is a second distribution target** (owner's call, 2026-08-27).
    Confirmed against hexium.gg/packaging: it takes Thunderstore-compatible zips with the
    exact root files `package.ps1` already stages (manifest.json, icon.png 256x256,
