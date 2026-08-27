@@ -1016,8 +1016,10 @@ trigger gets its own config line.
   refuse anywhere the stores do not live — no admin-list plumbing needed because the
   only consoles with store access are the server's own and a listen host's. `zone set`
   stamps fresh contact automatically (the staging trap, tooled away). WrathAdmin parsing
-  harness-pinned (239 total). In-game verification pending: one `wrath status` +
-  one `wrath zone set` on the dedicated console.
+  harness-pinned (239 total). **VERIFIED on the dedicated server's own console
+  2026-08-26 (0.19.0): `wrath status` answered** — headless Terminal registration, the
+  one never-before-exercised link, works. Remaining inches ride ordinary use: a
+  `zone set` round-trip and the pure-client refusal line.
 - **Shelter and storms.** Do Devastating Storm effects respect vanilla's `InShelter()`
   suppression?
 - **Per-system config surface.** Master toggles exist; per-system tuning knobs are not
