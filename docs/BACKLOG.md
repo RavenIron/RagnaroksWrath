@@ -1025,8 +1025,27 @@ trigger gets its own config line.
 - README rewritten for the full feature set 2026-08-26 (was 0.7.1-era).
 - Turnip race VERIFIED 2026-08-27 — the farming consumer seen by eye (clean crop grew,
   depleted field's five still seedlings).
-- REMAINING before publish: the two-player evening (per-peer sync surfaces + the
-  standing two-player inches), and a repack at the shipping version.
+- **THE ANNOUNCEMENT LAYER WAS NEVER CONNECTED — found and fixed 2026-08-27 (0.22.1–
+  0.22.3), verified on screen.** Two stacked delivery bugs hid behind each other for the
+  mod's whole life: (1) a dedicated server holds ZERO Player instances even with players
+  online (measured; settles the reference sheets' contradiction — the Jotunn sheet was
+  wrong), so vanilla's `Player.MessageAllInRange` reached nobody, ever; (2) callers pass
+  `ZoneKey.ToWorldPos()` centres at y=0, and the 3D distance check made any player on
+  terrain above ~55m read as outside a 64m radius (a player standing dead centre
+  measured "77m away"). Fix: ToPlayersNear serves local instances, then remote players
+  by CHARACTER ZDO with vanilla's ShowMessage RPC routed at each owner peer, distances
+  XZ-planar. VERIFIED: a console-staged rival (fake ledger id 999) produced announced
+  flips both directions, the final one SEEN on the owner's screen in its designed
+  TopLeft placement. Every earlier "accepted unobserved" Centre line (war resolution,
+  consecration, story, desecration) was in fact undeliverable pre-0.22.3 — the next
+  organic war and stone re-verify them on the repaired pipe for free.
+  **VersionSync also verified live in passing:** the owner reported the mismatch warning
+  as a bug — the feature working exactly as intended.
+- The FLIP ANNOUNCEMENT two-player inch is CLOSED solo (console-staged identities); the
+  pick-refusal personal gate has a solo protocol staged (harm set 0 -> bush yields).
+- REMAINING before publish: the two-player evening (now only: nameplate render
+  equivalence formally accepted or eyeballed, multi-peer fan-out, nemesis
+  owned-elsewhere), and a repack at the shipping version.
 
 ## Open questions
 
