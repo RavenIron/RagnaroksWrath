@@ -29,6 +29,15 @@ a dedicated server; `JOTUNN-AND-HEADLESS-AUTOMATION-FACTS.md` §6 says it correc
 connected characters' server-side replicas, and recommends it as the headless-safe pattern.
 Both agree `Player.m_localPlayer` is always null on a true dedicated server.
 
+> **SETTLED BY MEASUREMENT 2026-08-27** (this project, live dedicated server, player
+> connected and standing in an origin-adjacent zone): `Player.GetAllPlayers()` returned
+> **ZERO instances** — an instrumented `ToPlayersNear` logged
+> `0 player instance(s) exist on this machine` while delivering a contest flip. The
+> DEDICATED-SERVER-FACTS sheet is right; the Jotunn sheet's §6 is wrong. A headless
+> server instantiates NO Player objects, even with players online. The headless-safe
+> pattern for reaching players is character ZDOs + a routed RPC at each ZDO's owner
+> (see `Feedback/MessageFeed.ToPlayersNear`, 0.22.2).
+
 The dedicated-server sheet looks stronger — it cites line numbers and a runtime-measured
 `ZoneSystem.m_activeArea = 2`, and its reasoning chains from a server's reference position
 sitting at ~world origin, so a player 3 km out has no `Player` GameObject on the server at

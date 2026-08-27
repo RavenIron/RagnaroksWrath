@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using RavenIron.RagnaroksWrath.Config;
 
@@ -84,13 +85,15 @@ namespace RavenIron.RagnaroksWrath.Feedback
 
             try
             {
-                // Deliver by hand instead of Player.MessageAllInRange, for the COUNT:
-                // vanilla's static walks this machine's instantiated Player list, and on
-                // a headless server that list's contents depend on which zones the server
-                // happens to instantiate. Zero recipients for a line someone should have
-                // seen is the exact fact worth a log line (2026-08-27: the flip
-                // announcement vanished without one).
+                // MEASURED 2026-08-27: a dedicated server holds ZERO Player instances even
+                // with players connected (the instrumented flip line settled the reference
+                // sheets' old contradiction) — so Player.MessageAllInRange from headless
+                // reaches nobody, ever. Deliver like everything else in this mod finds
+                // players: LOCAL instances first (listen host, singleplayer), then remote
+                // players by CHARACTER ZDO, each sent vanilla's own "ShowMessage" routed
+                // RPC at its owning peer — the same handler ToEveryone already targets.
                 int recipients = 0;
+
                 var players = Player.GetAllPlayers();
                 for (int i = 0; i < players.Count; i++)
                 {
@@ -101,10 +104,33 @@ namespace RavenIron.RagnaroksWrath.Feedback
                     recipients++;
                 }
 
+                ZNet znet = ZNet.instance;
+                ZRoutedRpc rpc = ZRoutedRpc.instance;
+                if (znet != null && rpc != null && znet.IsServer())
+                {
+                    long selfUid = ZNet.GetUID();
+                    List<ZDO> characters = znet.GetAllCharacterZDOS();
+                    if (characters != null)
+                    {
+                        for (int i = 0; i < characters.Count; i++)
+                        {
+                            ZDO zdo = characters[i];
+                            if (zdo == null || !zdo.IsValid()) continue;
+                            if (zdo.GetLong(ZDOVars.s_playerID, 0L) == 0) continue;
+
+                            long owner = zdo.GetOwner();
+                            if (owner == 0 || owner == selfUid) continue;   // locals already served
+                            if (Vector3.Distance(zdo.GetPosition(), pos) >= radius) continue;
+
+                            rpc.InvokeRoutedRPC(owner, "ShowMessage", (int)where, text);
+                            recipients++;
+                        }
+                    }
+                }
+
                 if (recipients == 0)
                     RagnaroksWrath.Log.LogInfo(
-                        $"MessageFeed: ZERO recipients for '{text}' at {pos} " +
-                        $"({players.Count} player instance(s) exist on this machine).");
+                        $"MessageFeed: ZERO recipients for '{text}' at {pos}.");
             }
             catch (Exception ex)
             {
