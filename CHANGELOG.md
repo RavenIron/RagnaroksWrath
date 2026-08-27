@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.24.0
+
+- **Seasons (shudnal) is now a recognised season source.** Until now only Seasonality
+  (RustyMods) was detected; anyone running shudnal's Seasons got a second, disagreeing
+  season clock from us driving fire risk, plague growth and farming yield. We now defer
+  to whichever of the two is installed (they declare themselves mutually incompatible,
+  so it is never both) and run our own clock only when neither is present. shudnal's
+  season is read by reflection from its own state — not its global keys, which are off
+  by default and renameable — and, as always, consumed as gameplay state only: their
+  mod owns everything you see.
+
 ## 0.23.1
 
 - Config guidance from the first live lightning session: the storm-look setting's

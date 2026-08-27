@@ -245,13 +245,15 @@ namespace RavenIron.RagnaroksWrath.Config
             SeasonLengthDays = cfg.Bind(season, "SeasonLengthDays", 7,
                 new ConfigDescription(
                     "In-game days per season, when running our own clock. Ignored entirely if " +
-                    "Seasonality (RustyMods) is installed — we defer to its season in that case " +
-                    "rather than run a second clock that could disagree with it.",
+                    "Seasonality (RustyMods) or Seasons (shudnal) is installed — we defer to " +
+                    "their season in that case rather than run a second clock that could " +
+                    "disagree with it.",
                     new AcceptableValueRange<int>(1, 120)));
 
             AnnounceSeasonChange = cfg.Bind(season, "AnnounceSeasonChange", true,
-                "Announce season changes on screen. Automatically suppressed when Seasonality is " +
-                "installed, since it already shows the player the season visibly.");
+                "Announce season changes on screen. Automatically suppressed when Seasonality " +
+                "or Seasons (shudnal) is installed, since they already show the player the " +
+                "season visibly.");
 
             const string weather = "6 - Weather";
 
