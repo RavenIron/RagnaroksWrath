@@ -157,17 +157,20 @@ sound.
 **Seasons (shudnal)** — the OTHER major season mod, and the only one published on Hexium
 (Seasonality is Thunderstore-only as of 2026-08-27). Detect via
 `Chainloader.PluginInfos.ContainsKey("shudnal.Seasons")`.
-✅ **ALL SURFACES VERIFIED 2026-08-27** against their published source
-(github.com/shudnal/Seasons): GUID (`Seasons.cs`: `pluginID = "shudnal.Seasons"`); season
-enum Spring=0, Summer=1, Fall=2, Winter=3 — numerically identical to ours, so the reflected
-cast is a mapping, not a guess; `public static SeasonState seasonState` on the plugin class
-(null until their mod initialises — a quiet retry, not an error); `public Season
-GetCurrentSeason()` on `SeasonState` (`SeasonState/SeasonState.cs`). Their global keys were
-REJECTED as a read surface: `enableSeasonalGlobalKeys` defaults to **false** and every key
-name is a server-configurable string (`Season_Fall` etc.). They declare
-`[BepInIncompatibility("RustyMods.Seasonality")]`, so the two season sources are strictly
-either/or. In-game verification of the reflected read is still pending — a clean build
-proves nothing about member access.
+✅ **ALL SURFACES VERIFIED 2026-08-27, twice** — first against their published source
+(github.com/shudnal/Seasons), then by decompiling the SHIPPING DLL (Thunderstore package
+1.8.2, ilspycmd): `[BepInPlugin("shudnal.Seasons", ...)]`; `public static SeasonState
+seasonState` on the plugin class (null until their mod initialises — a quiet retry, not an
+error); `public Seasons.Season GetCurrentSeason()` on `public class SeasonState` returning
+`m_season`; enum `Season { Spring, Summer, Fall, Winter }` = 0..3, numerically identical to
+ours, so the reflected cast is a mapping, not a guess. NOTE the enum is NESTED in the plugin
+class (`Seasons.Seasons.Season`) — irrelevant to our read, which casts the boxed value to
+int and never names the enum type. Their global keys were REJECTED as a read surface:
+`enableSeasonalGlobalKeys` defaults to **false** and every key name is a server-configurable
+string (`Season_Fall` etc.). They declare `[BepInIncompatibility("RustyMods.Seasonality")]`
+(confirmed in the shipping DLL), so the two season sources are strictly either/or. In-game
+verification of the reflected read is still pending — a clean build proves nothing about
+member access.
 
 **AwayFromHome (Wubarrk)** — runs farms where no player stands, by rotating a "keeper" that
 loads a site for ~180s then unloads it.

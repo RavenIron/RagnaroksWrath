@@ -187,10 +187,12 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         /// <summary>
         /// Read shudnal's Seasons by reflection: `Seasons.seasonState.GetCurrentSeason()`.
         ///
-        /// Surfaces verified 2026-08-27 against their published source: `seasonState` is a
-        /// public static field on the plugin class, `SeasonState.GetCurrentSeason()` is a
-        /// public instance method, and their Season enum is Spring=0, Summer=1, Fall=2,
-        /// Winter=3 — numerically identical to ours, so the cast is a mapping, not a guess.
+        /// Surfaces verified 2026-08-27 against their published source AND the shipping DLL
+        /// (1.8.2, decompiled): `seasonState` is a public static field on the plugin class,
+        /// `SeasonState.GetCurrentSeason()` is a public instance method, and their Season
+        /// enum is Spring=0, Summer=1, Fall=2, Winter=3 — numerically identical to ours, so
+        /// the cast is a mapping, not a guess. Their enum is nested in the plugin class;
+        /// irrelevant here, since the boxed value is cast to int and the type never named.
         /// Their global keys were rejected as a surface: default-off AND the key names are
         /// server-configurable strings.
         ///
