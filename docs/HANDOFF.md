@@ -118,7 +118,12 @@ obeys.
   after the backlog clears, save-to-save). Phase C (dominance, mercies x1.25 zone /
   x1.5 sickness, Warden/Despoiler, flip voice) is harness-pinned (180+) and deployed;
   its in-game bits await play: mercy rate measurement, a 3-zone title, and the flip
-  announcement which STRUCTURALLY requires two players. Phases D–E not started (E gated).
+  announcement which STRUCTURALLY requires two players. Phase D CLOSED 2026-08-26 (see
+  above). PHASE E VERIFIED LIVE 2026-08-26 at 0.16.0: a boar killed Nomad, took its star
+  and slayer line (owner's eyes), and KEPT BOTH through a full server bounce — the
+  ZDO-key mark surviving ZDOID regeneration is the design's strong claim, observed.
+  TASK 13 COMPLETE, all five phases. Both ends deployed at 0.16.0. Task 14 (RelicSystem,
+  the capstone) is the last system in the mod.
   Scorch ash (0.14.x) verified by eye — burn scars visibly dust now, fading with healing.
   Deferred with cause: wildlife-flee and hostiles-seek-you (no acceptance criteria,
   BaseAI is the riskiest surface — own pass, own gates).

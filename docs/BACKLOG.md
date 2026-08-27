@@ -776,7 +776,14 @@ intensify — blight-side spawns starred via task 12's surface, wild-side spawn 
 Resolution when one side's drift wins the ground; one MessageFeed landmark line per
 resolution. Dangerous ground that resolves itself.
 
-**Phase E — the nemesis. BUILT 2026-08-26 at 0.16.0 (in-game verification pending).**
+**Phase E — the nemesis. BUILT AND VERIFIED LIVE 2026-08-26 at 0.16.0.** First real
+death: `Nemesis: Boar(Clone) marked — slayer of Nomad (kills 1, level 2)` — m_lastHit
+resolved, ownership held, keys written, level stepped. Plate confirmed by eye (star +
+slayer line). THE STRONG CLAIM CONFIRMED: server bounced (graceful, world saved), ZDOIDs
+regenerated at load, and the boar STILL wore its star and slayer line on rejoin — the
+ZDO-key design proven end to end. Accepted unobserved (same code path, lower stakes):
+the x2 count on a second death to the same creature, and the owned-elsewhere skip line.
+TASK 13 COMPLETE: all five phases built and verified.
 `Core/NemesisMark.cs` (pure: level step with never-demote cap, TMP suffix — 12 harness
 checks) + `Patches/Patch_Nemesis.cs` (Player.OnDeath observing postfix on the victim's
 client: m_lastHit via cached FieldRef (rule 5 — it is protected), owner-gated ZDO write
