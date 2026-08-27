@@ -1023,9 +1023,18 @@ trigger gets its own config line.
   only consoles with store access are the server's own and a listen host's. `zone set`
   stamps fresh contact automatically (the staging trap, tooled away). WrathAdmin parsing
   harness-pinned (239 total). **VERIFIED on the dedicated server's own console
-  2026-08-26 (0.19.0): `wrath status` answered** — headless Terminal registration, the
-  one never-before-exercised link, works. Remaining inches ride ordinary use: a
-  `zone set` round-trip and the pure-client refusal line.
+  2026-08-26 (0.19.0): `wrath status` answered** — headless Terminal registration works.
+  **REMOTE MUTATIONS (0.21.x) VERIFIED LIVE END TO END 2026-08-26:** `wrath zone set 2 1
+  fert 1` typed at F5 -> forwarded via vanilla's ZNet.RemoteCommand -> adminlist gate
+  passed -> executed on the server (store row `2 1 ... 1 0 0 0 0`, surviving autosaves)
+  -> **and the server console's output RELAYED BACK to the admin's screen** — the
+  dedicated console echoes command output to the remote issuer, a vanilla behavior
+  better than designed for. TWO instrument lessons from its verification, both the
+  runbook's own trap: (1) the "phantom usage line" was the SERVER's rejection of
+  literally-typed `<x> <y>` placeholders, relayed back — the pipe worked on the first
+  try; (2) "no `Remote admin` audit line in the server's BepInEx log" proved nothing,
+  because the minimal server install captures ZERO Unity/ZLog lines — vanilla audit
+  output exists only in the console window. Check the window, not the file.
 - **Shelter and storms.** Do Devastating Storm effects respect vanilla's `InShelter()`
   suppression?
 - **Per-system config surface.** Master toggles exist; per-system tuning knobs are not
