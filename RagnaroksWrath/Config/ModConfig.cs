@@ -57,6 +57,12 @@ namespace RavenIron.RagnaroksWrath.Config
         // ---- Fire (bridge to FireFront) -------------------------------------------------
         public static ConfigEntry<float> FireScorchIntervalSeconds;
         public static ConfigEntry<float> FireScorchPerMinute;
+        public static ConfigEntry<bool>  StormLightningEnabled;
+        public static ConfigEntry<float> LightningMeanMinutes;
+        public static ConfigEntry<float> LightningRingMinMeters;
+        public static ConfigEntry<float> LightningRingMaxMeters;
+        public static ConfigEntry<float> LightningStandoffMeters;
+        public static ConfigEntry<float> LightningIgniteRadiusMeters;
 
         // ---- Plague ---------------------------------------------------------------------
         public static ConfigEntry<float> PlagueSpreadIntervalSeconds;
@@ -307,7 +313,12 @@ namespace RavenIron.RagnaroksWrath.Config
 
             StormForcedEnvironment = cfg.Bind(weather, "StormForcedEnvironment", "ThunderStorm",
                 "Environment name used only when StormsForceWeather is on. Ignored entirely " +
-                "otherwise - with that off, this value is never read and the sky is never set.");
+                "otherwise - with that off, this value is never read and the sky is never set. " +
+                "KNOWN INTERACTION (verified live 2026-08-27): the default ThunderStorm is a " +
+                "WET environment, and rain rightly suppresses storm lightning - so with the " +
+                "look on you get rain but no bolts. Vanilla's 'Eikthyr' is the DRY storm " +
+                "(dark sky, thunder, no rain): use it if you want the look AND lightning " +
+                "fires in the same storm.");
 
             const string wind = "7 - Wind";
 
@@ -335,6 +346,48 @@ namespace RavenIron.RagnaroksWrath.Config
                     "double-count it. Default chars a zone fully after ~50 minutes of continuous " +
                     "burning; recovery is BiomeStateSystem's job and is slower than this.",
                     new AcceptableValueRange<float>(0f, 1f)));
+
+            StormLightningEnabled = cfg.Bind(fire, "StormLightningEnabled", true,
+                "Lightning during Devastating Storms: a rare bolt ignites ground near a player " +
+                "standing in the storm, through FireFront's own fire simulation (needs FireFront " +
+                "installed with its ground spread enabled — without either, storms never strike). " +
+                "Bolts only ever land near an online player, never in rain, and never within " +
+                "LightningStandoffMeters of anything player-built. NOTE: 'never in rain' " +
+                "includes a rainy FORCED storm look — if StormsForceWeather is on, pick a dry " +
+                "environment ('Eikthyr') or storms will look wet and never strike.");
+
+            LightningMeanMinutes = cfg.Bind(fire, "LightningMeanMinutes", 15f,
+                new ConfigDescription(
+                    "Mean minutes between strikes while a storm holds at least one player under " +
+                    "a dry sky. Against the default 5-minute storm, 15 here means roughly one " +
+                    "storm in three produces a bolt — storms should threaten fire, not promise it.",
+                    new AcceptableValueRange<float>(1f, 600f)));
+
+            LightningRingMinMeters = cfg.Bind(fire, "LightningRingMinMeters", 15f,
+                new ConfigDescription(
+                    "Nearest a bolt lands to the player it picked. Far enough that a strike is " +
+                    "never a targeted kill; the fire is the threat, not the bolt.",
+                    new AcceptableValueRange<float>(0f, 50f)));
+
+            LightningRingMaxMeters = cfg.Bind(fire, "LightningRingMaxMeters", 40f,
+                new ConfigDescription(
+                    "Farthest a bolt lands from the player it picked. Kept inside the 64m " +
+                    "announcement radius so whoever the storm strikes near always hears it.",
+                    new AcceptableValueRange<float>(10f, 60f)));
+
+            LightningStandoffMeters = cfg.Bind(fire, "LightningStandoffMeters", 30f,
+                new ConfigDescription(
+                    "No bolt lands within this range of anything player-built (any object " +
+                    "carrying a builder id — pieces and plants alike). The storm menaces the " +
+                    "wild, never the homestead; a blocked bolt is simply lost, not rerolled. " +
+                    "Capped at 64 because the check scans the 3x3 zones around the strike.",
+                    new AcceptableValueRange<float>(0f, 64f)));
+
+            LightningIgniteRadiusMeters = cfg.Bind(fire, "LightningIgniteRadiusMeters", 2.5f,
+                new ConfigDescription(
+                    "Ground radius FireFront ignites at the strike point. Small on purpose: one " +
+                    "bolt starts one fire, and the weather and the land decide what it becomes.",
+                    new AcceptableValueRange<float>(0.5f, 8f)));
 
             const string plague = "9 - Plague";
 

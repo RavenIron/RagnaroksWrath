@@ -1006,11 +1006,106 @@ trigger gets its own config line.
 
 - BepInEx pinned `denikson-BepInExPack_Valheim-5.4.2333` — confirmed current: it is the exact
   pack the live install runs.
-- FireFront is deliberately NOT a manifest dependency (soft by design); the README sells the
-  synergy instead.
+- FireFront was deliberately NOT a manifest dependency through 0.22.x (soft by design; the
+  README sold the synergy). REVERSED 2026-08-27 (owner's call, 0.23.0): FireFront is now a
+  listed dependency (`RavenIron-FireFront-<version>`) so mod managers install the pair
+  together, plus a boot-time version tattle in FireSystem naming the two API floors (0.17.2
+  positions, 0.17.3 igniter). The CODE stays soft-dependent — reflection, load-order-free,
+  dormant without it — only the packaging hardened. CONSEQUENCE: FireFront must be published
+  on the same store under that exact namespace-name BEFORE this zip can be uploaded
+  (dependency strings are validated at upload; FireFront currently has NO store packaging
+  of its own — that is now a publish prerequisite).
 - The package script refuses to build unless the THREE version homes agree (Plugin const,
   csproj, manifest) — the one manual-zip mistake worth automating away.
 - First artifact: `RavenIron-RagnaroksWrath-0.7.1.zip` (46 KB, five files, flat).
+
+---
+
+## 15. Storm lightning — BUILT AND VERIFIED LIVE 2026-08-27 at 0.23.0 (dedicated server)
+
+**VERIFIED, every acceptance item, same day:** six strikes across three storms and two
+zones ((4,0) and (4,1)), staged at `LightningMeanMinutes = 1` and landing at the staged
+rate. Observed link by link: storm began under `sky is 'Clear'` (dry gate passed) ->
+`lightning strike at (286, 24) in (4,0)` -> FireFront `Ground ignited (6/6)`, heartbeat
+`ground 5/50, raining False`, fire SPREADING cell to cell -> zone (4,0) banked scorch
+0.0397 by the next autosave (~2 min at the 0.02/min bridge rate, matching the burn time)
+-> **rivalry ledger empty for the zone — the sky billed nobody**, the by-construction
+claim observed. The owner SAW the Centre line ("lightning splits the sky showed up").
+The negative control fired too: with the owner near their build, `bolt grounded by the
+homestead in (4,0) — lost.` — the standoff scan refusing a real bolt, named in the log
+(the line is verbose-gated; it was flipped on for the test).
+
+**THE LESSON THE FIRST STORM TAUGHT — wet looks kill dry bolts:** the owner's first
+report was "nothing that looks like a devastating storm". Rule 4 means the sky stays
+vanilla's; the shipped remedy is `StormsForceWeather` — but its default environment
+`ThunderStorm` is WET, and the rain gate (correctly) never strikes in rain, so look and
+lightning were mutually exclusive at those settings. Vanilla's **`Eikthyr`** environment
+is the dry storm — dark sky, thunder, no rain — and with it forced, strikes continued
+through the storm look (three in one Eikthyr storm, observed). Both of the owner's
+installs now run `StormsForceWeather = true` + `StormForcedEnvironment = Eikthyr`; the
+config descriptions carry the interaction so the next owner doesn't rediscover it.
+The look landed: owner's verdict on the Eikthyr storm, same session — "storm looks
+great" — with strikes continuing beneath it.
+
+Accepted unobserved (dormancy paths, same standing as other low-stakes branches): the
+FireFront-absent warning and the pre-`IgniteGroundNear` one-line dormancy.
+
+**The build record** (as written before the live run; acceptance list at the bottom is
+now satisfied above):
+
+The first post-roadmap feature, owner-requested ("can certain events trigger plague and
+fires"): plague genesis already existed (0.22.0), so this adds the fire half — Devastating
+Storms finally PRODUCE fire instead of only multiplying its risk. Off-game 269/269 (13 new
+LightningStrike checks).
+
+**The shape, and why it honours the locked decisions:** the bolt is ONE reflection call
+into FireFront's own `IgniteGroundNear(Vector3, float)` — promoted to the bridge's third
+documented cross-mod contract (the one WRITE beside the two reads; comment at both ends).
+RW decides when and where; FireFront owns everything after the spark, so "never a second
+fire sim" holds. Decompile facts the build stands on (all read 2026-08-27):
+
+- `TryIgniteGroundCell` skips the leash when `_fireOrigin` is null and then SEEDS a fresh
+  origin from the first cell — a standalone call starts a legitimate new fire event.
+- Ground ignition captures NO igniter, so lightning fires are natural — attributed to
+  nobody — by construction. And because FireFront's event igniter is captured ONCE
+  globally, the sky holds its peace while an attributed (player-lit) fire burns: a bolt
+  joining an arson event would bill the arsonist for the sky's scorch.
+- `EnvMan.IsWet()` is public static: rain gates the strike up front (FireFront's own
+  suppression rule — announcing a fire that fizzles in seconds reads as a bug).
+- `ZDOMan.FindSectorObjects` is public: the homestead standoff scans the 3x3 sectors
+  around the strike for any ZDO carrying a creator id (pieces AND plants — the
+  RivalrySystem tending fact reused), XZ-planar per the 0.22.3 lesson. Any scan failure
+  reads as BLOCKED — when the world cannot be checked, the bolt is lost, never risked.
+
+**Gates, in order:** config -> storm active -> dry sky -> the dice
+(`LightningStrike.ChancePerTick`, the PlagueGenesis shape) -> no attributed fire event ->
+a real player under the storm (character ZDOs with `s_playerID`, never an AFH keeper —
+which is also the AwayFromHome promise: a bolt that only exists near online players can
+never reach an unattended base) -> the standoff. A blocked bolt is lost, not rerolled —
+the configured rate stays honest.
+
+**Voice:** one Centre line ("Lightning splits the sky!") within 64m of the strike, worded
+as the BOLT, not the fire — a strike into rock or sand that ignites nothing is honest
+weather, and FireFront's cell checks own that verdict. Server log carries position + zone.
+
+**Config (all in `8 - Fire`):** `StormLightningEnabled` (true), `LightningMeanMinutes`
+(15 — ~one strike per third 5-minute storm), `LightningRingMinMeters`/`MaxMeters`
+(15/40 — never a targeted kill, always inside the announcement radius),
+`LightningStandoffMeters` (30, capped 64 by the 3x3 scan), `LightningIgniteRadiusMeters`
+(2.5). Boot line names the armed parameters.
+
+**Acceptance, in-game (pending):**
+
+- On the staging world under a scheduler or console-forced storm with a player standing
+  in it under a dry sky: `wrath`-observe until a strike lands — Centre line seen, server
+  log line with zone, FireFront ground fire visible at the position, scorch accruing in
+  that zone on the next bridge ticks, rivalry ledger booking NOBODY.
+- Negative controls: no strike while raining; no strike with the player outside the storm
+  area; a bolt aimed inside 30m of a built piece logs "grounded by the homestead"
+  (verbose) and no fire appears.
+- The FireFront-absent and pre-`IgniteGroundNear` paths log their one-line dormancy.
+- For a fast protocol: `LightningMeanMinutes = 1` makes a 5-minute storm all but certain
+  to strike; remember BepInEx clamps-and-persists, so restore the default afterwards.
 
 ---
 

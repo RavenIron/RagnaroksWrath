@@ -54,6 +54,7 @@ namespace RagnaroksWrath.Tests
             WrathAdminTests();
             FarmingGrowthTests();
             PlagueGenesisTests();
+            LightningStrikeTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -1544,6 +1545,66 @@ namespace RagnaroksWrath.Tests
             Check("out-of-range ground clamps", PlagueGenesis.Weight(7f, -3f) == 3f);
             Check("NaN ground is clean, never punitive",
                 PlagueGenesis.Weight(float.NaN, float.NaN) == 1f);
+        }
+
+        private static void LightningStrikeTests()
+        {
+            Console.WriteLine("\nLightningStrike");
+
+            // 10s tick, 15min mean: chance = 10 / 900.
+            Check("the per-tick chance matches the configured mean",
+                Math.Abs(LightningStrike.ChancePerTick(10f, 15f) - 10f / 900f) < 1e-9f);
+            Check("an absurd mean clamps to certainty, not beyond",
+                LightningStrike.ChancePerTick(60f, 0.005f) == 1f);
+            Check("a zero mean disables rather than floods",
+                LightningStrike.ChancePerTick(10f, 0f) == 0f);
+            Check("a NaN mean disables rather than floods",
+                LightningStrike.ChancePerTick(10f, float.NaN) == 0f);
+            Check("a garbage interval disables",
+                LightningStrike.ChancePerTick(float.NaN, 15f) == 0f);
+
+            var anchor = new Vector3(100f, 37f, -200f);
+
+            // u1=0 lands exactly on the inner edge, u1→1 approaches the outer edge.
+            Vector3 inner = LightningStrike.StrikePoint(anchor, 0.0, 0.25, 15f, 40f);
+            Check("u1=0 lands on the inner edge (dist 15)",
+                Math.Abs(DistXZ(anchor, inner) - 15f) < 1e-3f);
+
+            Vector3 outer = LightningStrike.StrikePoint(anchor, 0.9999999, 0.7, 15f, 40f);
+            Check("u1=1 lands on the outer edge (dist 40)",
+                Math.Abs(DistXZ(anchor, outer) - 40f) < 1e-2f);
+
+            Check("every strike keeps the anchor's height",
+                inner.y == 37f && outer.y == 37f);
+
+            // u2=0 is straight +X — pins the angle convention so a change is deliberate.
+            Vector3 east = LightningStrike.StrikePoint(anchor, 0.0, 0.0, 20f, 20f);
+            Check("u2=0 strikes due +X",
+                Math.Abs(east.x - 120f) < 1e-3f && Math.Abs(east.z - (-200f)) < 1e-3f);
+
+            // A hundred samples all live inside the ring — area-uniform never escapes it.
+            bool allInRing = true;
+            var rng = new Random(12345);
+            for (int i = 0; i < 100; i++)
+            {
+                float d = DistXZ(anchor,
+                    LightningStrike.StrikePoint(anchor, rng.NextDouble(), rng.NextDouble(), 15f, 40f));
+                if (d < 15f - 1e-3f || d > 40f + 1e-3f) { allInRing = false; break; }
+            }
+            Check("a hundred rolls all land inside the ring", allInRing);
+
+            Check("NaN radii clamp to the anchor, never propagate",
+                DistXZ(anchor, LightningStrike.StrikePoint(anchor, 0.5, 0.5, float.NaN, float.NaN)) < 1e-3f);
+            Check("a negative inner radius clamps to zero",
+                DistXZ(anchor, LightningStrike.StrikePoint(anchor, 0.0, 0.0, -10f, 40f)) < 1e-3f);
+            Check("an inverted pair collapses to the surviving value",
+                Math.Abs(DistXZ(anchor, LightningStrike.StrikePoint(anchor, 0.9999999, 0.3, 30f, 5f)) - 30f) < 1e-2f);
+        }
+
+        private static float DistXZ(Vector3 a, Vector3 b)
+        {
+            float dx = a.x - b.x, dz = a.z - b.z;
+            return (float)Math.Sqrt(dx * dx + dz * dz);
         }
 
         // ---- harness ----------------------------------------------------------------

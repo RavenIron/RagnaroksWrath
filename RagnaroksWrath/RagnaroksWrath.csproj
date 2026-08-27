@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>RagnaroksWrath</AssemblyName>
     <RootNamespace>RavenIron.RagnaroksWrath</RootNamespace>
-    <Version>0.22.3</Version>
+    <Version>0.23.1</Version>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.23.1
+
+- Config guidance from the first live lightning session: the storm-look setting's
+  default environment (`ThunderStorm`) is rainy, and rain rightly suppresses lightning
+  fires — so look and bolts were mutually exclusive. Both descriptions now point at
+  vanilla's dry storm (`Eikthyr`) for owners who want the sky *and* the fire. No
+  behavior changed.
+
+## 0.23.0
+
+- **Storms strike.** A Devastating Storm over your head can now land a bolt of
+  lightning nearby — and the fire it starts is real, handled entirely by FireFront's
+  own simulation. Bolts are rare (about one storm in three at defaults), only ever
+  land near an online player, never fall in rain, and never within 30m of anything
+  player-built: the storm menaces the wild, not the homestead. Lightning fires are
+  natural — nobody is booked for the sky's work. Everything is config: the rate, the
+  landing ring, the standoff, or off entirely.
+- **FireFront is now a listed dependency.** Mod managers install the pair together,
+  so the fire half of the world can no longer be silently missing. Installing by
+  hand still works both ways — without FireFront the fire systems just sleep — and
+  the log now tattles at boot if your FireFront is too old for what this version
+  expects (0.17.2 for fire memory, 0.17.3 for arson attribution).
+
+## 0.22.1 – 0.22.3
+
+- **Zone announcements actually arrive now.** Two lifelong delivery bugs stacked: a
+  dedicated server could never reach remote players with zone-local lines, and the
+  distance check lost anyone standing on high ground. Every zone-local message —
+  war resolutions, consecrations, contest flips — now routes to each player properly
+  and measures distance flat. If you never saw a centre-screen line before, this is
+  why.
+
 ## 0.22.0
 
 - **Plagues begin on their own.** Until now every outbreak needed an admin's hand —

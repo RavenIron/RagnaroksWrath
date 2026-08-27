@@ -14,7 +14,7 @@ A Valheim world-simulation mod by **Raven Iron**. The world reacts and remembers
 Spring, Summer, Fall, Winter on a configurable clock — driving **gameplay**, never visuals: fire risk, plague growth, frost, farming yield all swing with the season. Runs its own clock, or defers automatically to **Seasonality** (RustyMods) when installed — no second clock, no conflict.
 
 ### ⛈ Devastating Storms
-Real vanilla events — banner, music, timer — fired on our schedule, positional and local: fire risk, wind and plague spread all rise **inside the storm's area** and nowhere else. A storm over contested ground escalates the war beneath it. The sky is never touched (Seasonality-safe); a config toggle exists for owners who run no weather mod and want the thunderstorm look.
+Real vanilla events — banner, music, timer — fired on our schedule, positional and local: fire risk, wind and plague spread all rise **inside the storm's area** and nowhere else. A storm over contested ground escalates the war beneath it. And with FireFront installed, a storm can **strike**: a rare bolt of lightning lands near someone under it and starts a real fire — never in rain, never near anything player-built. The sky is never touched (Seasonality-safe); a config toggle exists for owners who run no weather mod and want the thunderstorm look.
 
 ### 🦠 Plague — in the land, and in you
 A spreading, curable sickness that lives in the ground — and it starts on its own: every so often (rarer than daily by default, likelier on corrupted or burnt land, carried by storms) an outbreak quietly takes root where people live and walk. It grows where players linger, creeps along its frontier, feeds on corruption, rides storms — and dies back through winter or neglect. Clients see a **grey-green miasma** where it runs deep: no marker, no map icon, just the land looking wrong.
@@ -22,7 +22,7 @@ A spreading, curable sickness that lives in the ground — and it starts on its 
 Stand in it and it gets into **you**: exposure builds over tens of minutes into a real sickness — stamina first, then healing — shown as a vanilla status icon, never a HUD. Leaving drains it; rest drains it faster; poison-resist mead slows the intake. Relogging is not a cure. High-frost ground chills you where vanilla wouldn't — a campfire or frost-resist mead answers it, and your breath fogs in the cold air.
 
 ### 🔥 Fire scars (with FireFront)
-Install **FireFront** (Raven Iron) and fires char the land itself: burning zones accrue Scorch, which suppresses recovery and outlives the flames — and gray **ash drifts** over old burn scars, thinning as the land heals. Without FireFront the system sleeps; Ragnarok's Wrath ships no second fire simulation.
+**FireFront** (Raven Iron) ships as a dependency — mod managers install the pair together — and fires char the land itself: burning zones accrue Scorch, which suppresses recovery and outlives the flames — and gray **ash drifts** over old burn scars, thinning as the land heals. Installing by hand? You need both mods (FireFront 0.17.2+, 0.17.3+ for arson attribution — the log tells you at boot if the pairing is stale). Without FireFront the system sleeps; Ragnarok's Wrath ships no second fire simulation.
 
 ### 🌱 Land that keeps score
 Fertility tires under dense crops — and **tired fields grow slow**: crops in depleted soil take up to double the time, so resting a field genuinely pays. Blighted and burnt ground corrupts, corruption feeds the plague, and the world derives its own condition — Flourishing, Stable, Ailing, Stricken — announcing the turning points to everyone.
@@ -58,7 +58,7 @@ Config appears at `BepInEx/config/com.raveniron.ragnarokswrath.cfg` — every sy
 ## Plays well with
 
 - **Seasonality** — detected and deferred to automatically (GUID verified against their source)
-- **FireFront** — optional; unlocks fire scarring and arson attribution
+- **FireFront** — a listed dependency (installed automatically by mod managers); unlocks fire scarring, arson attribution, and storm lightning. Removing it is safe: those systems simply sleep.
 - **AwayFromHome** — deliberately compatible: drift never ticks on zone load state, unattended bases never burn, and sweeps are staggered off its rescan
 
 ## Known limitations

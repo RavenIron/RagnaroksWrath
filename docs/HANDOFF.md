@@ -48,9 +48,30 @@ horn mystery became two days that finished the mod.
 1. **The Skadi evening, on Saga**: multi-peer ring fan-out (the one genuinely untested
    surface — same code per peer, but never run with two), player-nameplate render (nemesis
    plate already argues equivalence), nemesis owned-elsewhere skip line. Skadi's Gale
-   profile needs RW 0.22.3 + FireFront 0.17.3; VersionSync will tattle inside a minute if
-   the versions differ.
+   profile needs RW at the shipping version (0.23.x — storm lightning and the FireFront
+   dependency landed AND VERIFIED LIVE 2026-08-27, see backlog task 15) + FireFront
+   0.17.3; VersionSync will tattle inside a minute if the versions differ. TEST STAGING
+   STILL LIVE on both owner installs: `LightningMeanMinutes = 1` and `VerboseLogging =
+   true` (restore 15 / false before the Skadi evening; `StormsForceWeather = true` +
+   `StormForcedEnvironment = Eikthyr` are KEEPERS — the owner's chosen look, verified
+   compatible with lightning).
 2. **Repack** at the shipping version: `tools\package.ps1` (refuses on version disagreement).
+3. **Publish FireFront FIRST** (new prerequisite, 2026-08-27): RW 0.23.0's manifest lists
+   `RavenIron-FireFront-0.17.3` as a dependency, and stores validate dependency strings at
+   upload. FireFront has NO store packaging of its own yet (no manifest/icon/README/zip
+   script in that repo) — it needs the full Thunderstore treatment before RW's zip is
+   accepted anywhere.
+4. **Hexium (hexium.gg) is a second distribution target** (owner's call, 2026-08-27).
+   Confirmed against hexium.gg/packaging: it takes Thunderstore-compatible zips with the
+   exact root files `package.ps1` already stages (manifest.json, icon.png 256x256,
+   README.md, CHANGELOG.md optional) — **the same dist zip uploads to both stores
+   verbatim**. Their quirks: dependency strings are MINIMUM versions (managers install
+   that or newer), BepInExPack_Valheim dependencies are auto-stripped on upload,
+   `name` allows only letters/digits/underscores (ours complies), description caps at
+   256 chars (ours complies), each version number uploads once, optional `faq/` folder
+   of Markdown files, >5 dependencies auto-tags a modpack. FireFront must be published
+   on Hexium too for the dependency to resolve there — same prerequisite as item 3,
+   per store.
 
 ## Ops facts the next session will want (also in auto-memory)
 

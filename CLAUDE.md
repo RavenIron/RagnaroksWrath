@@ -133,7 +133,7 @@ wrong measurement is the most common cause of a long debugging session here.
 | `EnvMan` / textures / materials | **Never touched.** See rule 4. |
 | Devastating Storms | `RandEventSystem` event with `m_forceEnvironment` **left empty** — full vanilla event (name, duration, music, spawns, banner) without overriding weather. A `StormsForceWeather` toggle, **default false**, exists for owners not running Seasonality. |
 | Persistence | **World-scoped sparse file**, keyed by world uid. ZDO custom keys rejected: they attach to an *object*, drift attaches to a *coordinate*, and an anchor prefab per zone would trigger the `ZNetScene.CreateObjectsSorted` → `DestroyZDO` landmine. |
-| FireSystem | **A bridge to FireFront, never a second fire sim.** FireFront (com.raveniron.firefront, same studio) owns ignition, spread, burning, VFX. RW reads its fires by reflection (`FireManager.CollectActiveFirePositions`, public since FireFront 0.17.2) and raises zone `Scorch`. Without FireFront, FireSystem is dormant. Decided 2026-08-25. |
+| FireSystem | **A bridge to FireFront, never a second fire sim.** FireFront (com.raveniron.firefront, same studio) owns ignition, spread, burning, VFX. RW reads its fires by reflection (`FireManager.CollectActiveFirePositions`, public since FireFront 0.17.2) and raises zone `Scorch`. Without FireFront, FireSystem is dormant. Decided 2026-08-25. Amended 2026-08-27 (0.23.0): the bridge carries ONE write — storm lightning calls FireFront's own `IgniteGroundNear` — which keeps the decision intact: RW decides when/where, FireFront owns every consequence. Also since 0.23.0 FireFront is a listed manifest dependency (packaging only; the code stays soft-dependent and dormant without it). |
 | Client visuals | **One role-aware DLL** (amended 2026-08-26; was "separate client plugin"): headless simulates, clients render, hosts do both. Visual-only, no HUD, procedural effects only — no assets, no bundles. `RagnaroksWrath.Client` retired. |
 | Spawn war wild side | **Refill pressure via vanilla's pheromone machinery, never a mod-owned spawner.** Decided 2026-08-26 after decompile: `m_pheromoneMaxInstanceOverride` widens the gate, not the group budget, so the war refills wildlife toward vanilla's cap faster (chance 100, gate 15 — shipped defaults) and can never crowd past it. Accepted deliberately. |
 | Timeline | Open-ended. Done when it's done. |
@@ -165,11 +165,14 @@ loads a site for ~180s then unloads it.
   player-built pieces, behind a config toggle.
 
 **FireFront (Raven Iron)** — our own structure-fire mod; the fire simulation this mod's
-FireSystem bridges to instead of competing with. The read API
-(`FireManager.CollectActiveFirePositions(List<Vector3>)`, FireFront 0.17.2+) is documented in
-FireFront's source as a load-bearing cross-mod contract: renaming it there silently disarms
-Scorch here, and FireSystem warns every tick when the surface cannot be resolved rather than
-going quietly dormant.
+FireSystem bridges to instead of competing with. THREE reflected surfaces, all documented in
+FireFront's source as load-bearing cross-mod contracts: the read API
+(`FireManager.CollectActiveFirePositions(List<Vector3>)`, 0.17.2+ — renaming it silently
+disarms Scorch here, and FireSystem warns every tick when it cannot resolve), the igniter
+property (`CurrentFireIgniterPlayerId`, 0.17.3+ — arson attribution; optional, absence logs
+once), and the write (`IgniteGroundNear(Vector3, float)`, promoted 2026-08-27 — storm
+lightning's spark; optional, absence logs once). Since 0.23.0 FireFront is also a listed
+manifest dependency — packaging only; the code stays soft.
 
 **SkyNet Redux** patches `EnvMan`
  and `ZoneSystem` for performance throttling — a third
@@ -216,6 +219,16 @@ overlap if it is ever installed alongside.
 ---
 
 ## Current state
+
+**Built and verified in-game (2026-08-27, 0.23.0, dedicated server): storm lightning** —
+the first post-roadmap feature. Six strikes over three storms: dry-sky gate, FireFront
+ignition and spread, scorch banked in the store, rivalry billing NOBODY (natural fire by
+construction), the homestead standoff refusing a real bolt by log line, Centre line and
+the Eikthyr storm look confirmed by the owner's eyes. FireFront became a Thunderstore
+manifest dependency the same day (packaging only — the code stays soft-dependent).
+Key operational fact: a WET forced storm look (`ThunderStorm`, the default) suppresses
+lightning via the rain gate; `Eikthyr` is the dry storm that allows both. See backlog
+task 15.
 
 **Built and verified in-game:** plugin loads, config binds, `WorldTick` drives systems,
 `SeasonSystem` resolves a real season from the world day (confirmed: logged `Summer` on an
