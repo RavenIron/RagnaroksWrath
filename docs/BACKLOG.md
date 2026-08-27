@@ -1011,6 +1011,19 @@ trigger gets its own config line.
 
 ---
 
+## Early-access readiness
+
+- **Fresh-world smoke test PASSED 2026-08-26** (0.20.0 server, world `EASmoke`, uid
+  314506678): all 15 systems initialised from zero state, `no existing store — fresh
+  world` on the honest path, season Spring at day 0, condition Flourishing (burden
+  0.00) set silently, Seasonality-absent clock and FireFront bridge both correct,
+  ZERO errors or warnings, graceful shutdown left only a header-only zone store (pinned
+  behavior) and no dirty-tracked ledger wrote a byte. Test artifacts removed.
+- README rewritten for the full feature set 2026-08-26 (was 0.7.1-era).
+- REMAINING before publish: the two-player evening (per-peer sync surfaces + the
+  standing two-player inches), the turnip-race eyeball (farming consumer), and a
+  repack at the shipping version.
+
 ## Open questions
 
 - **Verify the Seasonality GUID. DONE 2026-08-26.** Confirmed against RustyMods' own
