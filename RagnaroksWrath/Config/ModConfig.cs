@@ -85,6 +85,8 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float>  FarmingDepletionPerCropHour;
         public static ConfigEntry<string> FarmingCropPrefabs;
         public static ConfigEntry<float>  FarmingGrowthSlowdownAtFull;
+        public static ConfigEntry<bool>   PlagueGenesisEnabled;
+        public static ConfigEntry<float>  PlagueGenesisMeanHours;
 
         // ---- Titles ---------------------------------------------------------------------
         public static ConfigEntry<float> TitleIntervalSeconds;
@@ -369,6 +371,18 @@ namespace RavenIron.RagnaroksWrath.Config
                 new ConfigDescription(
                     "Plague level a newly infected zone starts at.",
                     new AcceptableValueRange<float>(0.01f, 0.5f)));
+
+            PlagueGenesisEnabled = cfg.Bind(plague, "PlagueGenesisEnabled", true,
+                "Outbreaks take root ORGANICALLY: a rare roll seeds sickness into ground " +
+                "players actually touch — likelier on corrupted or burnt land, carried by " +
+                "storms. Off = plagues start only by admin hand (the pre-0.22 behavior).");
+
+            PlagueGenesisMeanHours = cfg.Bind(plague, "PlagueGenesisMeanHours", 12f,
+                new ConfigDescription(
+                    "Mean real hours of played time between organic outbreaks on CLEAN " +
+                    "ground. Blighted ground shortens it (up to 5x at full blight); a " +
+                    "storm overhead multiplies again.",
+                    new AcceptableValueRange<float>(0.5f, 500f)));
 
             PlagueSpreadChance = cfg.Bind(plague, "PlagueSpreadChance", 0.25f,
                 new ConfigDescription(

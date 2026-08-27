@@ -60,6 +60,7 @@ namespace RavenIron.RagnaroksWrath.Client
                 // alone — which is exactly how the first monument's placement was lost
                 // TWICE. This Update runs on every rendering client, solo included.
                 Net.RelicSync.EnsureRegistered();
+                Net.VersionSync.EnsureRegistered();
 
                 Player player = Player.m_localPlayer;
                 if (player == null) return;

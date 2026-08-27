@@ -32,8 +32,12 @@ namespace RavenIron.RagnaroksWrath.Systems
         public void Tick(float deltaSeconds)
         {
             ZoneSync.EnsureRegistered();
+            Net.VersionSync.EnsureRegistered();
 
             if (!Persistence.IsLoaded) return;
+
+            // The loud half of version safety: tell every client what version runs here.
+            Net.VersionSync.MaybeBroadcast(deltaSeconds);
 
             ZNet znet = ZNet.instance;
             if (znet == null) return;

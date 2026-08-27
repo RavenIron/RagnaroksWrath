@@ -21,9 +21,12 @@ namespace RavenIron.RagnaroksWrath.Systems.World
     ///   recovery) drives plague through zero, the epsilon snap kills it, and the zone leaves
     ///   the store. Nothing here resurrects it.
     ///
-    /// HOW A PLAGUE STARTS: nothing in this system invents outbreaks. Patient zero comes from
-    /// elsewhere — a future event system, a wrath console command, or (the store being plain
-    /// tab-separated text by design) an admin's editor.
+    /// HOW A PLAGUE STARTS (0.22.0): GENESIS — a rare roll each pass seeds sickness into a
+    /// zone inside some online player's contact ring, weighted toward corrupted and burnt
+    /// ground and multiplied under storms. Sickness follows settlement; nothing seeds where
+    /// nobody goes (an uncontacted outbreak would be invisible bookkeeping anyway — drift
+    /// only grows plague under someone's feet). Admins retain the older instruments: the
+    /// wrath console and the hand-editable store.
     /// </summary>
     public class PlagueSystem : IWorldSystem
     {
@@ -43,7 +46,11 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             RagnaroksWrath.Log.LogInfo(
                 $"[{Name}] spread every {IntervalSeconds:F0}s at {ModConfig.PlagueSpreadChance.Value:P0} " +
                 $"per frontier zone (threshold {ModConfig.PlagueSpreadThreshold.Value:F2}, " +
-                $"seed {ModConfig.PlagueSeedAmount.Value:F2}). Growth and cure live in BiomeDrift.");
+                $"seed {ModConfig.PlagueSeedAmount.Value:F2}). Growth and cure live in BiomeDrift. " +
+                (ModConfig.PlagueGenesisEnabled.Value
+                    ? $"Genesis: outbreaks take root organically, ~{ModConfig.PlagueGenesisMeanHours.Value:0.#}h " +
+                      "mean on clean ground, faster on blighted, storm-carried."
+                    : "Genesis OFF: outbreaks start only by admin hand."));
         }
 
         public void Tick(float deltaSeconds)
@@ -60,6 +67,10 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 _plagued.Add(new KeyValuePair<ZoneKey, float>(kv.Key, kv.Value.Plague));
                 _infected.Add(kv.Key);
             }
+
+            // Genesis runs BEFORE the no-plague early-out — starting from nothing is its
+            // entire purpose.
+            TryGenesis();
 
             if (_plagued.Count == 0) return;
 
@@ -93,6 +104,54 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 RagnaroksWrath.Log.LogInfo(
                     $"[{Name}] seeded {seeded} zone(s) from {_plagued.Count} infected " +
                     $"({_targets.Count} frontier candidate(s)).");
+        }
+
+        /// <summary>
+        /// One genesis roll per pass: pick a random zone inside a random online player's
+        /// contact ring; if it is clean, sickness takes root there with a chance built
+        /// from the configured mean, the ground's blight, and any storm overhead. The
+        /// seed sits below the fog's emission floor — outbreaks are DISCOVERED, not
+        /// announced; the server log alone carries the birth certificate.
+        /// </summary>
+        private void TryGenesis()
+        {
+            if (!ModConfig.PlagueGenesisEnabled.Value) return;
+
+            ZNet znet = ZNet.instance;
+            if (znet == null) return;
+
+            List<ZDO> characters;
+            try { characters = znet.GetAllCharacterZDOS(); }
+            catch { return; }
+            if (characters == null || characters.Count == 0) return;
+
+            ZDO pick = characters[_rng.Next(characters.Count)];
+            if (pick == null || !pick.IsValid()) return;
+            if (pick.GetLong(ZDOVars.s_playerID, 0L) == 0) return;
+
+            int radius = Math.Max(0, ModConfig.BiomeContactRadiusZones.Value);
+            ZoneKey centre = ZoneKey.FromWorldPos(pick.GetPosition());
+            var zone = new ZoneKey(
+                centre.X + _rng.Next(-radius, radius + 1),
+                centre.Y + _rng.Next(-radius, radius + 1));
+
+            ZoneState state = Persistence.Get(zone);
+            if (state.Plague > 0f) return;   // already sick; no reroll — the rate stays honest
+
+            float weight = PlagueGenesis.Weight(state.Corruption, state.Scorch);
+            float storm = WeatherSystem.PlagueSpreadMultiplierAt(zone.ToWorldPos());
+            float chance = PlagueGenesis.ChancePerTick(
+                IntervalSeconds, ModConfig.PlagueGenesisMeanHours.Value) * weight * storm;
+
+            if (_rng.NextDouble() > chance) return;
+
+            state.Plague = ModConfig.PlagueSeedAmount.Value;
+            Persistence.Set(zone, state);
+            ZoneClock.MarkContact(zone);   // fresh stamp: genesis must not inherit a backlog
+
+            RagnaroksWrath.Log.LogInfo(
+                $"[{Name}] sickness takes root in {zone} " +
+                $"(ground weight {weight:0.##}, storm x{storm:0.##}).");
         }
     }
 }

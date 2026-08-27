@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.22.0
+
+- **Plagues begin on their own.** Until now every outbreak needed an admin's hand —
+  which meant a fresh public world could run forever without the blight arc ever
+  starting. Genesis fixes that: every so often (about twice a day of played time by
+  default, config-tunable) sickness quietly takes root in ground players actually
+  touch — likelier on corrupted or burnt land, carried by storms. The seed is
+  invisible until it grows; outbreaks are discovered, never announced. All the old
+  containment rules still hold, and the old admin instruments still work.
+- **Version mismatches are loud now.** A client running a different mod version than
+  the server gets one warning — log and corner message — instead of features silently
+  not showing. Mismatched pairs still fail safe; now they also fail audibly.
+- README: keep the config identical on server and clients — several client-side gates
+  read local values.
+
 ## 0.21.0
 
 - **`wrath` from the comfort of F5.** Mutations typed in-game now forward to the server

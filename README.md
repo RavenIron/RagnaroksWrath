@@ -17,7 +17,7 @@ Spring, Summer, Fall, Winter on a configurable clock — driving **gameplay**, n
 Real vanilla events — banner, music, timer — fired on our schedule, positional and local: fire risk, wind and plague spread all rise **inside the storm's area** and nowhere else. A storm over contested ground escalates the war beneath it. The sky is never touched (Seasonality-safe); a config toggle exists for owners who run no weather mod and want the thunderstorm look.
 
 ### 🦠 Plague — in the land, and in you
-A spreading, curable sickness that lives in the ground. It grows where players linger, creeps along its frontier, feeds on corruption, rides storms — and dies back through winter or neglect. Clients see a **grey-green miasma** where it runs deep: no marker, no map icon, just the land looking wrong.
+A spreading, curable sickness that lives in the ground — and it starts on its own: every so often (rarer than daily by default, likelier on corrupted or burnt land, carried by storms) an outbreak quietly takes root where people live and walk. It grows where players linger, creeps along its frontier, feeds on corruption, rides storms — and dies back through winter or neglect. Clients see a **grey-green miasma** where it runs deep: no marker, no map icon, just the land looking wrong.
 
 Stand in it and it gets into **you**: exposure builds over tens of minutes into a real sickness — stamina first, then healing — shown as a vanilla status icon, never a HUD. Leaving drains it; rest drains it faster; poison-resist mead slows the intake. Relogging is not a cure. High-frost ground chills you where vanilla wouldn't — a campfire or frost-resist mead answers it, and your breath fogs in the cold air.
 
@@ -52,6 +52,8 @@ Earned from what happened to you, never from tracked stats: **Stormrider**, **Pl
 Drop `RagnaroksWrath.dll` into `BepInEx/plugins/` on the **server and every client**. The same DLL does both jobs: the server runs the simulation, clients render what it pushes and act where they stand.
 
 Config appears at `BepInEx/config/com.raveniron.ragnarokswrath.cfg` — every system has its own on/off switch, every rate, threshold, and aura is tunable.
+
+**Keep the config identical on the server and every client.** Several client-side gates (consequence thresholds, wildlife lists, relic dials) read local values; a client with a diverging config behaves differently on the same world. If the server and a client disagree about the mod *version*, the client warns once on screen — mismatched pairs fail safe, but features silently stop showing until they match.
 
 ## Plays well with
 

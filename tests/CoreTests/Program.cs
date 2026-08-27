@@ -53,6 +53,7 @@ namespace RagnaroksWrath.Tests
             RelicTests();
             WrathAdminTests();
             FarmingGrowthTests();
+            PlagueGenesisTests();
 
             Console.WriteLine($"\n{_passed} passed, {_failed} failed.");
             return _failed == 0 ? 0 : 1;
@@ -1518,6 +1519,31 @@ namespace RagnaroksWrath.Tests
                 FarmingGrowth.GrowTimeMultiplier(float.NaN, 2f) == 1f);
             Check("NaN slowdown is vanilla, never punitive",
                 FarmingGrowth.GrowTimeMultiplier(0.8f, float.NaN) == 1f);
+        }
+
+        private static void PlagueGenesisTests()
+        {
+            Console.WriteLine("\nPlagueGenesis");
+
+            // 60s tick, 12h mean: chance = 60 / 43200.
+            Check("the per-tick chance matches the configured mean",
+                Math.Abs(PlagueGenesis.ChancePerTick(60f, 12f) - 60f / 43200f) < 1e-9f);
+            Check("an absurd mean clamps to certainty, not beyond",
+                PlagueGenesis.ChancePerTick(60f, 0.005f) == 1f);
+            Check("a zero mean disables rather than floods",
+                PlagueGenesis.ChancePerTick(60f, 0f) == 0f);
+            Check("a NaN mean disables rather than floods",
+                PlagueGenesis.ChancePerTick(60f, float.NaN) == 0f);
+            Check("a garbage interval disables",
+                PlagueGenesis.ChancePerTick(0f, 12f) == 0f);
+
+            Check("clean ground is weight one", PlagueGenesis.Weight(0f, 0f) == 1f);
+            Check("full blight is five times likelier", PlagueGenesis.Weight(1f, 1f) == 5f);
+            Check("corruption and scorch weigh alike",
+                PlagueGenesis.Weight(0.5f, 0f) == PlagueGenesis.Weight(0f, 0.5f));
+            Check("out-of-range ground clamps", PlagueGenesis.Weight(7f, -3f) == 3f);
+            Check("NaN ground is clean, never punitive",
+                PlagueGenesis.Weight(float.NaN, float.NaN) == 1f);
         }
 
         // ---- harness ----------------------------------------------------------------
