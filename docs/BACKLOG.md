@@ -242,8 +242,11 @@ comes from a future event system, a `wrath` console command, or an admin's edito
   rotation later (`zone (-1,0): depletion=0.00208`, matching 5 crops x 0.002/crop-hour).
   The 0.5.1 lesson is in the sweep comment: the iterative walk yields every ~400 populated
   sectors, and it must be DRAINED per tick — resuming one chunk per tick stretched a rotation
-  across an hour. **THE CONSUMER LANDED 2026-08-26 (0.20.0, in-game verification
-  pending):** `Plant.GetGrowTime` scaling postfix (decompile-verified surface: per-
+  across an hour. **THE CONSUMER LANDED 2026-08-26 (0.20.0), VERIFIED BY EYE 2026-08-27:
+  the two-turnip race — the crop on clean (1,1) matured on vanilla's clock while the
+  five on fully depleted (2,1) (staged fert=1 via the wrath console) were still
+  seedlings, the x2 slowdown seen exactly as a farmer would see it.**
+  `Plant.GetGrowTime` scaling postfix (decompile-verified surface: per-
   instance seeded lerp, growth fired owner-side — a client, which holds the synced
   ring), scoped to FarmingCropPrefabs, x(1 + depletion x (slowdown-1)), default double
   at full depletion, FarmingGrowth harness-pinned. YIELD reduction remains deferred
@@ -1020,9 +1023,10 @@ trigger gets its own config line.
   ZERO errors or warnings, graceful shutdown left only a header-only zone store (pinned
   behavior) and no dirty-tracked ledger wrote a byte. Test artifacts removed.
 - README rewritten for the full feature set 2026-08-26 (was 0.7.1-era).
+- Turnip race VERIFIED 2026-08-27 — the farming consumer seen by eye (clean crop grew,
+  depleted field's five still seedlings).
 - REMAINING before publish: the two-player evening (per-peer sync surfaces + the
-  standing two-player inches), the turnip-race eyeball (farming consumer), and a
-  repack at the shipping version.
+  standing two-player inches), and a repack at the shipping version.
 
 ## Open questions
 
