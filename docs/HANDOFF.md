@@ -1,5 +1,17 @@
 # Session handoff — 2026-08-27 (THE ROADMAP IS COMPLETE; the EA rehearsal begins)
 
+## PUBLISHED — 2026-08-27, evening
+
+**Both mods are LIVE on Hexium (hexium.gg) under team `RavenIronStudios`:**
+`RavenIronStudios-FireFront-0.18.4` and `RavenIronStudios-RagnaroksWrath-0.24.0` (the
+dependency chain resolving for real — RW's manifest minimum 0.17.3 satisfied by the
+published 0.18.4). RW ships the owner's wolf icon; FireFront the burning shield. Uploaded
+private-first via the owner's browser. Thunderstore status: team confirmed as
+RavenIronStudios there too; upload not yet confirmed done — ask the owner before assuming.
+Packaging facts and the store-team-vs-GitHub-org distinction live in item 3 of "What
+remains" below and in auto-memory (`distribution-targets`). The items below this line
+predate the publish and describe the road to it.
+
 For the next session picking this up cold. Read `CLAUDE.md` first, then this; `docs/BACKLOG.md`
 carries per-task verification detail, `docs/reference/README.md` gates the engine sheets. The
 2026-08-26 handoff below this section is SUPERSEDED but kept — it is the log of how phase D's
