@@ -242,6 +242,21 @@ overlap if it is ever installed alongside.
 
 ## Current state
 
+**BUILT, NOT YET VERIFIED IN-GAME (2026-08-30, 0.25.0): season sync.** `SeasonSync`
+broadcasts the season to every client on `SeasonSystem`'s own 10s cadence, because
+`Current` was only ever assigned on the simulation authority and a pure client therefore
+believed it was Spring for the whole session. Every in-mod gameplay consumer of the
+season runs server-side, so nothing here looked broken — the cost landed on Undertow,
+which computes its current field on the peer that OWNS a hull and asked us for a season
+it could never get. Absolute and unconditional rather than on-change, so a joining
+client is right within a tick and a dropped packet heals itself; the receiver refuses to
+act on the authority, which absorbs a listen host's copy of its own broadcast.
+**The instrument is `wrath status`, which now names the season's SOURCE on both sides** —
+mandatory here, because Spring is index 0 and so is "nothing has ever told us", so the
+season alone cannot distinguish a working sync from none. A clean build proves nothing
+about `ZRoutedRpc` at runtime: this needs one dedicated-server run with a client typing
+`wrath status` and reading back a non-Spring season marked `synced from the server`.
+
 **Built and verified in-game (2026-08-27, 0.23.0, dedicated server): storm lightning** —
 the first post-roadmap feature. Six strikes over three storms: dry-sky gate, FireFront
 ignition and spread, scorch banked in the store, rivalry billing NOBODY (natural fire by

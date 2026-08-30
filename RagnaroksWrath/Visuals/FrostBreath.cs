@@ -41,6 +41,7 @@ namespace RavenIron.RagnaroksWrath.Visuals
             try
             {
                 ZoneSync.EnsureRegistered();   // the render path arms pure clients, as ever
+                SeasonSync.EnsureRegistered(); // twice over: a client with one visual off still needs the season
 
                 if (!ModConfig.FrostBreathEnabled.Value) return;
 

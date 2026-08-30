@@ -105,7 +105,7 @@ namespace RavenIron.RagnaroksWrath.Patches
             var sb = new StringBuilder(256);
             if (Authority)
             {
-                sb.Append($"condition {WorldStateSystem.Condition}, season {SeasonSystem.Current}, ");
+                sb.Append($"condition {WorldStateSystem.Condition}, season {SeasonSystem.Current} ({SeasonSystem.Source}), ");
                 sb.Append($"day {SeasonSystem.CurrentDayOrZero()}\n");
                 sb.Append($"zones tracked {Persistence.TrackedZoneCount}, ");
                 sb.Append($"wars {RivalrySystem.ContestedZoneCount}, ");
@@ -116,6 +116,14 @@ namespace RavenIron.RagnaroksWrath.Patches
             else
             {
                 sb.Append("(pure client — synced view only)\n");
+                // Season AND its source, never one without the other. Spring is index 0 and so
+                // is "nothing has ever told us", so on a client the source is the only thing
+                // that separates a working sync from none at all — and before 0.25.0 there was
+                // no sync, so this line would have read Spring in midwinter.
+                sb.Append(SeasonSystem.Source == SeasonSystem.SeasonSource.Server
+                    ? $"season {SeasonSystem.Current} (synced from the server), "
+                    : $"season {SeasonSystem.Current} (NOT SYNCED - local default), ");
+                sb.Append($"day {SeasonSystem.CurrentDayOrZero()}\n");
                 Player local = Player.m_localPlayer;
                 if (local != null)
                 {

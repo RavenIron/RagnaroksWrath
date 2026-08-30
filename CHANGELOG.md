@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.25.0
+
+- **The season now reaches clients.** It never did: `SeasonSystem` only ever ran on the
+  simulation authority, so on a dedicated server every connected client believed it was
+  spring for the whole session, forever. Nothing in this mod looked wrong — every
+  gameplay consumer of the season (fire risk, plague growth, farming yield, frost)
+  already lived on the server — but `wrath status` typed on a client reported spring in
+  midwinter, and any *other* mod asking us what season it is got the same wrong answer
+  on the machine where it mattered. The server now broadcasts the season to everyone on
+  its own ten-second cadence: absolute, unconditional, four bytes, so a player who joins
+  mid-session is right within a tick and a dropped packet heals itself.
+- `wrath status` names where the season came from, on both sides. On a client that is
+  the only way to tell a working sync from none at all, because "spring" is equally what
+  you see when nothing has ever told you anything.
+- No behaviour changes on a single-player world or a listen host, where the authority and
+  the player were always the same process.
+
 ## 0.24.0
 
 - **Seasons (shudnal) is now a recognised season source.** Until now only Seasonality

@@ -5,6 +5,7 @@ using HarmonyLib;
 using RavenIron.RagnaroksWrath.Config;
 using RavenIron.RagnaroksWrath.Core;
 using RavenIron.RagnaroksWrath.Feedback;
+using RavenIron.RagnaroksWrath.Net;
 
 namespace RavenIron.RagnaroksWrath.Systems.World
 {
@@ -55,7 +56,10 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         {
             OwnClock = 0,
             Seasonality = 1,
-            ShudnalSeasons = 2
+            ShudnalSeasons = 2,
+
+            /// <summary>A pure client, told the season by the authority over SeasonSync.</summary>
+            Server = 3
         }
 
         // Seasonality publishes season as vanilla global keys.
@@ -133,6 +137,15 @@ namespace RavenIron.RagnaroksWrath.Systems.World
                 case SeasonSource.ShudnalSeasons: resolved = ReadFromShudnalSeasons();  break;
                 default:                          resolved = ComputeFromWorldAge();     break;
             }
+
+            // The wire, armed and fed on the authority's own cadence — and deliberately
+            // BEFORE every early return below. A season that has not changed still has to
+            // reach a client who has only just joined, so this broadcasts unconditionally
+            // rather than on change: absolute, self-healing, four bytes, no bookkeeping.
+            // `resolved` and not `Current` because on the very first tick Current is still
+            // the enum default and `resolved` is the truth we are about to adopt.
+            SeasonSync.EnsureRegistered();
+            SeasonSync.Broadcast(resolved);
 
             // Resolve-on-first-tick, not on Initialise. ZoneSystem may not be ready at plugin load,
             // and a first resolve that legitimately fails must not latch this system off — that
@@ -328,6 +341,60 @@ namespace RavenIron.RagnaroksWrath.Systems.World
 
             day = _getCurrentDay(env);
             return true;
+        }
+
+        // ---- the client side ------------------------------------------------------------
+        // A pure client ticks no system of ours, so everything above this line is authority-only
+        // and `Current` would sit at the enum default forever. These two are how the value gets
+        // in from the network instead. See Net/SeasonSync for the reasoning and the cost.
+
+        /// <summary>True once this client has been told a season by the server.</summary>
+        private static bool _serverSeasonSeen;
+
+        /// <summary>
+        /// Client-side: adopt the season the server just sent.
+        ///
+        /// Refuses on the authority, which owns its own season through Tick — a listen host
+        /// receives a local copy of its own broadcast and must ignore it. No announcement from
+        /// here either: the server already sent one to everybody through MessageFeed, and two
+        /// lines for one event is the duplication that makes players uninstall a mod.
+        /// </summary>
+        public static void ApplyFromServer(Season season)
+        {
+            if (RagnaroksWrath.IsSimulationAuthority()) return;
+
+            if (!_serverSeasonSeen)
+            {
+                _serverSeasonSeen = true;
+                Source = SeasonSource.Server;
+                Current = season;
+
+                // Proof of life, and it has to name the source. Spring is index 0 and so is
+                // every failure mode here, so "season Spring" alone cannot tell a working sync
+                // from no sync at all — which is exactly the bug this whole file just fixed.
+                RagnaroksWrath.Log.LogInfo(
+                    $"SeasonSystem: season arriving from the server — {season}.");
+                return;
+            }
+
+            if (season == Current) return;
+
+            Season previous = Current;
+            Current = season;
+            RagnaroksWrath.Log.LogInfo($"SeasonSystem: server season {previous} -> {Current}.");
+        }
+
+        /// <summary>
+        /// New world session: forget that a server ever told us a season, WITHOUT resetting the
+        /// season itself. Leaving the last known value is the same call ReadFromSeasonality makes
+        /// on a miss — snapping to spring would make every server join look like a season change.
+        /// No-ops on the authority, whose Source was decided in Initialise.
+        /// </summary>
+        public static void ForgetServerSeason()
+        {
+            if (RagnaroksWrath.IsSimulationAuthority()) return;
+            _serverSeasonSeen = false;
+            Source = SeasonSource.OwnClock;
         }
 
         private void AnnounceIfChanged()
