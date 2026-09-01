@@ -41,6 +41,11 @@ namespace RavenIron.RagnaroksWrath.Net
         /// Registration is keyed on the ZRoutedRpc INSTANCE, not a "done" flag: the instance is
         /// per-world-session, and a stale flag would leave the next world with no handler at all.
         /// Safe and cheap to call from any per-tick path on either side.
+        ///
+        /// A packet for a hash nobody registered is DROPPED SILENTLY - `ZRoutedRpc.HandleRoutedRPC`
+        /// is a bare `TryGetValue` with no else branch (decompiled 2026-08-30). So a client that
+        /// never armed, or an older client that lacks this class, leaves no trace in any log:
+        /// the season just stays wherever it was. That is why `wrath status` prints the SOURCE.
         /// </summary>
         public static void EnsureRegistered()
         {

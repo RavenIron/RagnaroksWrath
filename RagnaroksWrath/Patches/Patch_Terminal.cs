@@ -122,7 +122,7 @@ namespace RavenIron.RagnaroksWrath.Patches
                 // no sync, so this line would have read Spring in midwinter.
                 sb.Append(SeasonSystem.Source == SeasonSystem.SeasonSource.Server
                     ? $"season {SeasonSystem.Current} (synced from the server), "
-                    : $"season {SeasonSystem.Current} (NOT SYNCED - local default), ");
+                    : $"season {SeasonSystem.Current} (NOT SYNCED), ");
                 sb.Append($"day {SeasonSystem.CurrentDayOrZero()}\n");
                 Player local = Player.m_localPlayer;
                 if (local != null)
