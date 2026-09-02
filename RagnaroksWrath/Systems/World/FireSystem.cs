@@ -248,49 +248,13 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         }
 
         /// <summary>
-        /// True when anything player-built — any ZDO carrying a builder id (pieces and
-        /// plants alike, the same `s_creator` fact RivalrySystem's tending verified at
-        /// source) — stands within <paramref name="standoff"/> of the strike, XZ-planar
-        /// (the 0.22.3 lesson: vertical distance is meaningless for "near this ground").
-        /// Scans the 3x3 sectors around the strike via vanilla's own index
-        /// (`ZDOMan.FindSectorObjects`, public, decompile-verified 2026-08-27), which
-        /// bounds the honest standoff at 64m — the config clamp agrees. Any failure
-        /// reads as BLOCKED: when the world cannot be checked, the bolt is lost, never
-        /// risked.
+        /// The bolt standoff, now shared machinery: Homestead owns the player-built scan
+        /// (it grew a second caller in 0.26.0 — the storm scheduler anchors storms on
+        /// players in the wild with the same question). Lightning fails CLOSED: when the
+        /// world cannot be checked, the bolt is lost, never risked.
         /// </summary>
         private bool IsNearPlayerBuilt(Vector3 strike, float standoff)
-        {
-            if (standoff <= 0f) return false;
-
-            try
-            {
-                ZDOMan man = ZDOMan.instance;
-                if (man == null) return true;
-
-                _sectorScratch.Clear();
-                man.FindSectorObjects(ZoneKey.FromWorldPos(strike).ToVector2i(), 1, 0, _sectorScratch);
-
-                float sqr = standoff * standoff;
-                for (int i = 0; i < _sectorScratch.Count; i++)
-                {
-                    ZDO zdo = _sectorScratch[i];
-                    if (zdo == null || !zdo.IsValid()) continue;
-                    if (zdo.GetLong(ZDOVars.s_creator, 0L) == 0) continue;
-
-                    Vector3 p = zdo.GetPosition();
-                    float dx = p.x - strike.x;
-                    float dz = p.z - strike.z;
-                    if (dx * dx + dz * dz <= sqr) return true;
-                }
-                return false;
-            }
-            catch (Exception ex)
-            {
-                RagnaroksWrath.Log.LogWarning(
-                    $"[{Name}] lightning standoff check failed ({ex.Message}) — bolt lost.");
-                return true;
-            }
-        }
+            => Homestead.IsNearPlayerBuilt(strike, standoff, _sectorScratch, resultWhenUncheckable: true);
 
         /// <summary>
         /// FireFront's `IgniteGroundNear(Vector3, float)` — the bridge's one WRITE,

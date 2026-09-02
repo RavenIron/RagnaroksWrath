@@ -50,6 +50,7 @@ namespace RavenIron.RagnaroksWrath.Config
         public static ConfigEntry<float>  StormPlagueSpreadMultiplier;
         public static ConfigEntry<bool>   StormsForceWeather;
         public static ConfigEntry<string> StormForcedEnvironment;
+        public static ConfigEntry<float>  StormAvoidBaseMeters;
 
         // ---- Wind -----------------------------------------------------------------------
         public static ConfigEntry<float> WindIntervalSeconds;
@@ -321,6 +322,17 @@ namespace RavenIron.RagnaroksWrath.Config
                 "look on you get rain but no bolts. Vanilla's 'Eikthyr' is the DRY storm " +
                 "(dark sky, thunder, no rain): use it if you want the look AND lightning " +
                 "fires in the same storm.");
+
+            StormAvoidBaseMeters = cfg.Bind(weather, "StormAvoidBaseMeters", 30f,
+                new ConfigDescription(
+                    "Storms anchor on a player out in the WILD: anyone standing within this " +
+                    "range of anything player-built (any object carrying a builder id - " +
+                    "pieces and plants alike) does not draw storms. A storm centred on a " +
+                    "homestead announces drama it cannot deliver - lightning grounds out on " +
+                    "the standoff and cleared base ground gives fire nothing - so an overdue " +
+                    "storm HOLDS until somebody steps outside their walls, then breaks. " +
+                    "0 disables the filter; capped at 64 by the 3x3-zone scan.",
+                    new AcceptableValueRange<float>(0f, 64f)));
 
             const string wind = "7 - Wind";
 

@@ -54,6 +54,13 @@ namespace RavenIron.RagnaroksWrath.Systems.World
         private float _sinceStormEnded;
         private readonly System.Random _rng = new System.Random();
 
+        // Wild-anchor machinery (0.26.0): scratch for Homestead's sector scan, the
+        // filtered candidate list, and a latch so a held storm logs its hold once per
+        // episode instead of every tick it stays overdue.
+        private readonly List<ZDO> _sectorScratch = new List<ZDO>(256);
+        private readonly List<ZDO> _wildCandidates = new List<ZDO>(8);
+        private bool _holdLogged;
+
         /// <summary>
         /// RandEventSystem.m_randomEvent is PRIVATE, so liveness comes through a cached field
         /// accessor per rule 5 — publicized assemblies are compile-time only and Mono refuses the
@@ -137,6 +144,31 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             float progress = (_sinceStormEnded - ModConfig.StormMinIntervalSeconds.Value) / span;
             if (_rng.NextDouble() > progress) return;
 
+            // The roll succeeded — the storm WANTS to fire. Only now pay for the wild
+            // filter (0.26.0): a storm anchored on a player at their homestead announces
+            // drama it structurally cannot deliver — lightning grounds out on the standoff
+            // and cleared base ground gives fire nothing to eat — so the anchor must be a
+            // player out in the wild. If everyone online is behind their own walls, the
+            // overdue storm HOLDS with its accrual intact: the sky breaks the moment
+            // somebody steps back out. Deliberately checked after the roll so the scan
+            // costs nothing on the quiet ticks.
+            if (ModConfig.StormAvoidBaseMeters.Value > 0f)
+            {
+                if (!TryPickWildCentre(out Vector3 wild))
+                {
+                    if (ModConfig.VerboseLogging.Value && !_holdLogged)
+                    {
+                        _holdLogged = true;
+                        RagnaroksWrath.Log.LogInfo(
+                            $"[{Name}] storm holds — every player is at a homestead; " +
+                            "it breaks when someone steps into the wild.");
+                    }
+                    return;
+                }
+                centre = wild;
+            }
+
+            _holdLogged = false;
             StartStorm(centre);
         }
 
@@ -281,6 +313,49 @@ namespace RavenIron.RagnaroksWrath.Systems.World
             catch (Exception ex)
             {
                 RagnaroksWrath.Log.LogWarning($"[WeatherSystem] could not pick a storm centre: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// A storm anchor out in the WILD: a random online player standing farther than
+        /// `StormAvoidBaseMeters` from anything player-built. False when everyone online
+        /// is at a homestead — the caller holds the storm rather than announcing one that
+        /// cannot deliver. The scan fails OPEN inside Homestead (an uncheckable world
+        /// counts as wild): a storm without lightning still carries wind, plague and the
+        /// war, so a broken scan must dull the filter, never kill the weather.
+        /// </summary>
+        private bool TryPickWildCentre(out Vector3 centre)
+        {
+            centre = Vector3.zero;
+
+            ZNet znet = ZNet.instance;
+            if (znet == null) return false;
+
+            try
+            {
+                List<ZDO> characters = znet.GetAllCharacterZDOS();
+                if (characters == null || characters.Count == 0) return false;
+
+                _wildCandidates.Clear();
+                float radius = ModConfig.StormAvoidBaseMeters.Value;
+                for (int i = 0; i < characters.Count; i++)
+                {
+                    ZDO zdo = characters[i];
+                    if (zdo == null || !zdo.IsValid()) continue;
+                    if (Homestead.IsNearPlayerBuilt(zdo.GetPosition(), radius, _sectorScratch,
+                            resultWhenUncheckable: false)) continue;
+                    _wildCandidates.Add(zdo);
+                }
+
+                if (_wildCandidates.Count == 0) return false;
+
+                centre = _wildCandidates[_rng.Next(_wildCandidates.Count)].GetPosition();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                RagnaroksWrath.Log.LogWarning($"[WeatherSystem] wild-centre pick failed: {ex.Message}");
                 return false;
             }
         }

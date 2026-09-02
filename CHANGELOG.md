@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.26.0
+
+- **Storms stop crying wolf over homesteads.** A Devastating Storm anchors on a
+  player — and when that player was safe at their base, everyone still got the big
+  "A devastating storm gathers." announcement for a storm that couldn't deliver:
+  lightning refuses to strike near anything player-built, and cleared base ground
+  gives fire nothing to eat. Storms now anchor only on players out in the **wild**
+  (farther than `StormAvoidBaseMeters`, default 30, from anything with a builder
+  stamp). If everyone online is behind their own walls, an overdue storm quietly
+  holds — and breaks the moment somebody steps outside. Set the new option to 0 for
+  the old behavior.
+
 ## 0.25.0
 
 - **The season now reaches clients.** It never did: `SeasonSystem` only ever ran on the

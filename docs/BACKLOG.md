@@ -1110,6 +1110,37 @@ weather, and FireFront's cell checks own that verdict. Server log carries positi
 
 ---
 
+## 16. Storms anchor in the wild — BUILT 2026-08-28 at 0.26.0 (in-game verification pending)
+
+Owner-reported problem from live play: a Devastating Storm anchored on a player AT THEIR
+BASE announces world-wide drama it structurally cannot deliver — lightning grounds out on
+the homestead standoff (task 15's rule) and FireFront's terrain firebreaks mean cleared
+base ground gives the fire risk nothing to eat. The notification read as a false alarm.
+
+**The fix, scheduler-side and server-only:** the storm's anchor must be a player in the
+WILD. `Core/Homestead.cs` now owns the player-built scan (extracted from FireSystem's
+bolt standoff — one implementation, two callers, each choosing its own failure answer:
+lightning fails CLOSED because a blocked bolt is safely lost; the scheduler fails OPEN
+because a storm without lightning still carries wind, plague and the war, and a broken
+scan must dull the filter, never kill the weather). At roll success — deliberately after
+the dice, so quiet ticks pay nothing — the scheduler picks among players farther than
+`StormAvoidBaseMeters` (default 30, 0 disables, capped 64 by the 3x3 scan) from anything
+carrying a builder id. Nobody wild? The overdue storm HOLDS with its accrual intact and
+fires the moment someone steps out (one latched verbose line per hold episode).
+
+**Interaction accepted with eyes open:** phase D's storm-escalated wars often sit on
+TENDED ground near settlements; a defender camping the war zone inside their own walls
+now also holds storms off. Judged correct — the sky punishes venturing, not defending —
+and reversible via `StormAvoidBaseMeters = 0`.
+
+**Acceptance, in-game (pending):** with the storm overdue (past `StormMaxIntervalSeconds`)
+and the only player standing inside their base: no storm, no announcement, verbose hold
+line once. Step 40+ m into open ground: the storm fires within a weather tick, anchored on
+the player's wild position. With two players split home/wild: the storm anchors on the
+wild one. `StormAvoidBaseMeters = 0` restores the old anchor-anyone behavior.
+
+---
+
 ## Early-access readiness
 
 - **Fresh-world smoke test PASSED 2026-08-26** (0.20.0 server, world `EASmoke`, uid
