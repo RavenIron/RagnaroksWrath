@@ -1139,6 +1139,18 @@ line once. Step 40+ m into open ground: the storm fires within a weather tick, a
 the player's wild position. With two players split home/wild: the storm anchors on the
 wild one. `StormAvoidBaseMeters = 0` restores the old anchor-anyone behavior.
 
+## 17. SeasonSync — BUILT 2026-08-30 at 0.25.0, VERIFIED LIVE 2026-09-03 (Ravenrest)
+
+The season reaches clients (see CLAUDE.md current state for the design). Verified on the LIVE
+Ravenrest server rather than the staging box: a pure client typed `wrath status` and read back
+`season Summer (synced from the server), day 141` — non-Spring, source-marked, matching
+Seasonality's HUD. Two facts in one screenshot: the `ZRoutedRpc` wire works at runtime, and
+the rule-4 Seasonality deference resolved a real season through its global keys for the
+first time with that mod actually installed. The same session showed an organic Devastating
+Storm raging with the player out in the forest under Seasonality's untouched summer sky —
+consistent with task 16's wild anchor, but NOT its controlled verification (no hold line is
+readable from a remote server); that check still belongs on the staging box.
+
 ---
 
 ## Early-access readiness

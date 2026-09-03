@@ -242,7 +242,7 @@ overlap if it is ever installed alongside.
 
 ## Current state
 
-**BUILT, NOT YET VERIFIED IN-GAME (2026-08-30, 0.25.0): season sync.** `SeasonSync`
+**Built and VERIFIED IN-GAME (2026-09-03, on the LIVE Ravenrest server, with Seasonality installed — 0.25.0+): season sync.** `SeasonSync`
 broadcasts the season to every client on `SeasonSystem`'s own 10s cadence, because
 `Current` was only ever assigned on the simulation authority and a pure client therefore
 believed it was Spring for the whole session. Every in-mod gameplay consumer of the
@@ -253,9 +253,11 @@ client is right within a tick and a dropped packet heals itself; the receiver re
 act on the authority, which absorbs a listen host's copy of its own broadcast.
 **The instrument is `wrath status`, which now names the season's SOURCE on both sides** —
 mandatory here, because Spring is index 0 and so is "nothing has ever told us", so the
-season alone cannot distinguish a working sync from none. A clean build proves nothing
-about `ZRoutedRpc` at runtime: this needs one dedicated-server run with a client typing
-`wrath status` and reading back a non-Spring season marked `synced from the server`.
+season alone cannot distinguish a working sync from none. VERIFIED by exactly that instrument: a pure client on Ravenrest typed `wrath status` and read
+back `season Summer (synced from the server), day 141` — non-Spring, source-marked, and
+agreeing with Seasonality's own HUD. The same screenshot is the first live proof of the
+rule-4 deference with Seasonality actually installed: the server resolved Summer through
+its global keys, not our clock.
 
 **Built and verified in-game (2026-08-27, 0.23.0, dedicated server): storm lightning** —
 the first post-roadmap feature. Six strikes over three storms: dry-sky gate, FireFront
