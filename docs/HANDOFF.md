@@ -6,8 +6,10 @@
 `RavenIronStudios-FireFront-0.18.4` and `RavenIronStudios-RagnaroksWrath-0.24.0` (the
 dependency chain resolving for real — RW's manifest minimum 0.17.3 satisfied by the
 published 0.18.4). RW ships the owner's wolf icon; FireFront the burning shield. Uploaded
-private-first via the owner's browser. Thunderstore status: team confirmed as
-RavenIronStudios there too; upload not yet confirmed done — ask the owner before assuming.
+private-first via the owner's browser. **Thunderstore is NOT a channel** — owner's call,
+2026-09-03: nothing has ever been uploaded there and nothing will be. Hexium is the only
+store. The zip is still built to Thunderstore's package *format*, which is what Hexium
+consumes; format and channel are different things, and these docs conflated them for a week.
 Packaging facts and the store-team-vs-GitHub-org distinction live in item 3 of "What
 remains" below and in auto-memory (`distribution-targets`). The items below this line
 predate the publish and describe the road to it.
@@ -40,7 +42,7 @@ horn mystery became two days that finished the mod.
   the next organic war/stone re-verifies them free.
 - **EA prep done:** README rewritten for the full mod; fresh-world smoke test passed (15
   systems from zero, no noise); Seasonality GUID verified from their source; a 0.19.0-era
-  Thunderstore zip exists in dist\ (STALE — repack at the shipping version).
+  store zip exists in dist\ (STALE — repack at the shipping version).
 
 ## The two worlds (one shared BepInEx config — remember that)
 
@@ -55,7 +57,7 @@ horn mystery became two days that finished the mod.
   server root launches it; the old `start_headless_server.bat` launches Dedicated; same
   port, one at a time. NO STAGING on Saga, ever — its whole value is that nobody helped it.
 
-## What remains before the Thunderstore button
+## What remains before the store button
 
 1. **The Skadi evening, on Saga**: multi-peer ring fan-out (the one genuinely untested
    surface — same code per peer, but never run with two), player-nameplate render (nemesis
@@ -244,7 +246,7 @@ obeys.
   (`Visuals\ParticleKit` is the substrate); farming's growth/yield consumer; the nameplate
   RENDER check (needs a second player); the crop-wither slow half (a turnip stands in the
   outbreak at blight 1.0 — it should be visibly unhealthy now and die at grow time);
-  package + Thunderstore upload (now 0.11.1 + FireFront 0.17.3 as a pair).
+  package + store upload (now 0.11.1 + FireFront 0.17.3 as a pair) — SUPERSEDED, both shipped to Hexium 2026-08-27.
 
 ## The live world (Dedicated, uid 4690126)
 

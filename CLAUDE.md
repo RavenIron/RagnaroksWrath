@@ -261,7 +261,7 @@ about `ZRoutedRpc` at runtime: this needs one dedicated-server run with a client
 the first post-roadmap feature. Six strikes over three storms: dry-sky gate, FireFront
 ignition and spread, scorch banked in the store, rivalry billing NOBODY (natural fire by
 construction), the homestead standoff refusing a real bolt by log line, Centre line and
-the Eikthyr storm look confirmed by the owner's eyes. FireFront became a Thunderstore
+the Eikthyr storm look confirmed by the owner's eyes. FireFront became a listed store
 manifest dependency the same day (packaging only — the code stays soft-dependent).
 Key operational fact: a WET forced storm look (`ThunderStorm`, the default) suppresses
 lightning via the rain gate; `Eikthyr` is the dry storm that allows both. See backlog

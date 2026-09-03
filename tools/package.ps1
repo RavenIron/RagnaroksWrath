@@ -1,4 +1,6 @@
-# Builds the Thunderstore release zip: RavenIron-RagnaroksWrath-<version>.zip in dist\.
+# Builds the store release zip: RavenIron-RagnaroksWrath-<version>.zip in dist.
+# Goes to Hexium (hexium.gg) - the only store we publish to (owner, 2026-09-03). The LAYOUT
+# is Thunderstore's package format, because that is the format Hexium consumes.
 #
 # Guards the one mistake a manual zip invites: the THREE places the version lives
 # (Plugin const, csproj, manifest.json) drifting apart. The script refuses to package

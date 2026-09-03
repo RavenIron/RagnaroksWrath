@@ -334,7 +334,7 @@ cold body) is the design, observed working in one spot.
 ## 10. Packaging — DONE 2026-08-26
 
 Root-level `manifest.json`, player-facing `README.md`, `CHANGELOG.md`, generated 256x256
-`icon.png`, and `tools\package.ps1` producing the flat Thunderstore zip in `dist\`
+`icon.png`, and `tools\package.ps1` producing the flat store zip in `dist\`
 (gitignored). Modeled on SkaldSaga's release SHAPE only — that project is dead and stays
 reference-only; nothing is linked or copied from it.
 

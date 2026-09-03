@@ -43,7 +43,7 @@ namespace RavenIron.RagnaroksWrath.Systems.World
     /// `FireManager.CollectActiveFirePositions(List&lt;Vector3&gt;)`, public in FireFront since
     /// 0.17.2 and documented there as load-bearing for this mod.
     ///
-    /// Since 0.23.0 FireFront is ALSO a Thunderstore manifest dependency (owner's call
+    /// Since 0.23.0 FireFront is ALSO a listed manifest dependency (owner's call
     /// 2026-08-27, reversing the earlier soft-by-design packaging): mod managers install the
     /// pair together, so a missing FireFront now most likely means a hand install skipped it —
     /// which is why absence warns instead of whispering. Initialise tattles the exact version
@@ -101,7 +101,7 @@ namespace RavenIron.RagnaroksWrath.Systems.World
 
             if (!_fireFrontPresent)
             {
-                // A warning, not info, since 0.23.0: FireFront is a listed Thunderstore
+                // A warning, not info, since 0.23.0: FireFront is a listed manifest
                 // dependency, so absence usually means a hand install missed half the pair.
                 // Running without it stays safe and supported — the world just never scars.
                 RagnaroksWrath.Log.LogWarning(
