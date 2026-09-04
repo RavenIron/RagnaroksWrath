@@ -154,6 +154,24 @@ wrong measurement is the most common cause of a long debugging session here.
 v3.7.8: `ModGUID = Author + "." + ModName` = `"RustyMods.Seasonality"`). Detection is
 sound.
 
+✅ **STORM SKY UNDER SEASONALITY, VERIFIED BY EYE 2026-09-03 (Seasonality 3.8.0, decompiled
+the same day):** `StormsForceWeather` DOES show its environment with Seasonality installed,
+and not by patch order. Vanilla's `EnvMan.UpdateEnvironment` asks `GetEnvironmentOverride()`
+FIRST — debug env, intro, then `RandEventSystem.GetEnvOverride()` (the active event's
+`m_forceEnvironment`), then `EnvZone` — and only falls through to the biome weather list when
+all are empty. Seasonality patches exactly three `EnvMan` members: a postfix on
+`GetAvailableEnvironments` (rewrites that fallback list), a postfix on `Awake` (registers its
+own environments, sets `m_environmentDuration`) and `IsCold`. It never touches the override
+path, so our vanilla event wins for the storm's duration by the engine's own precedence, and
+Seasonality's sky returns when the event ends. Rule 4 still stands — we patch nothing in
+`EnvMan` — but its "owners not running Seasonality" caveat on the toggle is stricter than the
+engine requires *for this one mod at this version*; it says nothing about other weather mods.
+The boot warning WeatherSystem prints when the toggle is on still calls Seasonality a
+conflict; soften it in a future version (backlog task 16). Operational gotcha that cost a
+round-trip: the forced environment is baked into the CLIENT's copy of the event from the
+client's config at game launch — editing the cfg and reconnecting changes nothing; the game
+must be fully relaunched.
+
 **Seasons (shudnal)** — the OTHER major season mod, and the only one published on Hexium
 (Seasonality is Thunderstore-only as of 2026-08-27). Detect via
 `Chainloader.PluginInfos.ContainsKey("shudnal.Seasons")`.
@@ -241,6 +259,23 @@ overlap if it is ever installed alongside.
 ---
 
 ## Current state
+
+**Built and VERIFIED IN-GAME (2026-09-03, 0.26.0, on a CLONED server install with the full
+Ravenrest modpack and Seasonality 3.8.0 live): storms anchor in the wild.** The owner stood
+inside their base with the storm overdue: no event, no banner, and the verbose
+`storm holds — every player is at a homestead` line exactly once. They stepped into the open
+and the next weather tick set the vanilla event and logged `storm started at (-6, 41)`; the
+storm ran under Seasonality's untouched `Clear` sky and lifted on schedule. Backlog task 16.
+Later the same session, with `StormsForceWeather` on and `Eikthyr` staged on BOTH the clone and
+the client: Eikthyr's dark sky and thunder rendered over Seasonality's winter, confirmed by
+the owner's eyes, and bolts landed and FireFront burned ground under it — see the compatibility
+section for why the toggle works alongside Seasonality after all. The three earlier storms under
+the production config (forced weather off) were invisible except for a four-second banner and
+rolled no bolt: the storm look is a config choice, not a fault.
+Operational lesson from the same run, recorded in memory: verification runs get their OWN
+cloned install (`C:\Users\donfr\ValheimServers\StormTest`, port 2476, own `-savedir`, plugins
+mirrored from the owner's `raveniron` Gale profile) — the Steam install IS Ravenrest and its
+plugin set had already drifted behind the profile far enough for Jotunn to refuse the join.
 
 **Built and VERIFIED IN-GAME (2026-09-03, on the LIVE Ravenrest server, with Seasonality installed — 0.25.0+): season sync.** `SeasonSync`
 broadcasts the season to every client on `SeasonSystem`'s own 10s cadence, because

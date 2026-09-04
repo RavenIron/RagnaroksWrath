@@ -1110,7 +1110,7 @@ weather, and FireFront's cell checks own that verdict. Server log carries positi
 
 ---
 
-## 16. Storms anchor in the wild — BUILT 2026-08-28 at 0.26.0 (in-game verification pending)
+## 16. Storms anchor in the wild — BUILT 2026-08-28 at 0.26.0, VERIFIED IN-GAME 2026-09-03
 
 Owner-reported problem from live play: a Devastating Storm anchored on a player AT THEIR
 BASE announces world-wide drama it structurally cannot deliver — lightning grounds out on
@@ -1133,11 +1133,32 @@ TENDED ground near settlements; a defender camping the war zone inside their own
 now also holds storms off. Judged correct — the sky punishes venturing, not defending —
 and reversible via `StormAvoidBaseMeters = 0`.
 
-**Acceptance, in-game (pending):** with the storm overdue (past `StormMaxIntervalSeconds`)
-and the only player standing inside their base: no storm, no announcement, verbose hold
-line once. Step 40+ m into open ground: the storm fires within a weather tick, anchored on
-the player's wild position. With two players split home/wild: the storm anchors on the
-wild one. `StormAvoidBaseMeters = 0` restores the old anchor-anyone behavior.
+**Acceptance, in-game — PASSED 2026-09-03** on a cloned server install
+(`ValheimServers\StormTest`, the full Ravenrest modpack mirrored from the owner's
+`raveniron` Gale profile, Seasonality 3.8.0 live, storms staged to every 120–180 s):
+the owner spawned at the base and stood inside it; the log printed `storm holds — every
+player is at a homestead` exactly once and no event was set. They walked into the open and
+the very next weather tick logged `Random event set:ragnarokswrath_devastating_storm` then
+`storm started at (-6, 41)`; the storm ran its 120 s under Seasonality's `Clear` sky and
+lifted (`storm ended`), Stormrider earned. Not exercised: two players split home/wild,
+and `StormAvoidBaseMeters = 0`. As written before the run: with the storm overdue (past
+`StormMaxIntervalSeconds`) and the only player standing inside their base: no storm,
+no announcement, verbose hold line once. Step 40+ m into open ground: the storm fires
+within a weather tick, anchored on the player's wild position. With two players split
+home/wild: the storm anchors on the wild one. `StormAvoidBaseMeters = 0` restores the
+old anchor-anyone behavior.
+
+**Second pass the same day, the VISIBLE storm:** the three storms above ran under the production
+look (`StormsForceWeather = false`) and the owner saw nothing but a four-second banner — no sky
+change by design, no bolt by dice (three two-minute storms at one bolt per fifteen
+storm-minutes). Re-staged with `StormsForceWeather = true`, `Eikthyr`, `LightningMeanMinutes = 1`
+on the clone AND `Eikthyr` in the client's cfg (game fully relaunched — a reconnect keeps the
+launch-time value): Eikthyr's sky rendered over Seasonality's winter, confirmed by eye; bolts
+landed within a minute of each storm and FireFront burned ground under them. Why it works with
+Seasonality is in CLAUDE.md's compatibility section (vanilla event-override precedence;
+Seasonality never touches that path). **Follow-ups, small:** soften WeatherSystem's boot warning
+and the `StormsForceWeather` description, which still call Seasonality a conflict; and the
+owner has an open decision on whether Ravenrest itself should run the toggle on.
 
 ## 17. SeasonSync — BUILT 2026-08-30 at 0.25.0, VERIFIED LIVE 2026-09-03 (Ravenrest)
 
@@ -1148,8 +1169,8 @@ Seasonality's HUD. Two facts in one screenshot: the `ZRoutedRpc` wire works at r
 the rule-4 Seasonality deference resolved a real season through its global keys for the
 first time with that mod actually installed. The same session showed an organic Devastating
 Storm raging with the player out in the forest under Seasonality's untouched summer sky —
-consistent with task 16's wild anchor, but NOT its controlled verification (no hold line is
-readable from a remote server); that check still belongs on the staging box.
+consistent with task 16's wild anchor, but not its controlled verification — that ran later
+the same day on a cloned install (see task 16).
 
 ---
 
